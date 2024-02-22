@@ -165,7 +165,7 @@ void Multiplex::start( void )
                 std::cout << FOREGRN ;
                 std::cout << "============== Request ==============" << std::endl ;
                 std::cout << "==============+++++++++==============" << std::endl ;
-              //  s = write (1, buf, bytesReceived);
+             //  s = write (1, buf, bytesReceived);
                 // get 
                 //  start parse
                 Http_req htt(buf,bytesReceived);
