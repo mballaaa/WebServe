@@ -5,15 +5,23 @@
 #include <cstdio>
 #include <sstream>
 #include <algorithm>
+#include <cstdlib> // for strtol
 int main()
 {
-    std ::string tes="sss dvf";
-    std ::string ::iterator end=std::remove(tes.begin(), tes.end(), '\r');
-     for (std::string::iterator it = tes.begin(); it != end; ++it) {
-        std::cout << *it;
-    }
-    // function
-    void split()
+std::string str = "1";
+char* endptr;
+long value = strtol(str.c_str(), &endptr, 10);
+
+if (endptr == str.c_str()) {
+    std :: cout << endptr << std ::endl;
+    // Conversion failed (no digits converted)
+    std::cerr << "Error: Invalid numerical string." << std::endl;
+} else {
+    // Conversion successful, value stores the converted number
+    std::cout << "Converted value: " << value << std::endl;
+    // You can also check the remaining string using endptr:
+    std::cout << "Remaining string: " << endptr << std::endl;
+}
 }
 
 // int main() {
