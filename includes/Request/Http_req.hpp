@@ -6,7 +6,11 @@
 #include <cstdio>
 #include <sstream>
 #include <algorithm>
- #include "../../includes/Multiplex.hpp"
+#include "../../includes/Multiplex.hpp"
+#include "dirent.h"
+#define IS_DIR   0
+#define IS_FILE 1
+#define IS_RED 2
 class Http_req
 {
 public:
@@ -19,7 +23,7 @@ public:
 private:
    /// this the start line 
     std::string req;
-    
+    std::string _target;
     
     std ::string method;
     std::string path;
@@ -27,6 +31,7 @@ private:
 
    std::map<std::string, std::string> header; 
     Server server;
+    Location _loca;
     int byterec;
 
 public:
@@ -35,6 +40,7 @@ public:
    void parse_re(std ::string bufer,int bytee);
    int StautRe(std ::string request);
     int MoreValidation();
+    void LetGet();
     ~Http_req();
 };
 
