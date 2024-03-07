@@ -2,7 +2,6 @@
 
 Server::Server( void ) : _serverNames(), _port(), _root(""), _host(""), _clientMaxBodySize(), _errorPages()
 {
-    // std::cerr << __PRETTY_FUNCTION__ << std::endl ;
     // this->_locations.insert(std::make_pair(
     //     "/",
     //     Location() 
@@ -11,7 +10,6 @@ Server::Server( void ) : _serverNames(), _port(), _root(""), _host(""), _clientM
 
 Server::Server( const Server& rhs )
 {
-    // std::cerr << __PRETTY_FUNCTION__ << std::endl ;
     serverNames_t::const_iterator itS = rhs._serverNames.begin() ;
     while (itS != rhs._serverNames.end())
         this->_serverNames.push_back(*itS++) ;
@@ -33,7 +31,6 @@ Server::Server( const Server& rhs )
 
 Server& Server::operator=( const Server& rhs )
 {
-    std::cerr << __PRETTY_FUNCTION__ << std::endl ;
     
     serverNames_t::const_iterator itS = rhs._serverNames.begin() ;
     this->_serverNames.clear() ;
@@ -60,7 +57,6 @@ Server& Server::operator=( const Server& rhs )
 
 Server::~Server( void )
 {
-    // std::cerr << __PRETTY_FUNCTION__ << std::endl ;
 }
 
 const Server::serverNames_t&						Server::getServerNames ( void ) const
@@ -68,7 +64,7 @@ const Server::serverNames_t&						Server::getServerNames ( void ) const
     return (_serverNames) ;
 }
 
-const std::string&						Server::getIndex ( void ) const
+const std::vector<std::string>&						Server::getIndex ( void ) const
 {
     return (_index) ;
 }
@@ -113,7 +109,7 @@ void 							Server::setServerNames( const Server::serverNames_t& _serverNames )
 
 void 							Server::setIndex( const std::string& _index )
 {
-    this->_index = _index ;
+    this->_index.push_back(_index) ;
 }
 
 void 							Server::setPort( const std::string& _port )
@@ -190,7 +186,15 @@ std::ostream& operator<<( std::ostream& os, const Server& server )
     }
     std::cout << std::endl ;
 
-    os << "Index: " << server.getIndex() << std::endl ;
+    std::vector<std::string>::const_iterator inx = server.getIndex().begin() ;
+    os << "\t\tIndex: " ;
+    while (inx != server.getIndex().end())
+    {
+        os << *inx++ ;
+        if (inx != server.getIndex().end())
+            os << ", " ;
+        
+    }
     os << "Port: " << server.getPort() << std::endl ;
     os << "Root: " << server.getRoot() << std::endl ;
     os << "Host: " << server.getHost() << std::endl ;

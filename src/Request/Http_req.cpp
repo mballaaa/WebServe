@@ -1,5 +1,5 @@
 #include "../../includes/Request/Http_req.hpp"
-#include "../../includes/Response.hpp"
+
 Http_req::Http_req(std ::string req, int byterec, Multiplex::listeners_t listners)
 {
     
@@ -159,7 +159,7 @@ int Http_req::MoreValidation()
      std :: cout << red.second << std ::endl;
     if(red.first !=0 && red.second != "")
     {
-        this->path=red.second;
+        this->_target=red.second;
         //std :: cout << "tis the path\n" << path << std ::endl;
     }
     // let check allow methode 
@@ -265,8 +265,9 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 {
     (void)bufer;
     (void)bytee;
-    if (StautRe(bufer) || bytee < 0)
+    if (!StautRe(bufer) || bytee < 0)
     {
+            
     }
     else
     {
@@ -280,7 +281,8 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 
 bool Is_dir(const char *ptr)
 {
-    DIR *dir= opendir(ptr);
+    std :: cout << "ptr==>" << ptr << std ::endl;
+    DIR *dir= opendir(ptr+1);
     if(dir !=NULL)
     {
         return true;
@@ -297,13 +299,14 @@ int is_file_dir(std::string uri)
 // =====> Let Start Get
 void Http_req:: LetGet()
 {
-    std ::string URI=this->path;
+    std ::string URI=this->_target;
     int check_type=is_file_dir(URI);
+    std :: cout << "output" << check_type << std ::endl;
     if(check_type == IS_DIR)
     {
-        std :: cout << "Wecccchh\n";
+        std :: cout <<"=>"  <<this->_target << std ::endl;
     }
-
+   
 }
 Http_req::~Http_req()
 {
