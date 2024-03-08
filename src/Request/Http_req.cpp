@@ -21,6 +21,7 @@ Http_req::Http_req(std ::string req, int byterec, Multiplex::listeners_t listner
     this->req = req;
     this->byterec = byterec;
     this->server = it->second;
+    std :: cout << "====>root"  << server.getRoot() << std ::endl;
    /// See location 
 
 //    std :: cout << "Yessss\n";
@@ -49,9 +50,9 @@ Http_req::Http_req(std ::string req, int byterec, Multiplex::listeners_t listner
 bool is_same(std::string key,std::string target)
 {
     //key is valuee from config location
-    //target ==is path request
-    std :: cout << " key from conf===>" << key << std ::endl;
-    std :: cout << target << std :: endl;
+    // //target ==is path request
+    // std :: cout << " key from conf===> " << key << std ::endl;
+    // std :: cout << "path==>"  << target << std :: endl;
     if(key.length() < target.length())
     {
         
@@ -82,6 +83,24 @@ std::string to_stringmetohd(int value) {
         case 2: return "POST";
         case 4: return "DELETE";
         default: return "Unknown Method";
+    }
+}
+std ::string SetRootLoc(std ::string path,std ::string loac_value,std ::string root)
+{
+    std :: cout << "==>uri path:" << path << std ::endl;
+	std :: cout << "==>locationpath:" << loac_value << std ::endl;
+	std :: cout << "==>root:" << root << std ::endl;
+    size_t it =url.find(loac_value);
+    //path==>//test/image.txt
+    //loca=/test
+    if(it != std ::string::npos )
+    {
+        if(!root.empty() && root[root.length()-1] !='/')
+        {
+            root+="/";
+            int len=loac_value.length();
+            
+        }
     }
 }
 int Http_req::MoreValidation()
@@ -134,55 +153,63 @@ int Http_req::MoreValidation()
     std::map<std ::string,Location> location=this->server.getLocations();
     std::map<std::string,Location> :: iterator it;
     int flag=0;
+    std ::string key ;
     for ( it =location.begin() ; it != location.end(); it++)
     {
       
-        std ::string key =it->first;
-        if(is_same(key,_target))
-        {
-            flag++;
-        this->_loca=it->second;
-       
-        break;        
+         key =it->first;
+         
+         if(is_same(key,_target))
+         {
+           // std :: cout << "is same\n" << std ::endl;
+             flag++;
+             this->_loca=it->second;
+              break;        
         }
 
     }
     
     if(flag==0)
-    {
-        
-        return (0);
+    {    
+        // if not found any match
+        key = "/";
     }
-   
+        
+
+    
+   std :: cout << "weech\n";
      Location::redirection_t  red=this->_loca.getReturn();
      std :: cout << red.first << std ::endl;
      std :: cout << red.second << std ::endl;
     if(red.first !=0 && red.second != "")
     {
         this->_target=red.second;
+        return 0;
         //std :: cout << "tis the path\n" << path << std ::endl;
     }
     // let check allow methode 
     Location::Methods_t allowmethod=this->_loca.getAllowedMethods();
     bool is_exit=false;
+    (void) is_exit;
+    
    for(size_t i =0 ; i < allowmethod.size();i++)
    {
         // change to stirng
         std ::string get_methode=to_stringmetohd(allowmethod[i]);
+        std :: cout << "get methode==>\n" << get_methode << std ::endl;
         if(get_methode==this->method)
         {
+            
             is_exit=true;
             break;
         }
     
         
    }
-   if(!is_exit)
-   {
-    return false;
-   }
-    
-    
+    /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
+   
+       
+    _target=SetRootLoc(_target,key,this->_loca.getRoot());
 
     return (1);
 }
@@ -256,7 +283,7 @@ int Http_req::StautRe(std::string request)
     {
          
     }
-      debugFunction();
+      //debugFunction();
 
     res = 1;
     return (res);
