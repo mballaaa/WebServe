@@ -41,6 +41,7 @@ public:
    int StautRe(std ::string request);
     int MoreValidation();
     void LetGet();
+    void CheckLoc();
     ~Http_req();
 };
 
