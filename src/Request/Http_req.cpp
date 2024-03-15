@@ -341,7 +341,10 @@ void Http_req ::CheckLoc()
 {
     if(this->_loca.getIndex().size()!=0)
     {
-        // check CGI
+        std ::vector<std ::string> index=this->_loca.getIndex();
+        //check if index file are exit 
+        
+        
     }
     
     
