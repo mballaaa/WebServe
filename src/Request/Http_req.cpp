@@ -1,7 +1,15 @@
 #include "../../includes/Request/Http_req.hpp"
 #include <unistd.h>
+#include <sys/stat.h> 
+#include <cerrno>     
+#include <cstring>    
+
+#include <cstring>
 
 static int a=0;
+/*=============== 14 PART (begin)==================*/
+Http_req::Http_req(){}
+/*=============== 14 PART (end)==================*/
 Http_req::Http_req(Server server)
 {
     is_finsh=false;
@@ -67,6 +75,9 @@ Http_req &Http_req::operator=(const Http_req &obj)
         server = obj.server;
         _loca = obj._loca;
         byterec = obj.byterec;
+        /*=============== 14 PART (begin)==================*/
+        _status = obj._status;
+        /*=============== 14 PART (end)==================*/
     }
     return *this;
 }
@@ -109,6 +120,13 @@ const Location &Http_req::getLocation() const
 {
     return _loca;
 }
+/*=============== 14 PART (begin)==================*/
+
+const std::map<std::string, std::string> &Http_req::getStatus() const
+{
+    return _status;
+}
+/*=============== 14 PART (end)==================*/
 /*
     structure of request
         ===> start line
@@ -409,6 +427,13 @@ void Http_req::parse_re(std ::string bufer, int bytee)
             //std :: cout << "YEssss\n";
             LetGet();
         }
+        /*=============== 14 PART (begin)==================*/
+        else if(method=="POST")
+        {
+           LetPost();
+        }
+        /*=============== 14 PART (end)==================*/
+
     }
 }
 
@@ -495,6 +520,81 @@ void Http_req::LetGet()
         CheckLoc();
     }
 }
+/*=============== 14 PART (begin)==================*/
+void Http_req::mimeParse(){
+    std::ifstream file("mime.types");
+    std::string line;
+    std::string key;
+    std::string value;
+
+    if(!file.is_open())
+        return ;
+    
+    while(getline(file,line)){
+        std::istringstream thenewline(line);
+
+        thenewline >> key;
+        thenewline >> value;
+        if(!value.empty()){
+            size_t pos = value.find(";");
+            if(pos != std::string::npos )
+                value.erase(pos);
+            _mime[key] = value;
+        }
+    }
+}
+
+
+std::string randNameGen(){
+    srand(time(NULL));
+    std::string c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    std::string name;
+    for (int i = 0;i < 5;i++)
+        name += c[rand()%(sizeof(c)-1)];
+    return name;
+}
+
+void Http_req::LetPost(){
+    std::ifstream filee("writeBody.txt");
+    
+    if (!filee.is_open())
+        return ;
+    
+    /*location not found*/
+    if(_loca.getUploadPath() == "Not Found"){
+        /*Status 404*/
+        _status["404"] = "Not Found";
+    }
+    else if(_loca.getUpload() == true){
+        
+        mimeParse();
+        
+        if(header["content-length"]==" 0"){
+
+            /*Status 204*/
+            _status["204"] = "No Content";
+            return ;
+        }
+
+        int dirCheck = mkdir("Upload",0777);
+
+        if(!dirCheck || errno==  EEXIST){
+            std::string str = "Upload/"+randNameGen()+"."+_mime[header["content-type"].substr(1)];
+            std::ofstream file(str.c_str(),std::ios::out);
+
+            while(std::getline(filee,str))
+                file  << str << std::endl ;
+        }
+        /*Status 201*/
+         _status["201"] = "Created";
+    }
+    else if (_loca.getUpload() == false){
+        /*Status 403*/
+        _status["403"] = "Forbidden";
+    }
+    
+}
+/*=============== 14 PART (end)==================*/
 Http_req::~Http_req()
 {
 }

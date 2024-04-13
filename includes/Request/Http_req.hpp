@@ -1,6 +1,8 @@
 #ifndef HTTP_REQ
 #define HTTP_REQ
 #include <iostream>
+#include <fstream>
+
 #include "../Server.hpp"
 #include <cerrno>
 #include <cstdio>
@@ -36,10 +38,21 @@ public: // amine: i made this public for now
    std::map<std::string, std::string> header;
     Server server;
     Location _loca;
-
+/*=============== 14 PART (begin)==================*/
+    std::map<std::string,std::string> _mime;
+    std::map<std::string,std::string> _status;
+    
+/*=============== 14 PART (end)==================*/
     int byterec;
+/*=============== 14 PART (begin)==================*/
+    const std::map<std::string,std::string>& getStatus() const;
+/*=============== 14 PART (end)==================*/
 
-
+/*=============== 14 PART (begin)==================*/
+       void LetPost();
+    void mimeParse();
+    
+/*=============== 14 PART (end)==================*/
 public:
 
     Http_req();
