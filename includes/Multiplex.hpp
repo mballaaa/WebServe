@@ -19,7 +19,7 @@
 
 #include "SocketManager.hpp"
 #include "Server.hpp"
-#include "Request/Request.hpp"
+#include "Request/Http_req.hpp"
 
 #define RESETTEXT  "\x1B[0m" // Set all colors back to normal.
 #define FOREBLK  "\x1B[30m" // Black
@@ -40,7 +40,7 @@ public:
 	typedef std::map<SOCKET, Server> listeners_t ;
 	typedef std::map<std::string, SOCKET> host_port_map_t ;
 	typedef struct epoll_event epoll_event_t ;
-    typedef std::map<SOCKET, Request> requests_t ;
+    typedef std::map<SOCKET, Http_req> requests_t ;
 	
 private:
 	static SOCKET 			epollFD ;
@@ -55,7 +55,7 @@ private:
 	~Multiplex( void ) ;
 public:
     // static void setServers( const servers_t& servers ) ;
-    static void start( ) ;
+    static void start( void ) ;
     static void setup( const servers_t& _servers ) ;
 
 	// Getters
