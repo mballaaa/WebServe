@@ -1,6 +1,7 @@
 #include "../../includes/Multiplex.hpp"
 
 #include "../../includes/Request/Http_req.hpp"
+#include "../../includes/Response/Response.hpp"
 SOCKET                      Multiplex::epollFD ;
 Multiplex::listeners_t      Multiplex::listeners ;
 Multiplex::requests_t       Multiplex::requests ;
@@ -50,6 +51,8 @@ void Multiplex::start( void )
     eventName[EPOLLHUP] = "EPOLLHUP" ;
 
     /* The event loop */
+    Http_req reqqq;
+
     while (1)
     {
         int eventCount ; // Number of events epoll_wait returned
@@ -198,6 +201,8 @@ void Multiplex::start( void )
               
                 Http_req& currRequest = requests.find(events[i].data.fd)->second ;
                     currRequest.parse_re(buf,bytesReceived);
+                reqqq = currRequest;
+                
                // //std :: cout << "HEY\n";
 
                 std::cerr << "==============+++++++++==============" << std::endl ;
@@ -225,16 +230,18 @@ void Multiplex::start( void )
                 SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
                 std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n") ;
                 // std::string response("HTTP/1.1 302 Found\r\nLocation: http://example.com/new-page\r\n\r\n") ; // redirection response
-                s = write (events[i].data.fd, response.c_str(), response.size());
+                Response resp(reqqq);
+                s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
+                // s = write (events[i].data.fd, response.c_str(), response.size());
                 if (s == -1)
                     throw std::runtime_error("Cant write response") ;
-                // std::cerr << FOREBLU ;
-                // std::cerr << "============== Response ==============" << std::endl ;
-             //    std::cerr << "==============++++++++++==============" << std::endl ;
-              //   write (1, response.c_str(), response.size());
-                // std::cerr << "==============+++++++++==============" << std::endl ;
-                // std::cerr << "==============+++++++++==============" << std::endl ;
-                // std::cerr << RESETTEXT ;
+                std::cerr << FOREBLU ;
+                std::cout << "============== Response ==============" << std::endl ;
+                std::cerr << "==============++++++++++==============" << std::endl ;
+                write (1, resp.getResponse().c_str(), resp.getResponse().size());
+                std::cerr << "==============+++++++++==============" << std::endl ;
+                std::cerr << "==============+++++++++==============" << std::endl ;
+                std::cerr << RESETTEXT ;
                 /**
                  * Incas the client request Connection: close we close the connection
                  * else the connection remains open and waiting for another rquest from the client
