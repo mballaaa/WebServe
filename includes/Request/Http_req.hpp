@@ -11,6 +11,7 @@
 #include "dirent.h"
 #define IS_DIR   0
 #define IS_FILE 1
+#define IS_LINK 3
 #define IS_RED 2
 
 class Http_req
