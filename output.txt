@@ -1,242 +1,1414 @@
-����
-��
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 
-�
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
 
-�
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
 
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
 
-M��gh��x[3�f�'_�%&�V����k.�OIΦ��
-��S�N'�_�%��
-@
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
 
-��
+} ;
 
-��
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
 
-ǶW�n
-
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 
-@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
 
-
-�
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
 
-fR
-N౴3
-�a��	+��k��tz��g	A��s���B�
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
 
-(
-�a�����u�p�ľ˹�i�t:tr�Y縐�ss3n��R
-
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
 
-$�I��R`�TvKV��i6�4�o��w2\��Zh�Ȳ��r�󲜬�C����3e�������y�nYnS+Q�S[��v�~�����`?�U߷b�~<z�@
-!1��`1&6���S�xo+�GWN�0��5e
-�jqm-|�}/u����=����}լϼ��C�
+} ;
 
-��/�Z���x���������V��xv���ޭ���+� d�w˷�����_���NYz�"��QTq���%g����*��f�=��Xo�bk~���<}��G��
-�V�G�(&��䰖0�\�|���8��x�_��OB5��]�M����Zj��2�T�ve�
-@
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
 
-
-V�+��M�gv��M��VM��"����r
-H�w�w9|���I[,z
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 
-��
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
 
-(
-�
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
 
-�
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
 
-����{����dqȈ�P>S'E*
-_i78Ǚ
-�
-P�
-�
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
 
-wr�G�N��>e?4D(
-@
+} ;
 
-P@
-`���y8��+��~b�| ��n�e�y���[�c��|3gcs.*��P1�y*O2�'4�a@
-�0?��}��
-�6?�}?�C�X|+�纰��'�":��G����
-,�NT��%f�D����
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
 
-5J��Ⱥ/�uퟛ
-P@
-@
-$��A<�O��r�بb�8W�X;+i��O=��4�x�_�?����6�k�ޙ���ó*mM�"����'���W�I�2�g���qsJ*_��
-`Ь�$���,�k7yd�f͘�s�9����eS��zq�ӎ],%�3�7��������K��+�G����2M�6�t0C,��6��8�ʥ�Jmf����VS{0�ci����E>h7~ھ�
-w���o����
-��w���K�+N���/	YxSK�K������/�\��?(8eN2��r�˱���|���{F�����;���
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 
-@
-��
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
 
-
-q)��H���y'�
-(
-
-(
-@
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
 
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
 
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
 
+} ;
 
-�
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
 
-��
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 
-���[���d��͑��U�׏��
-
-��	�ݔ������ʼ��Lɹ�����C��FXR�=��z��e�}/���.��=#���e��c��Z����8Ӡ�$��I$�I$��i��kc+J�"NS��ovϠ�T,v,�%5�E�N�y���vڎ��B�]Z��9c=U���ؚ�:��a��8���i�(��Ylq~�׈g�����=Z�[�k$���[��~�p����d��.�)��Hĕ�)��!�ϔp8�CӢ��g�?5����`]~��>��H�e�Etu��!��A�+�3�@
-��O��_��_���Ĉ๲̞W�����u���[o{z�,?�*�ػooogo�����j
-��_����^��k��g�
-���5����m/B.@��'�*J�?p����iva�l�*�X����og?��c���~���5�Q�
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
 
-�
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
 
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
 
-(
-@
-$��^N��pfe��7W�WJS�t�2��f�z_�cY�s�ӟ.���24߃>9�O��KX7�5]'M�d���^��X��'��l�����
-I�j꫟`�yM?i΍U)AI9$�ު�Zm"νUk&�g�����<1i�������S��� �]ԃA}ұ��F9˦�$3dd��\�>���fy^?N7����%����m�Z+hrS�h�:���
-��N�y��M]�(
-Y��Q�k��3\&M��/5G��][葥:r�.H-O;�OԵMc��\Eu��d��"M��u�
-F�_�\�K[�ݷ��	Y"�
-��hn�6�|�D�qis\\,acVS�!�pn�ݫ�|	��x��G�ѩ)��u5����m��k�v5�JQvj��cӮ�hφ�
-gi1��nQIFG�O��G[	c#UV�����Ѵ�Z���)�^���8��u��3ş�w��ľӢ����;�(��E7��C8��v�"㺹u,F1�����Qn�����{--�I���`�GS|�:#�?��~"�<д_�{յ?�{]�\��%֚Tȱ� [p��Lda���"���=�ex����ƅH(:jV���7.���M���T�J���$������/Y�'����⏌���5��&M?S�n��V ,�yo�cX�5mnA;�p93�5����
-P@
-���*���jւ�lr�O��X�
-��
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
 
-|ѷ*n�-WV�Z;���?�b*FU��ʾ����b�F���#�����t~+A:gj{�e�h!�?5Yp�4͸㐿����89fT�j�_Ukޏ���n�=\V���ֶ2iSt��_�K�����U�<�X��mω-�=.����,����b4I!��	�0�(u(�ݐk�8��}�J���(MJ�V�M���i���ã���eF��k�����E�I���>/���
-��`x���8.���>�bb� �B���z�"ax{/�a�S�5[�Gٵʣk���V��=L��9JM�__�o�����sV�m>(���4�a�b�ޕ$���j%*B	�@���'�1]d��tg��Ӕ�wRVQR�컫��꺓[V�mJ/]���
+} ;
 
-�%H�K1�F!�@,{��]�밗�ůw��GI$�m;+��{O�K�����'�����h&Դs�ټ:4��K��6��y{6|�����2\I�|(�.Y{US��\�׭�������϶�k��ٛ��
-P@
-@
-�ֺOm�C�N���]�������7��G�^�����
-{�v�{�i�"I�Վ\���ڠv�LW�p�
-P@
-��:�O[��}�K�
-���'�I��]�ӭ��x�L����}Q_Vs
-;��9Ĝ3��\+�⣯I-������^�o��O.h�>|M�~![^Z5�։�=Qk��~���.1���%\��AS��^#�o����^^}�����-D1���ϛ�
-���
-��%3�h����%�ǘ���M�G�m��r��8x3��m�k�	�l���Ұ�F�t���
-�0��
-����w
-¾�#�և�m��bFFT���  �
-�
-d�h��G��yS%r�2طCyGw>�?�z�j{�,r��T���
-�>"�_�/�'��&W�akغW~��
-��j_�Wz�G��&G���L�Q����$�]�ͽ�Wv��<����dt#!�� �@P@
-
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
 
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
 
-d�n��9�;dlV
-��
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
 
-c��>V{��~V�ثm$g���P�P@
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
 
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
 
-�~�c��Vk�K8V(���=��O$�@�
-
-
-�M���/��
-���_��g-��s������Lrx2DX�.�q^�3�c�n��f�5�d������KT�k�v~G�U�x!@
-�F�O�n�
-����B�������_?�[�7��y�
-����������
-\jAJ�$��$��'j�2NI���������#�o#�p�8Z_�����!��{@
-P@
-Vxx�ΤN1��V��t�w�Q����_�
-W�_
-�;�|�#�h�ϝ�2	#h�I
-�p9GcZa�k
-��jӮ�Z���>e��1���2y�}��5%t�[��6�w"�~3��kx%�;����iOu3��3�<�y���|Ё�
-��4�T3jiS=��`�$�y$:�,����ۙ]�#'ƙg�U����y(I�7�ݷ]R�����?𷄴;ojڎmo�8셺��yQbU�bG<W[Q҂�o}-m�{8����㉭/vVQ��M좖�<���M��~2|;��u�4����t��ym$ �����e\��eMz��<>9��i�����ϕ���0�ph9����_�x���Gm�L�<G�{�~�.t'�Vԯl#Yo�L��h�!�(0��;W��zj��Ok���}�{Ę,
-ya���y(E˕?�Ż�����t=p�-&������8ɀH�tH���$� ��W��N��5k�˹�L�N�G=��v����k���굱}�c�G����mU�M�e�s��7E���#�d��=�����_���<?�V^�u9y���y���nW9�
-%�c+�
-i�r�y���o�orǊ�)�_�Z�z�jZ��$_h��d�S�Y��T(���6_[j����I\�1�]Ya��:�_�rv��ؒ��N�a��e��u9<�kX�ɞ����S\��1��J��*)��wuo������Fv��Jr��r�u�܃B���o��XA�-把��d�l�{l�nbq�9��Ul��	EJ֖���3�q
-����O⃄����mw+��ï�������
-�j�W��VP���]��	J)�����wѸ�E
-��_
-}�Mc�?�N5]5-5�_���B�^C	�������__��:T\9]㻻����-��L]|V1V炍O�6Vi7ˢ���Q�<C�|7���'�x���~�nSN��c�1��dđ(30+J�)�T�:N��޼���f�X��ck�x�6
-�&8�5�Z:�V��?WVֈ�>�¾4��t���O,l��¤�o��6e'�|2�����
-�+��ں����͇�����QD�Q|k������Fn�7�
+} ;
 
-~4�&���k�f�i�i�4��`�̳�v�X3>�x����R�J�Js���	(�M|�.)�a�XZ�SS�J�9O��%{���_a��A�x���l�=^�^ڋ9�V��4������Q��U�V��TwV��I�\f,	5:��$�ZvJ��N����-kE���_�6�(�-t��L���Kw*�.-V�Fc���{C���S��*)�d�������b���d�'>IEɥx��F�=�
-��~ZnR��٤�vj�N���x{O׼i�mkV��e�+�:Y.4�H�죒ed��_'T���W�:򣇫Ng�n��]7>��
-�3��_2Ug�"�4�ֶ峵���_���Wc�x��ĭ�K�\�W~��9�y���`u>do������ZЃ�e>.�R���֝.�k���V�S���qpt���JM4�z�����
-��]�����������v=��g<������F�_Q.��G�|o�t�g��
-ݼo[L��?g�����W��ӝ:X��Y�7��90�q�D�
-U�����6�qƓc
-����kr�Zݭ�����4+�!t��]-cXV��Ѡ�6������5Z�g�T�7{���<��J�];[�˖�em���g�|!��c�x[H�6n�[���q���k��2���G$pj�b�տ<۾�oS^��(�<�j�Jͫ6�ѵ��]�w��N���?�z��1��G+ �� {QG_�)��6���0X��*�f���N�z$����:y����w}�e�k�M�{����{��i<Eis^o��W��r���!��J+�����o�.�_��7>�w�[j�Z]���Aŵ̐+K
-�+��N�&.Ui]]�+h�j�����
-@
-�q���X&Ӻ��p���֝�]'�^�o�
-��8�V�'�#&�����$��Թq��j���UQ��t
-x?�D
-<Co{k�#Eo���V���X�*����z��c�x�V�U_�<U6�)K����^��k��<4�W���[�����<���^�[u
->Yncc��`�>�N?�4OM<}Z{>[�_�Jj��(���w_��d����]<F	�
-w�A�L��ն��n涋P��H�z��1�)���K
-�E6�4S{]�Z�]�5[�Um}�x1�f����k��f���u�[��4�
-KT��X&�n&E�=�`J�z���
-��,�OBS;�>�b�>_��G��7%�-*TW�[/�<�M
-����n���6J�sykv�E
-(
-����xZtd�w�-4��l�XJ����
-p��Ww�-����3��<5�ɦ�{����|G�o��Mh��k�M
-U$�.y۸g�+���~������q֧�8v<�A���o�����8�K�v�n��i�J$��K������)��GuR=�����TcA��rrk}��o��)�h�h�{��R񵶃���>(���x_J�W�4��8�Y(�U����܊qӊ�pҩ��O
-Rm�R]_Wk��ܪ�4��mg�K�_<�N��׍l!�5]z�-w[�nl��ܯs���>��GbH�Mz��#��<h���)�i�.�N�D�U��CD�Km�X�m���>%������Z�W���%��L�o�tx�sA����O
-���(}q��[^m�Y>έ:���յ�S�����������Ǜ�
-(
-�?w��r�
-��U1.��%���������C�Zp�r���k��^�g�l~=x�ƗZv�W�4�;;�:3����.����$
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
 
-�
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 
-���o�'�
-�E🇢�?i�V{יv��:�|B�g
-�`g�C#��WK��r�����O���V:�ϲ��;�
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
 
-�;����3�7���
-�	���
-xû�	�
-�*?�2�
-��D����W���c><���|
-G{�۬A�|�G���o�@�����p����Ή���m�	��ſ��!c��*
-����H��
-6��
-R�/�����(냃@W�oOُ��9�z��ݵ�5�I,�3�4�����h>%��l���M��ۥŅ�w��(J�
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
 
-j~��bmX[�5��
-Յ��d'��������(G���ލ�7"�&�0�g�-"X�[д[�G^[o�Ҁ=��>|@�^񾅯Ƿq:v��Q��F%O�����
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
 
->�5ڀ44O�(O�|�7ĝ#��
-�Zw��v�y��{��:�m�1���A�
-,���}>���Q� ��e�Ǻ� �����#���{�K�|+�t˗�+>��Ǿ�J�O��h�?����~��?�Y�}(�ht�wn�h?�
-v��-�z���ў"��|�c�:ƽ3�犼#�ٛ�wM��%�
-)�)bG��i$��9
-�g�T+
-�$��*h�W�����P���
-@
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
 
+} ;
 
-�"�5�@�'b!�C�[����;��P�/�Y��l7�Ļ��0[���uo�vGN
-<L�������O6��]���v\�ʠ3����qk��,NY���g����د��%��b��%߻��Y/����<�.׀n
-�3��ib�P�wo�]�薬�t�V\�Wg�5�_���
-sn��t�\���H#r��6	R!}�
-�ڀ=��
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
 
-�L|H־$x���[�Ա�'9ټ�6E�1�8ي
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
 
-\%����x#$�X)) l4�76O�F���a�8�)��s����.��eӻ�<.e}�ܽ_v
-CZЯW
-R5���QwM;4���RV{�����,u��|G��F#�;�u/��z�Ւ���K7��4м�U<�G/��Wh�e/'�^[>�vG����?~�ߑ�f���Zu������X�ē�\�J�E4L2����R ��+�$�<��0
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
 
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getUploadPath( void ) const ;
+
+	// Setters
+	void 						setAutoIndex( const std::string& _autoIndex ) ;
+	void 						setIndex( const std::string& _index ) ;
+	void 						setAllowedMethods( const Methods_t	& _allowedMethods ) ;
+	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
+	void 						setRoot( const std::string& _root ) ;
+	void 						setCgi( const std::string& state ) ;
+	void 						setUpload( const std::string& state ) ;
+	void 						setUploadPath( const std::string& path ) ;
+
+} ;
+
+std::ostream& operator<<( std::ostream& os, const Location& location ) ;
+
+#endif
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
+
+#include <iostream>
+#include <vector>
+#include <map>
+#include <cstdlib>
+
+class Location
+{
+public:
+	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
+	typedef std::vector<Method_t> Methods_t ;
+	typedef std::pair<int, std::string> redirection_t ;
+	
+private:
+	bool						_autoIndex ;
+	std::vector<std::string>	_index ;
+	Methods_t					_allowedMethods ;
+	redirection_t				_return ;
+	std::string					_root ;
+	bool						_cgi ;
+	bool						_upload ;
+	std::string					_upload_path ;
+public:
+	Location( void ) ;
+	Location( const Location& rhs ) ;
+	Location& operator=( const Location& rhs ) ;
+	~Location( void ) ;
+
+	// Getters
+	const bool&					getAutoIndex( void ) const ;
+	const std::vector<std::string>&			getIndex( void ) const ;
+	const Methods_t&			getAllowedMethods( void ) const ;
+	const redirection_t&		getReturn( void ) const ;
+	const std::string&			getRoot( void ) const ;
+	const bool&					getCgi( void ) const ;
+	const bool&					getUpload( void ) const ;
+	const std::string&			getU

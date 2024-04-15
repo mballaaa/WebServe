@@ -132,6 +132,7 @@ void Multiplex::start( void )
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
                 continue;
             }
+            
             else if (events[i].events & EPOLLIN ) // check if we have EPOLLIN (connection socket ready to read)
             {
                 /**
@@ -156,6 +157,7 @@ void Multiplex::start( void )
                 }
                 else if (bytesReceived == 0)
                 {
+                    
                     /* End of file. The remote has closed the
                         connection. */
                     // printf ("Closed connection on descriptor %d by client\n",
@@ -208,7 +210,7 @@ void Multiplex::start( void )
                 std::cerr << "==============+++++++++==============" << std::endl ;
                 std::cerr << "==============+++++++++==============" << std::endl ;
 
-           file:///home/mballa/Downloads/get.jpg
+
                 std::cerr << RESETTEXT ;
                 if (s == -1)
                 {
@@ -223,8 +225,9 @@ void Multiplex::start( void )
                 */
                 SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLOUT) ;
             }
-            else if (events[i].events & EPOLLOUT) // check if we have EPOLLOUT (connection socket ready to write)
+            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true) // check if we have EPOLLOUT (connection socket ready to write)
             {
+               
                 /**
                  * Set connection socket to EPOLLIN to read another request in the next iteration
                 */

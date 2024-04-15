@@ -14,6 +14,7 @@ Http_req::Http_req(Server server)
 {
     is_finsh = false;
     this->server = server;
+    in_out=true;
 }
 
 // Http_req::Http_req(std ::string req, int byterec, std::map<int, Server> listners)
@@ -114,6 +115,10 @@ const Server &Http_req::getServer() const
 const Location &Http_req::getLocation() const
 {
     return _loca;
+}
+const bool &Http_req ::getFlag() const
+{
+        return in_out;
 }
 /*=============== 14 PART (begin)==================*/
 
@@ -321,14 +326,14 @@ void Http_req::debugFunction()
 
     if (outputFile.is_open()) {
         // Output body to the file
-        outputFile << this->body << std::endl;
+        outputFile << this->body;
 
         // Close the file
         outputFile.close();
 
     }
     ///// print headar
-    // std::map<std::string, std::string>::iterator it;
+    //  std::map<std::string, std::string>::iterator it;
     // for (it = header.begin(); it != header.end(); it++)
     // {
 
@@ -340,6 +345,17 @@ void Http_req::debugFunction()
 }
 int Http_req::StautRe(std::string request)
 {
+    std :: cout << request << std :: endl;
+     std::ofstream outputFile("output1.txt", std::ios_base::app);
+     //////////////////
+if (outputFile.is_open()) {
+        // Output body to the file
+        outputFile << request << std::endl;
+
+        // Close the file
+        outputFile.close();
+
+    }
     std ::string my_req;
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
@@ -389,21 +405,22 @@ int Http_req::StautRe(std::string request)
             }
             // debugFunction();
         }
-        this->body = my_req.substr(len_req + 4);
+        size_t body_start = len_req + 4;
+        this->body = my_req.substr(body_start);
         
 
         is_finsh = true;
 
 
     }
-    else
+    else if(is_finsh)
     {
         this->body = request;
     }
 
     // std :: cerr << "this body ==>"  <<body << std ::endl;
 
-     debugFunction();
+      debugFunction();
     //======> check path
     if (MoreValidation())
     {
@@ -412,6 +429,7 @@ int Http_req::StautRe(std::string request)
     res = 1;
     return (res);
 }
+
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
 
@@ -419,6 +437,8 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     (void)bytee;
     if (!StautRe(bufer) || bytee < 0)
     {
+        in_out=true;
+        return ;
     }
     else
     {
@@ -461,7 +481,36 @@ int is_file_dir(std::string uri)
         return 0;
     return 1;
 }
+std ::string getMessage(int code)
+{
+  switch (code)
+  {
+        case 400: return "Bad Request";
+        case 401: return "Unauthorized";
+        case 403: return "Forbidden";
+        case 404: return "Not Found";
+        case 500: return "Internal Server Error";
+        case 501: return "Not Implemented";
+        case 503: return "Service Unavailable";
+        default: return "Unknown Error";
+  }  
+}
+void SendErrorClient(int code)
+{
+    (void) code;
+    // Prepare Message ouput
+    std::string messages_error=getMessage(code);
+  // std::string errorPage = "<html><head><title>" + std::to_string(code) + " " + messages_error + "</title><style>*{font-family:\"Arial\";}</style></head><body><center><br/><h1>" + std::to_string(code) + " - " + messages_error + 
+//    "</h1><hr/></center></body></html>";
+//     std::string response = "HTTP/1.1 " + std::to_string(code) + " " + messages_error + "\r\n"
+//                            "Content-Type: text/html\r\n"
+//                            "Content-Length: " + std::to_string(errorPage.length()) + "\r\n\r\n" +
+//                            errorPage;
 
+
+    
+
+}
 void Http_req ::CheckLoc()
 {
    
@@ -517,12 +566,43 @@ void Http_req ::CheckLoc()
                     list = readdir(dir);
                 }
                 toHtml += "</pre>\n</body>\n</html>";
+              
                 closedir(dir);
-               // send();
+                int output=send(1,toHtml.c_str(),toHtml.length(),0);
+               if(output <=0)
+               {
+                SendErrorClient(500);
+                in_out =true;
+                return ;
+                
+               }
+               else
+               {
+                in_out =true;
+                return ;
+               }
+               
+            //    else if(flag_error==0)
+            //    {
+
+            //    }
+               
+               
+                
+
             }
+            
+        }
+        else
+        {
+            SendErrorClient(403);
+            in_out=true;
+            return ;
         }
     }
 }
+
+
 // =====> Let Start Get
 void Http_req::LetGet()
 {
@@ -535,6 +615,12 @@ void Http_req::LetGet()
         // std ::cerr << "hEYY\n";
         CheckLoc();
     }
+    else
+    {
+        
+    }
+    
+
 }
 /*=============== 14 PART (begin)==================*/
 void Http_req::mimeParse()
@@ -619,6 +705,8 @@ void Http_req::LetPost()
     }
 }
 /*=============== 14 PART (end)==================*/
+
+
 Http_req::~Http_req()
 {
 }
