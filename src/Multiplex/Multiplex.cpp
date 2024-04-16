@@ -208,7 +208,7 @@ void Multiplex::start( void )
                 std::cerr << "==============+++++++++==============" << std::endl ;
                 std::cerr << "==============+++++++++==============" << std::endl ;
 
-           file:///home/mballa/Downloads/get.jpg
+        //    file:///home/mballa/Downloads/get.jpg
                 std::cerr << RESETTEXT ;
                 if (s == -1)
                 {
