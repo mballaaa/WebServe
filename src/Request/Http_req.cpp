@@ -414,9 +414,19 @@ int Http_req::StautRe(std::string request)
 }
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
-    
+            std::cout  << bufer  << std::endl;
+
+    /*For Post Method, Don't touch it*/
+        // std::ofstream body("writeBody.txt", std::ios::app);
+        // if(bufer.find("\r\n\r\n") != std::string::npos)
+        //     body << bufer.substr(bufer.find("\r\n\r\n")+4);
+        // else
+        //     body << bufer ;
+        // body.close();
+    /*--------------------------------*/
     (void)bufer;
     (void)bytee;
+    
     if (!StautRe(bufer) || bytee < 0)
     {
     }
@@ -424,7 +434,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     {
         if (method == "GET")
         {
-            //std :: cout << "YEssss\n";
+            std :: cout << "YEssss\n";
             LetGet();
         }
         /*=============== 14 PART (begin)==================*/
@@ -557,6 +567,8 @@ std::string randNameGen(){
 void Http_req::LetPost(){
     std::ifstream filee("writeBody.txt");
     
+    std::cout << body << std::endl;
+
     if (!filee.is_open())
         return ;
     
@@ -592,7 +604,7 @@ void Http_req::LetPost(){
         /*Status 403*/
         _status["403"] = "Forbidden";
     }
-    
+    filee.close();
 }
 /*=============== 14 PART (end)==================*/
 Http_req::~Http_req()
