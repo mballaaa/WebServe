@@ -17,7 +17,16 @@ public:
     void fillResponseHeadre(Http_req);
     void fillResponseBody(Http_req);
     
+
     std::string getResponse();
+    /*-------------Body TYPE(begin)-------------*/
+    void notFound();
+    void forrbiden();
+    void created();
+    void noContent();
+
+    /*-------------Body TYPE(end)-------------*/
+
     /*===========================================*/
     
     ~Response();
