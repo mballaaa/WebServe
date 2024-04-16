@@ -14,7 +14,7 @@ Http_req::Http_req(Server server)
 {
     is_finsh = false;
     this->server = server;
-    in_out=true;
+    in_out=false;
 }
 
 // Http_req::Http_req(std ::string req, int byterec, std::map<int, Server> listners)
@@ -345,33 +345,29 @@ void Http_req::debugFunction()
 }
 int Http_req::StautRe(std::string request)
 {
-    std :: cout << request << std :: endl;
-     std::ofstream outputFile("output1.txt", std::ios_base::app);
+   
      //////////////////
-if (outputFile.is_open()) {
-        // Output body to the file
-        outputFile << request << std::endl;
 
-        // Close the file
-        outputFile.close();
 
-    }
-    std ::string my_req;
+    std ::string my_req="";
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
     {
         my_req += request;
     }
-
+    
     size_t len_req = my_req.find("\r\n\r\n");
     int res;
     res = 0;
-    // //std :: cout << "Heyyy\n";
-    // //std :: cout << a << std ::endl;
+  
     a++;
+   
+   
 
     if (!is_finsh && len_req != std ::string ::npos)
     {
+      
+       
 
         std::istringstream input(my_req);
         input >> this->method >> this->path >> this->http_ver;
@@ -405,9 +401,10 @@ if (outputFile.is_open()) {
             }
             // debugFunction();
         }
+    
         size_t body_start = len_req + 4;
         this->body = my_req.substr(body_start);
-        
+      
 
         is_finsh = true;
 
@@ -418,14 +415,21 @@ if (outputFile.is_open()) {
         this->body = request;
     }
 
+
     // std :: cerr << "this body ==>"  <<body << std ::endl;
 
       debugFunction();
-    //======> check path
+    if(is_finsh==true)
+    {   
     if (MoreValidation())
-    {
-    }
+     {
 
+     }   
+
+
+    }
+    //======> check path
+ 
     res = 1;
     return (res);
 }
@@ -433,8 +437,7 @@ if (outputFile.is_open()) {
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
 
-    (void)bufer;
-    (void)bytee;
+    
     if (!StautRe(bufer) || bytee < 0)
     {
         in_out=true;
