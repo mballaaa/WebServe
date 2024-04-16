@@ -126,6 +126,10 @@ const std::map<std::string, std::string> &Http_req::getStatus() const
 {
     return _status;
 }
+
+const bool &Http_req::getFlag() const{
+        return in_out;
+}
 /*=============== 14 PART (end)==================*/
 /*
     structure of request
@@ -437,6 +441,9 @@ int Http_req::StautRe(std::string request)
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
 
+    (void)bufer;
+    (void)bytee;
+
     
     if (!StautRe(bufer) || bytee < 0)
     {
@@ -652,8 +659,8 @@ void Http_req::mimeParse()
     }
 }
 
-std::string randNameGen()
-{
+
+std::string randNameGen(){
     srand(time(NULL));
     std::string c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string name;
@@ -707,6 +714,7 @@ void Http_req::LetPost()
         _status["403"] = "Forbidden";
     }
 }
+
 /*=============== 14 PART (end)==================*/
 
 

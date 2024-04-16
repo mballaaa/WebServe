@@ -27,18 +27,59 @@ void Response::fillResponseHeadre(Http_req request){
 
 
 }
+void Response::created(){
 
-/*Fill  Resposne Body*/
-void Response::fillResponseBody(Http_req request){
-    (void) request;
     std::ifstream file("www/html/201.html");
     std::string line;
     if(file.is_open()){
         while (getline(file,line))
             _resbody += line+"\n";
-        
     }
     file.close();
+}
+void Response::forrbiden(){
+    
+    std::ifstream file("www/html/403.html");
+    std::string line;
+    if(file.is_open()){
+        while (getline(file,line))
+            _resbody += line+"\n";
+    }
+    file.close();
+}
+
+void Response::notFound(){
+    std::ifstream file("www/html/Page not found · GitHub Pages.html");
+    std::string line;
+    if(file.is_open()){
+        while (getline(file,line))
+            _resbody += line+"\n";
+    }
+    file.close();
+}
+
+void Response::noContent(){
+
+    std::ifstream file("www/html/204.html");
+    std::string line;
+    if(file.is_open()){
+        while (getline(file,line))
+            _resbody += line+"\n";
+    }
+    file.close();
+}
+
+/*Fill  Resposne Body*/
+void Response::fillResponseBody(Http_req request){
+    if(request._status.find("201") != request._status.end())
+        created();
+    else if(request._status.find("403") != request._status.end())
+        forrbiden();
+    else if(request._status.find("404") != request._status.end())
+        notFound();
+    else if(request._status.find("204") != request._status.end())
+        noContent();
+
 }
 
 std::string Response::getResHeaders(){

@@ -224,7 +224,7 @@ void Multiplex::start(void)
                  */
                 SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLOUT);
             }
-            else if (events[i].events & EPOLLOUT) // check if we have EPOLLOUT (connection socket ready to write)
+            else if (events[i].events && EPOLLOUT && requests[events[i].data.fd].getFlag() == true) // check if we have EPOLLOUT (connection socket ready to write)
             {
                 /**
                  * Set connection socket to EPOLLIN to read another request in the next iteration
@@ -246,7 +246,8 @@ void Multiplex::start(void)
                 // std::cerr << FOREBLU ;
                 // std::cout << "============== Response ==============" << std::endl ;
                 // std::cerr << "==============++++++++++==============" << std::endl ;
-                // write (1, resp.getResponse().c_str(), resp.getResponse().size());
+                // // write (1, resp.getResponse().c_str(), resp.getResponse().size());
+                // write (1, response.c_str(), response.size());
                 // std::cerr << "==============+++++++++==============" << std::endl ;
                 // std::cerr << "==============+++++++++==============" << std::endl ;
                 // std::cerr << RESETTEXT ;

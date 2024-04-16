@@ -7,6 +7,7 @@ mballa :==> in part allow methode ( change enum for be handle only GET DELETE PO
 ///Mballa Part /////////////
 
 ====> SHLOUD close when use opendir
+===> check if the path was existe
 
 
 
@@ -14,3 +15,4 @@ mballa :==> in part allow methode ( change enum for be handle only GET DELETE PO
 
 
 ///14 part //////////////
+=>> check creation of writeBody file

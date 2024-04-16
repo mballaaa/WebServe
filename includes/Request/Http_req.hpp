@@ -51,9 +51,12 @@ public: // amine: i made this public for now
 /*=============== 14 PART (end)==================*/
 
 /*=============== 14 PART (begin)==================*/
-       void LetPost();
+
+    void LetPost();
     void mimeParse();
-    
+    void chunked();
+    void contentLenght();
+
 /*=============== 14 PART (end)==================*/
 public:
 
@@ -72,6 +75,7 @@ public:
 
     /*  Getter*/
     const std::string& getTarget() const;
+    const bool& getFlag() const;
     const std::string& getBody() const;
     const std::string& getMethod() const;
     const std::string& getPath() const;
