@@ -208,6 +208,7 @@ void Multiplex::start( void )
                 std::cerr << "==============+++++++++==============" << std::endl ;
                 std::cerr << "==============+++++++++==============" << std::endl ;
 
+           file:///home/mballa/Downloads/get.jpg
                 std::cerr << RESETTEXT ;
                 if (s == -1)
                 {
@@ -227,22 +228,28 @@ void Multiplex::start( void )
                 /**
                  * Set connection socket to EPOLLIN to read another request in the next iteration
                 */
-                SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
+               SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
                 std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n") ;
                 // std::string response("HTTP/1.1 302 Found\r\nLocation: http://example.com/new-page\r\n\r\n") ; // redirection response
-                Response resp(reqqq);
-                s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
-                // s = write (events[i].data.fd, response.c_str(), response.size());
+                s = write (events[i].data.fd, response.c_str(), response.size());
                 if (s == -1)
                     throw std::runtime_error("Cant write response") ;
-                std::cerr << FOREBLU ;
-                std::cout << "============== Response ==============" << std::endl ;
-                std::cerr << "==============++++++++++==============" << std::endl ;
-                // write (1, resp.getResponse().c_str(), resp.getResponse().size());
+                // SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
+                // std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n") ;
+                // // std::string response("HTTP/1.1 302 Found\r\nLocation: http://example.com/new-page\r\n\r\n") ; // redirection response
+                // Response resp(reqqq);
+                // s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
+                // // s = write (events[i].data.fd, response.c_str(), response.size());
+                // if (s == -1)
+                //     throw std::runtime_error("Cant write response") ;
+                // std::cerr << FOREBLU ;
+                // std::cout << "============== Response ==============" << std::endl ;
+                // std::cerr << "==============++++++++++==============" << std::endl ;
+                // // write (1, resp.getResponse().c_str(), resp.getResponse().size());
                 // write (1, response.c_str(), response.size());
-                std::cerr << "==============+++++++++==============" << std::endl ;
-                std::cerr << "==============+++++++++==============" << std::endl ;
-                std::cerr << RESETTEXT ;
+                // std::cerr << "==============+++++++++==============" << std::endl ;
+                // std::cerr << "==============+++++++++==============" << std::endl ;
+                // std::cerr << RESETTEXT ;
                 /**
                  * Incas the client request Connection: close we close the connection
                  * else the connection remains open and waiting for another rquest from the client
