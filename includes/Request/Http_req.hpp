@@ -83,7 +83,6 @@ public:
     const std::map<std::string, std::string>& getHeader() const;
     const Server& getServer() const;
     const Location& getLocation() const;
-    const bool& getFlag() const;
 };
 
 #endif

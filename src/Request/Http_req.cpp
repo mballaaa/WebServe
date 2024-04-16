@@ -116,10 +116,6 @@ const Location &Http_req::getLocation() const
 {
     return _loca;
 }
-const bool &Http_req ::getFlag() const
-{
-        return in_out;
-}
 /*=============== 14 PART (begin)==================*/
 
 const std::map<std::string, std::string> &Http_req::getStatus() const
@@ -641,7 +637,10 @@ void Http_req::mimeParse()
     std::string value;
 
     if (!file.is_open())
+    {
+        std::cout << "Error : mimes.types could not be open" << std::endl;
         return;
+    }
 
     while (getline(file, line))
     {
@@ -659,8 +658,12 @@ void Http_req::mimeParse()
     }
 }
 
+void Http_req::contentLenght(){
 
-std::string randNameGen(){
+}
+
+std::string randNameGen()
+{
     srand(time(NULL));
     std::string c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string name;
@@ -671,11 +674,6 @@ std::string randNameGen(){
 
 void Http_req::LetPost()
 {
-    std::ifstream filee("writeBody.txt");
-
-    if (!filee.is_open())
-        return;
-
     /*location not found*/
     if (_loca.getUploadPath() == "Not Found")
     {
@@ -699,11 +697,20 @@ void Http_req::LetPost()
 
         if (!dirCheck || errno == EEXIST)
         {
-            std::string str = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+            /*First check if the extension exist */
+            std::string str;
+            if (_mime.find(header["content-type"].substr(1)) != _mime.end())
+                str = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+            else
+                str = "Upload/" + randNameGen() + ".txt";
+            
+            if(header["transfer-encoding"] == " chunked"){
+                while(body.find("/r/n") != std::string::npos)
+                        body.erase(body.find("/r/n"));
+            }
             std::ofstream file(str.c_str(), std::ios::out);
-
-            while (std::getline(filee, str))
-                file << str << std::endl;
+            file << body;
+            
         }
         /*Status 201*/
         _status["201"] = "Created";
@@ -713,6 +720,7 @@ void Http_req::LetPost()
         /*Status 403*/
         _status["403"] = "Forbidden";
     }
+    in_out = true;
 }
 
 /*=============== 14 PART (end)==================*/
