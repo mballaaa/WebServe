@@ -12,13 +12,9 @@ Http_req::Http_req() {}
 /*=============== 14 PART (end)==================*/
 Http_req::Http_req(Server server)
 {
-    is_finsh=false;
-    this->server=server;
-    
-   
-
-
-
+    is_finsh = false;
+    this->server = server;
+    in_out=false;
 }
 
 // Http_req::Http_req(std ::string req, int byterec, std::map<int, Server> listners)
@@ -205,7 +201,6 @@ std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string
 int Http_req::MoreValidation()
 {
 
-
     if (!check_path(this->path))
     {
 
@@ -326,26 +321,17 @@ void Http_req::debugFunction()
     // std ::cout << "type mthode=>" << this->method << std ::endl;
     // std ::cout << "path=>" << this->path << std ::endl;
     // std ::cout << "vers=>" << this->http_ver << std ::endl;
-       std::ofstream outputFile("output.txt", std::ios_base::app);
 
-    if (outputFile.is_open()) {
-        // Output body to the file
-        outputFile << this->body << std::endl;
-
-        // Close the file
-        outputFile.close();
-
-    }
     ///// print headar
     std::map<std::string, std::string>::iterator it;
     for (it = header.begin(); it != header.end(); it++)
     {
-      
+
         // std ::cerr << it->first << ":" << it->second << std ::endl;
     }
-    // 
+    //
     // //std :: cout << "this ===?\n";
-    //std :: cout << this->body << std::endl;
+    // std :: cout << this->body << std::endl;
 }
 int Http_req::StautRe(std::string request)
 {
@@ -394,23 +380,21 @@ int Http_req::StautRe(std::string request)
                 }
                 header[key] = value;
 
-                    /// debug function
-                }
-               // debugFunction();
+                /// debug function
             }
-           this->body=my_req.substr(len_req+4);
-           is_finsh=true;
-         
+            // debugFunction();
         }
-        else
-        {
-            this->body=request;
-        }
-    
- 
+        this->body = my_req.substr(len_req + 4);
+        is_finsh = true;
+    }
+    else
+    {
+        this->body = request;
+    }
+
     // std :: cerr << "this body ==>"  <<body << std ::endl;
 
-     debugFunction();
+    //  debugFunction();
     //======> check path
     if (MoreValidation())
     {
@@ -421,7 +405,8 @@ int Http_req::StautRe(std::string request)
 }
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
-    
+    std::cout << bufer << std::endl;
+
     (void)bufer;
     (void)bytee;
 
@@ -432,7 +417,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     {
         if (method == "GET")
         {
-            //std :: cout << "YEssss\n";
+            std ::cout << "YEssss\n";
             LetGet();
         }
         /*=============== 14 PART (begin)==================*/
@@ -472,7 +457,7 @@ int is_file_dir(std::string uri)
 
 void Http_req ::CheckLoc()
 {
-    std :: cout << this->_loca.getIndex().size() << std ::endl;
+    std ::cout << this->_loca.getIndex().size() << std ::endl;
     if (this->_loca.getIndex().size() != 0)
     {
 
@@ -480,37 +465,28 @@ void Http_req ::CheckLoc()
         // check if index file are exit
         /// ==> get first index string
         std ::string main_index = index.at(0);
-        std :: cout <<   "==>" << this->_loca.getRoot() << std ::endl;
+        std ::cout << "==>" << this->_loca.getRoot() << std ::endl;
 
-        //std ::cerr << "index  name==>" << main_index << std ::endl;
-        std :: cout << "==> index" << main_index << std ::endl;
+        // std ::cerr << "index  name==>" << main_index << std ::endl;
+        std ::cout << "==> index" << main_index << std ::endl;
         _target += main_index;
     }
     else
     {
         if (this->_loca.getAutoIndex())
         {
-            ///Here We shloud Send DirectoryListe
-            std :: cout <<  _target << std :: endl;
-            std ::string dirpath=_target;
+            /// Here We shloud Send DirectoryListe
+            std ::cout << _target << std ::endl;
+            std ::string dirpath = _target;
             DIR *dir = opendir(_target.c_str());
-            if(dir !=NULL)
-            {   
+            if (dir != NULL)
+            {
                 struct dirent *list;
-                list=readdir(dir);
-                while (list !=NULL)
+                list = readdir(dir);
+                while (list != NULL)
                 {
-                    
                 }
-                
-                
             }
-
-
-         
-            
-
-
         }
     }
 }
@@ -535,10 +511,14 @@ void Http_req::mimeParse()
     std::string key;
     std::string value;
 
-    if(!file.is_open())
-        return ;
-    
-    while(getline(file,line)){
+    if (!file.is_open())
+    {
+        std::cout << "Error : mimes.types could not be open" << std::endl;
+        return;
+    }
+
+    while (getline(file, line))
+    {
         std::istringstream thenewline(line);
 
         thenewline >> key;
@@ -553,8 +533,12 @@ void Http_req::mimeParse()
     }
 }
 
+void Http_req::contentLenght(){
 
-std::string randNameGen(){
+}
+
+std::string randNameGen()
+{
     srand(time(NULL));
     std::string c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string name;
@@ -563,12 +547,8 @@ std::string randNameGen(){
     return name;
 }
 
-void Http_req::LetPost(){
-    std::ifstream filee("writeBody.txt");
-    
-    if (!filee.is_open())
-        return ;
-    
+void Http_req::LetPost()
+{
     /*location not found*/
     if (_loca.getUploadPath() == "Not Found")
     {
@@ -590,12 +570,22 @@ void Http_req::LetPost(){
 
         int dirCheck = mkdir("Upload", 0777);
 
-        if(!dirCheck || errno==  EEXIST){
-            std::string str = "Upload/"+randNameGen()+"."+_mime[header["content-type"].substr(1)];
-            std::ofstream file(str.c_str(),std::ios::out);
-
-            while(std::getline(filee,str))
-                file  << str << std::endl ;
+        if (!dirCheck || errno == EEXIST)
+        {
+            /*First check if the extension exist */
+            std::string str;
+            if (_mime.find(header["content-type"].substr(1)) != _mime.end())
+                str = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+            else
+                str = "Upload/" + randNameGen() + ".txt";
+            
+            if(header["transfer-encoding"] == " chunked"){
+                while(body.find("/r/n") != std::string::npos)
+                        body.erase(body.find("/r/n"));
+            }
+            std::ofstream file(str.c_str(), std::ios::out);
+            file << body;
+            
         }
         /*Status 201*/
         _status["201"] = "Created";
@@ -605,7 +595,7 @@ void Http_req::LetPost(){
         /*Status 403*/
         _status["403"] = "Forbidden";
     }
-    
+    in_out = true;
 }
 
 /*=============== 14 PART (end)==================*/
