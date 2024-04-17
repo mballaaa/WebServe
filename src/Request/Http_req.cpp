@@ -675,6 +675,7 @@ std::string randNameGen()
 void Http_req::LetPost()
 {
     /*location not found*/
+    // std::cout << body << std::endl;
     if (_loca.getUploadPath() == "Not Found")
     {
         /*Status 404*/
@@ -708,9 +709,9 @@ void Http_req::LetPost()
                 while(body.find("/r/n") != std::string::npos)
                         body.erase(body.find("/r/n"));
             }
-            std::ofstream file(str.c_str(), std::ios::out);
+            std::ofstream file(str.c_str(), std::ios::app);
             file << body;
-            
+            file.close();
         }
         /*Status 201*/
         _status["201"] = "Created";
