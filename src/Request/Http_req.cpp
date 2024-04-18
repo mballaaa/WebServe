@@ -8,13 +8,15 @@
 
 static int a = 0;
 /*=============== 14 PART (begin)==================*/
-Http_req::Http_req() {}
+Http_req::Http_req() {
+}
 /*=============== 14 PART (end)==================*/
 Http_req::Http_req(Server server)
 {
     is_finsh = false;
     this->server = server;
     in_out=false;
+    // sec_flag=false;
 }
 
 // Http_req::Http_req(std ::string req, int byterec, std::map<int, Server> listners)
@@ -70,7 +72,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
         header = obj.header;
         server = obj.server;
         _loca = obj._loca;
-        byterec = obj.byterec;
+        // byterec = obj.byterec;
         /*=============== 14 PART (begin)==================*/
         _status = obj._status;
         /*=============== 14 PART (end)==================*/
@@ -241,7 +243,7 @@ int Http_req::MoreValidation()
             return (0);
         }
     }
-    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
+    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != " chunked")
     {
         // std :: cout << "ddddd4\n";
         return (0);
@@ -672,10 +674,26 @@ std::string randNameGen()
     return name;
 }
 
+void getSize(std::string body){
+    
+    std::string size = body.substr(0,body.find("\r\n"));
+}
+
+
+int hexStringToInt(const std::string& hexString) {
+    std::stringstream ss;
+    ss << std::hex << hexString; // Set the stringstream to interpret input as hexadecimal
+    int intValue;
+    ss >> intValue; // Extract the integer value
+    return intValue;
+}
+
 void Http_req::LetPost()
 {
     /*location not found*/
-    // std::cout << body << std::endl;
+    std::cout << "------------------- ORIGIN BODY (BEGIN)------------------- " << std::endl;
+    std::cout << body << std::endl;
+    std::cout << "------------------- ORIGIN BODY (END)------------------- " << std::endl;
     if (_loca.getUploadPath() == "Not Found")
     {
         /*Status 404*/
@@ -693,9 +711,8 @@ void Http_req::LetPost()
             _status["204"] = "No Content";
             return;
         }
-
         int dirCheck = mkdir("Upload", 0777);
-
+        
         if (!dirCheck || errno == EEXIST)
         {
             /*First check if the extension exist */
@@ -704,14 +721,91 @@ void Http_req::LetPost()
                 str = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
             else
                 str = "Upload/" + randNameGen() + ".txt";
-            
-            if(header["transfer-encoding"] == " chunked"){
-                while(body.find("/r/n") != std::string::npos)
-                        body.erase(body.find("/r/n"));
-            }
+
             std::ofstream file(str.c_str(), std::ios::app);
-            file << body;
-            file.close();
+            if(!file.is_open()){
+                std::cout << "File Upload Error" << std::endl;
+                return ;
+            }
+
+            std::istringstream body_forstream(body);
+            std::string chunk_sizeString;
+            static int i  = 0;
+            if(header["transfer-encoding"] == " chunked"){
+                if(!i){
+                    std::getline(body_forstream,chunk_sizeString,'\r');
+                    classChunksizeString = chunk_sizeString;
+                    chunksize = hexStringToInt(chunk_sizeString);
+                }
+
+                size_t t = to_file.size();
+                while(chunksize >= to_file.size()){
+                    // std::getline(body_forstream,chunk_sizeString,'\r');
+                    // if(body.find("\r") == std::string::npos)
+                    if(body.find(classChunksizeString) != std::string::npos)
+                        chunk_sizeString = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
+                    else
+                        chunk_sizeString = body;
+                    // std::cout << "chunk_sizeString === >" <<chunk_sizeString << std::endl;
+                    // body_forstream.get();
+                        if(chunk_sizeString.size()+to_file.size() <= chunksize){
+                            // std::cout << "chunk_sizeString.size()+to_file.size() <= chunksize"<< std::endl;
+                            to_file += chunk_sizeString;
+                            std::cout << "------------------- ORIGIN BODY (BEGIN)------------------- " << std::endl;
+                            // std::cout << "chunksize = " << chunksize << std::endl;
+                            std::cout << "t+body.size()-classChunksizeString.size() = " << t+body.size()-classChunksizeString.size() << std::endl;
+                            std::cout << "to_file.size()+2 = " << to_file.size()+2 << std::endl;
+                            std::cout << "------------------- ORIGIN BODY (END)------------------- " << std::endl;
+                            if(to_file.size() == chunksize){
+                                std::getline(body_forstream,chunk_sizeString,'\r');
+                                chunksize = hexStringToInt(chunk_sizeString);
+                                classChunksizeString = chunk_sizeString;
+                                body_forstream.get();
+                                t = 0;
+                                file << to_file;
+                                to_file.erase();
+                                body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
+                                // exit(0);
+
+                            }
+                        }
+                        else{
+                            std::getline(body_forstream,chunk_sizeString,'\r');
+                            chunksize = hexStringToInt(chunk_sizeString);
+                            classChunksizeString = chunk_sizeString;
+                            body_forstream.get();
+                            t = 0;
+                            file << to_file;
+                            to_file.erase();
+                            body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
+                        }
+                        if(!chunksize){
+                            // std::cout << "!chunksize"<< std::endl;
+                            break;
+                        }
+                        if(to_file.size() == chunksize){
+                            // std::cout << "to_file.size() == chunksize"<< std::endl;
+                            file << to_file;
+                            to_file.erase();
+                        }
+
+                        if(!i){
+                            if((t+body.size()-classChunksizeString.size()) == to_file.size()){
+                                // std::cout << "t+body.size()-classChunksizeString.size()) == to_file.size()+2"<< std::endl;
+                                break;
+                            }
+                        }else
+                            if((t+body.size()) == to_file.size()){
+                                // std::cout << "t+body.size()) == to_file.size()"<< std::endl;
+                                break;
+                            }
+                }
+                i++;
+            }
+            else{
+                file << body;
+                file.close();
+            }
         }
         /*Status 201*/
         _status["201"] = "Created";

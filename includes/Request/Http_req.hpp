@@ -41,9 +41,14 @@ public: // amine: i made this public for now
     Server server;
     Location _loca;
 /*=============== 14 PART (begin)==================*/
+
     std::map<std::string,std::string> _mime;
     std::map<std::string,std::string> _status;
-    
+    std::string to_file;
+    size_t chunksize;
+    std::string classChunksizeString;
+    bool sec_flag;
+
 /*=============== 14 PART (end)==================*/
     int byterec;
 /*=============== 14 PART (begin)==================*/
