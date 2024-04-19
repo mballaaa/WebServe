@@ -245,12 +245,13 @@ int Http_req::MoreValidation()
     }
     if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
     {
-        // std :: cout << "ddddd4\n";
+        ;
         return (0);
     }
 
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
         return (0);
+    
 
     this->_target = this->path;
 
@@ -586,7 +587,7 @@ void Http_req ::CheckLoc()
                 toHtml += "</pre>\n</body>\n</html>";
 
                 closedir(dir);
-               in_out =true;
+                in_out =true;
                _status["200"]="OK";
                
                return ;

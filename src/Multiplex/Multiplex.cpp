@@ -176,7 +176,7 @@ void Multiplex::start(void)
                 std::cerr << "============== Request ==============" << std::endl;
                 std::cerr << "==============+++++++++==============" << std::endl;
                
-                std::string toSTing(buf,bytesReceived); // Convert received data to string using the total bytes received
+                std::string toSTing(buf); // Convert received data to string using the total bytes received
                  //Http_req &currRequest = requests.find(events[i].data.fd)->second;
                // std::cout << "fddddd " << requests[events[i].data.fd].is_finsh << std::endl;
                 requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
