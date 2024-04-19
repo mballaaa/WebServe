@@ -48,6 +48,8 @@ public: // amine: i made this public for now
     size_t chunksize;
     std::string classChunksizeString;
     bool sec_flag;
+    std::string make_name;
+    
 
 /*=============== 14 PART (end)==================*/
     int byterec;

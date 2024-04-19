@@ -18,7 +18,8 @@ void Response::fillResponseHeadre(Http_req request){
     ss << _resbody.size();
     std::cerr << "------------------RESP------------------" << std::endl; 
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
-    h["content-length"] = ss.str(); 
+    h["content-length"] = ss.str();
+    h["content-type"] = "text/plain"; 
     for(;it2 != h.end();it2++)
         _resheaders += it2->first+":"+it2->second+"\r\n";
   

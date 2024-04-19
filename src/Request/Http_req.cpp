@@ -691,22 +691,21 @@ int hexStringToInt(const std::string& hexString) {
 void Http_req::LetPost()
 {
     /*location not found*/
-    std::cout << "------------------- ORIGIN BODY (BEGIN)------------------- " << std::endl;
+    // std::cout << "------------------- ORIGIN BODY (BEGIN)------------------- " << std::endl;
     std::cout << body << std::endl;
-    std::cout << "------------------- ORIGIN BODY (END)------------------- " << std::endl;
+    // std::cout << "------------------- ORIGIN BODY (END)------------------- " << std::endl;
     if (_loca.getUploadPath() == "Not Found")
     {
         /*Status 404*/
+        // in_out = true;
         _status["404"] = "Not Found";
     }
     else if (_loca.getUpload() == true)
     {
 
         mimeParse();
-
         if (header["content-length"] == " 0")
         {
-
             /*Status 204*/
             _status["204"] = "No Content";
             return;
@@ -716,22 +715,30 @@ void Http_req::LetPost()
         if (!dirCheck || errno == EEXIST)
         {
             /*First check if the extension exist */
+           
+            static int i  = 0;
+            std::cout << "---------- I =>> " << i << std::endl;
             std::string str;
+            if(!i){
             if (_mime.find(header["content-type"].substr(1)) != _mime.end())
-                str = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+                make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
             else
-                str = "Upload/" + randNameGen() + ".txt";
+                make_name = "Upload/" + randNameGen() + ".txt";
 
-            std::ofstream file(str.c_str(), std::ios::app);
+            }
+
+            std::ofstream file(make_name.c_str(), std::ios::app);
+            
+            // std::ofstream file(make_name.c_str(), std::ios::app);
             if(!file.is_open()){
                 std::cout << "File Upload Error" << std::endl;
                 return ;
             }
-
+            std::cout << " i: " <<i << std::endl;            
             std::istringstream body_forstream(body);
             std::string chunk_sizeString;
-            static int i  = 0;
             if(header["transfer-encoding"] == " chunked"){
+
                 if(!i){
                     std::getline(body_forstream,chunk_sizeString,'\r');
                     classChunksizeString = chunk_sizeString;
@@ -740,71 +747,59 @@ void Http_req::LetPost()
 
                 size_t t = to_file.size();
                 while(chunksize >= to_file.size()){
-                    // std::getline(body_forstream,chunk_sizeString,'\r');
-                    // if(body.find("\r") == std::string::npos)
-                    if(body.find(classChunksizeString) != std::string::npos)
-                        chunk_sizeString = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
+                    if(body.find(classChunksizeString) != std::string::npos)                    
+                            chunk_sizeString = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
                     else
                         chunk_sizeString = body;
-                    // std::cout << "chunk_sizeString === >" <<chunk_sizeString << std::endl;
-                    // body_forstream.get();
-                        if(chunk_sizeString.size()+to_file.size() <= chunksize){
-                            // std::cout << "chunk_sizeString.size()+to_file.size() <= chunksize"<< std::endl;
-                            to_file += chunk_sizeString;
-                            std::cout << "------------------- ORIGIN BODY (BEGIN)------------------- " << std::endl;
-                            // std::cout << "chunksize = " << chunksize << std::endl;
-                            std::cout << "t+body.size()-classChunksizeString.size() = " << t+body.size()-classChunksizeString.size() << std::endl;
-                            std::cout << "to_file.size()+2 = " << to_file.size()+2 << std::endl;
-                            std::cout << "------------------- ORIGIN BODY (END)------------------- " << std::endl;
-                            if(to_file.size() == chunksize){
-                                std::getline(body_forstream,chunk_sizeString,'\r');
-                                chunksize = hexStringToInt(chunk_sizeString);
-                                classChunksizeString = chunk_sizeString;
-                                body_forstream.get();
-                                t = 0;
-                                file << to_file;
-                                to_file.erase();
-                                body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
-                                // exit(0);
+                    if(chunk_sizeString.size()+to_file.size() <= chunksize){
 
-                            }
-                        }
-                        else{
-                            std::getline(body_forstream,chunk_sizeString,'\r');
-                            chunksize = hexStringToInt(chunk_sizeString);
-                            classChunksizeString = chunk_sizeString;
-                            body_forstream.get();
-                            t = 0;
-                            file << to_file;
-                            to_file.erase();
+                        to_file += chunk_sizeString;
+                    }
+                    else{
+                        
+                        // std::cout << "ERRRRRRRRRRRRRRRRRRROR" << std::endl;
+                        /*READ THE (CHUNKED SIZE - FILE SIZE) FROM THE BODY*/
+                        chunk_sizeString = body.substr(0,chunksize-to_file.size());
+                        to_file += chunk_sizeString;
                             body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
-                        }
-                        if(!chunksize){
-                            // std::cout << "!chunksize"<< std::endl;
-                            break;
-                        }
-                        if(to_file.size() == chunksize){
-                            // std::cout << "to_file.size() == chunksize"<< std::endl;
-                            file << to_file;
-                            to_file.erase();
-                        }
+                        
+                            chunk_sizeString = body.substr(0,body.find("\r\n"));
+                      
+                        
+                        
+                        chunksize = hexStringToInt(chunk_sizeString);
+                        classChunksizeString = chunk_sizeString;
+                        t = 0;
+                        file << to_file;
+                        to_file.erase();
+                        
+                            body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
+                        
+                    }
+                    if(!chunksize){
+                        // in_out = true;
+                        break;
+                    }
+                    if(to_file.size() == chunksize){
+                        // std::cout << "ERRRRRRRRRRRRRRRRRRROR" << std::endl;
 
-                        if(!i){
-                            if((t+body.size()-classChunksizeString.size()) == to_file.size()){
-                                // std::cout << "t+body.size()-classChunksizeString.size()) == to_file.size()+2"<< std::endl;
-                                break;
-                            }
-                        }else
-                            if((t+body.size()) == to_file.size()){
-                                // std::cout << "t+body.size()) == to_file.size()"<< std::endl;
-                                break;
-                            }
+                        file << to_file;
+                        to_file.erase();
+                    }
+                    if(!i){
+                        if((t+body.size()-classChunksizeString.size()) == to_file.size()+2)
+                            break;
+                    }else
+                        if((t+body.size()) == to_file.size())
+                            break;
                 }
                 i++;
+                std::cout << "----------------- I = " << i << "-------------" << std::endl;
             }
             else{
                 file << body;
                 file.close();
+                i++;
             }
         }
         /*Status 201*/
