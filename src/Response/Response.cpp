@@ -48,6 +48,7 @@ void Response::forrbiden(){
     file.close();
 }
 
+
 void Response::notFound(){
     std::ifstream file("www/html/Page not found · GitHub Pages.html");
     std::string line;
@@ -55,7 +56,21 @@ void Response::notFound(){
         while (getline(file,line))
             _resbody += line+"\n";
     }
+    
     file.close();
+}
+void Response::listDirectory(std ::string html)
+{
+std::ifstream file("www/html/listDirectory.html");
+std::string line;
+    if(file.is_open()){
+        while (getline(file,line))
+            html += line+"\n";
+    }
+    file.close();
+    
+    _resbody = html;
+    
 }
 
 void Response::noContent(){
@@ -68,9 +83,23 @@ void Response::noContent(){
     }
     file.close();
 }
+void Response::send_get(Http_req request)
+{
+    if(!request.toHtml.empty())
+    {
+        listDirectory(request.toHtml);
+    }
+}
 
 /*Fill  Resposne Body*/
-void Response::fillResponseBody(Http_req request){
+void Response::fillResponseBody(Http_req request)
+{   
+    
+
+    if(request._status.find("200") != request._status.end())
+    {
+        send_get(request);
+    }
     if(request._status.find("201") != request._status.end())
         created();
     else if(request._status.find("403") != request._status.end())
@@ -81,6 +110,7 @@ void Response::fillResponseBody(Http_req request){
         noContent();
 
 }
+
 
 std::string Response::getResHeaders(){
     return _resheaders;

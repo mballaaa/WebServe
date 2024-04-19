@@ -24,6 +24,12 @@ public:
     void forrbiden();
     void created();
     void noContent();
+    /*start mballa*/
+    void listDirectory(std::string);
+    void    send_get(Http_req);
+
+
+    /*End mballa*/
 
     /*-------------Body TYPE(end)-------------*/
 
