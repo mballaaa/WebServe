@@ -10,6 +10,7 @@ Multiplex::host_port_map_t Multiplex::hostPortMap;
 
 void Multiplex::setup(const servers_t &servers)
 {
+    
     if (servers.empty())
     {
         throw std::runtime_error("Servers are not set");
@@ -132,28 +133,28 @@ void Multiplex::start(void)
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
                 continue;
             }
-            else if (events[i].events & EPOLLIN ) // check if we have EPOLLIN (connection socket ready to read)
+            else if (events[i].events & EPOLLIN) // check if we have EPOLLIN (connection socket ready to read)
             {
                 /**
                  * We have a notification on the connection socket meaning there is more data to be read
-                */
-               
-                ssize_t bytesReceived; // number of bytes read returned
+                 */
+
+                ssize_t bytesReceived;  // number of bytes read returned
                 char buf[R_SIZE] = {0}; // read buffer
 
-                bytesReceived = read (events[i].data.fd, buf, sizeof(char) * R_SIZE - 1);
-           if (bytesReceived == -1)
+                bytesReceived = read(events[i].data.fd, buf, sizeof(char) * R_SIZE - 1);
+                if (bytesReceived == -1)
                 {
-                    perror ("read");
+                    perror("read");
                     // printf ("Closed connection on descriptor %d\n",
                     // events[i].data.fd);
 
                     /* Closing the descriptor will make epoll remove it
                         from the set of descriptors which are monitored. */
-                    close (events[i].data.fd);
+                    close(events[i].data.fd);
                     // mballa:remove request from map after closing connection
-                    requests.erase(events[i].data.fd) ;
-                    continue ;
+                    requests.erase(events[i].data.fd);
+                    continue;
                 }
                 else if (bytesReceived == 0)
                 {
@@ -164,45 +165,23 @@ void Multiplex::start(void)
 
                     /* Closing the descriptor will make epoll remove it
                         from the set of descriptors which are monitored. */
-                    close (events[i].data.fd);
+                    close(events[i].data.fd);
                     // mballa: remove request from map after closing connection
-                    requests.erase(events[i].data.fd) ;
-                    continue ;
+                    requests.erase(events[i].data.fd);
+                    continue;
                 }
 
                 /* Write the buffer to standard output */
                 std::cerr << FOREGRN;
                 std::cerr << "============== Request ==============" << std::endl;
                 std::cerr << "==============+++++++++==============" << std::endl;
-                //  s = write (1, buf, bytesReceived);
-                // get
-                //  start parse
-
-                // here you have to parse the headers
-                // for the body you have to consider the content length or chunked encoding
-                // also remember you cant store the hole body in a variable so you have to store it in a file
-                //
-                // currRequest.http_req.req = std::string(buf) ;
-                // currRequest.http_req.byterec = bytesReceived ;
-                // currRequest.http_req.server = currRequest.getServer() ;
-                // currRequest.http_req.parse_re(std::string(buf),bytesReceived) ;
-                // if (currRequest.http_req.state == Http_req::HEADER)
-                // {
-                //     s = write (1, currRequest.http_req.body.c_str(), strlen(currRequest.http_req.body.c_str())) ;
-                //     currRequest.http_req.state = Http_req::BODY ;
-
-                // }
-                // else if (currRequest.http_req.state == Http_req::BODY)
-                // {
-                //     s = write (1, buf, bytesReceived) ;
-                // }
-
-                // Http_req htt(buf,bytesReceived,listeners);
-                // call some function
-                std::string toSTing(buf, bytesReceived); // Convert received data to string using the total bytes received
-                Http_req &currRequest = requests.find(events[i].data.fd)->second;
-                currRequest.parse_re(toSTing, bytesReceived); // Pass totalBytesReceived instead of bytesReceived
-                reqqq = currRequest;
+               
+                std::string toSTing(buf); // Convert received data to string using the total bytes received
+                 //Http_req &currRequest = requests.find(events[i].data.fd)->second;
+               // std::cout << "fddddd " << requests[events[i].data.fd].is_finsh << std::endl;
+                requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
+                 //currRequest.parse_re(toSTing, bytesReceived); // Pass totalBytesReceived instead of bytesReceived
+                 //reqqq = currRequest;
 
                 // //std :: cout << "HEY\n";
 
@@ -226,48 +205,25 @@ void Multiplex::start(void)
             }
             else if (events[i].events && EPOLLOUT && requests[events[i].data.fd].getFlag() == true) // check if we have EPOLLOUT (connection socket ready to write)
             {
-                /**
-                 * Set connection socket to EPOLLIN to read another request in the next iteration
-                 */
-                SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN);
-                std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n");
-                // std::string response("HTTP/1.1 302 Found\r\nLocation: http://example.com/new-page\r\n\r\n") ; // redirection response
-                s = write(events[i].data.fd, response.c_str(), response.size());
-                if (s == -1)
-                    throw std::runtime_error("Cant write response");
-                // SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
-                // std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n") ;
-                // // std::string response("HTTP/1.1 302 Found\r\nLocation: http://example.com/new-page\r\n\r\n") ; // redirection response
-                // Response resp(reqqq);
-                // s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
-                // // s = write (events[i].data.fd, response.c_str(), response.size());
-                // if (s == -1)
-                //     throw std::runtime_error("Cant write response") ;
-                // std::cerr << FOREBLU ;
-                // std::cout << "============== Response ==============" << std::endl ;
-                // std::cerr << "==============++++++++++==============" << std::endl ;
-                // // write (1, resp.getResponse().c_str(), resp.getResponse().size());
-                // write (1, response.c_str(), response.size());
-                // std::cerr << "==============+++++++++==============" << std::endl ;
-                // std::cerr << "==============+++++++++==============" << std::endl ;
-                // std::cerr << RESETTEXT ;
-                /**
-                 * Incas the client request Connection: close we close the connection
-                 * else the connection remains open and waiting for another rquest from the client
-                 */
-                // if (requests.find(events[i].data.fd)->second.request.find("Connection: close") != std::string::npos)
-                // {
-                //     printf ("Closed connection on descriptor %d\n",
-                //             events[i].data.fd);
-                //     /* Closing the descriptor will make epoll remove it
-                //         from the set of descriptors which are monitored. */
-                //     close (events[i].data.fd);
-                //     // requests.erase(events[i].data.fd) ;
-                // }
-                /**
-                 * clear request buffer after processing it and sending request
-                 */
-                std::cerr << "Response Sent" << std::endl;
+        
+                
+                SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
+             
+                Response resp(requests[events[i].data.fd]);
+                std :: cout << "Jeeee\n" ;
+                if(resp.getResponse().empty())
+                {
+                    std :: cout << "IS empty\n";
+                }
+                else{
+                     std :: cout << "IS not empty\n";
+                }
+                s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
+         
+                
+                   std::cout << "============== Response ==============" << std::endl ;
+               
+
             }
         }
     }

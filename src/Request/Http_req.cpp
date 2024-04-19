@@ -12,9 +12,10 @@ Http_req::Http_req() {}
 /*=============== 14 PART (end)==================*/
 Http_req::Http_req(Server server)
 {
+    toHtml = "";
     is_finsh = false;
     this->server = server;
-    in_out=false;
+    in_out = false;
 }
 
 // Http_req::Http_req(std ::string req, int byterec, std::map<int, Server> listners)
@@ -71,6 +72,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
         server = obj.server;
         _loca = obj._loca;
         byterec = obj.byterec;
+        toHtml = obj.toHtml;
         /*=============== 14 PART (begin)==================*/
         _status = obj._status;
         /*=============== 14 PART (end)==================*/
@@ -123,8 +125,9 @@ const std::map<std::string, std::string> &Http_req::getStatus() const
     return _status;
 }
 
-const bool &Http_req::getFlag() const{
-        return in_out;
+const bool &Http_req::getFlag() const
+{
+    return in_out;
 }
 /*=============== 14 PART (end)==================*/
 /*
@@ -201,7 +204,6 @@ std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string
 int Http_req::MoreValidation()
 {
 
-
     if (!check_path(this->path))
     {
 
@@ -243,12 +245,13 @@ int Http_req::MoreValidation()
     }
     if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
     {
-        // std :: cout << "ddddd4\n";
+        ;
         return (0);
     }
 
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
         return (0);
+    
 
     this->_target = this->path;
 
@@ -322,15 +325,15 @@ void Http_req::debugFunction()
     // std ::cout << "type mthode=>" << this->method << std ::endl;
     // std ::cout << "path=>" << this->path << std ::endl;
     // std ::cout << "vers=>" << this->http_ver << std ::endl;
-       std::ofstream outputFile("output.txt", std::ios_base::app);
+    std::ofstream outputFile("output.txt", std::ios_base::app);
 
-    if (outputFile.is_open()) {
+    if (outputFile.is_open())
+    {
         // Output body to the file
         outputFile << this->body;
 
         // Close the file
         outputFile.close();
-
     }
     ///// print headar
     //  std::map<std::string, std::string>::iterator it;
@@ -341,33 +344,29 @@ void Http_req::debugFunction()
     // }
     //
     // //std :: cout << "this ===?\n";
-   //  std :: cout << this->body << std::endl;
+    //  std :: cout << this->body << std::endl;
 }
 int Http_req::StautRe(std::string request)
 {
-   
-     //////////////////
 
+    //////////////////
+    std ::cout << request << std ::endl;
 
-    std ::string my_req="";
+    std ::string my_req = "";
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
     {
         my_req += request;
     }
-    
+
     size_t len_req = my_req.find("\r\n\r\n");
     int res;
     res = 0;
-  
+
     a++;
-   
-   
 
     if (!is_finsh && len_req != std ::string ::npos)
     {
-      
-       
 
         std::istringstream input(my_req);
         input >> this->method >> this->path >> this->http_ver;
@@ -401,50 +400,53 @@ int Http_req::StautRe(std::string request)
             }
             // debugFunction();
         }
-    
+
         size_t body_start = len_req + 4;
         this->body = my_req.substr(body_start);
-      
 
         is_finsh = true;
-
-
     }
-    else if(is_finsh)
+    else if (is_finsh)
     {
         this->body = request;
     }
 
-
     // std :: cerr << "this body ==>"  <<body << std ::endl;
 
-      debugFunction();
-    if(is_finsh==true)
-    {   
-    if (MoreValidation())
-     {
-
-     }   
-
-
+   
+    if (is_finsh == true)
+    { debugFunction();
+        if (MoreValidation())
+        {
+        }
     }
     //======> check path
- 
+
     res = 1;
     return (res);
 }
 
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
+    std::ofstream outputFile("request.txt", std::ios_base::app);
 
+    if (outputFile.is_open())
+    {
+        // Output body to the file
+        outputFile << this->body;
+
+        // Close the file
+        outputFile.close();
+    }
+    //std :: cout << bufer << std ::endl;
     (void)bufer;
     (void)bytee;
 
-    
     if (!StautRe(bufer) || bytee < 0)
     {
-        in_out=true;
-        return ;
+        in_out = true;
+        std :: cout << "Skrtaaaaaaaaaaaaaaaaaaaaaaa7\n";
+        return;
     }
     else
     {
@@ -458,8 +460,10 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         {
             LetPost();
         }
+        
         /*=============== 14 PART (end)==================*/
     }
+   
 }
 
 bool Is_dir(const char *ptr)
@@ -489,59 +493,68 @@ int is_file_dir(std::string uri)
 }
 std ::string getMessage(int code)
 {
-  switch (code)
-  {
-        case 400: return "Bad Request";
-        case 401: return "Unauthorized";
-        case 403: return "Forbidden";
-        case 404: return "Not Found";
-        case 500: return "Internal Server Error";
-        case 501: return "Not Implemented";
-        case 503: return "Service Unavailable";
-        default: return "Unknown Error";
-  }  
+    switch (code)
+    {
+    case 400:
+        return "Bad Request";
+    case 401:
+        return "Unauthorized";
+    case 403:
+        return "Forbidden";
+    case 404:
+        return "Not Found";
+    case 500:
+        return "Internal Server Error";
+    case 501:
+        return "Not Implemented";
+    case 503:
+        return "Service Unavailable";
+    default:
+        return "Unknown Error";
+    }
 }
 void SendErrorClient(int code)
 {
-    (void) code;
+    (void)code;
     // Prepare Message ouput
-    std::string messages_error=getMessage(code);
-  // std::string errorPage = "<html><head><title>" + std::to_string(code) + " " + messages_error + "</title><style>*{font-family:\"Arial\";}</style></head><body><center><br/><h1>" + std::to_string(code) + " - " + messages_error + 
-//    "</h1><hr/></center></body></html>";
-//     std::string response = "HTTP/1.1 " + std::to_string(code) + " " + messages_error + "\r\n"
-//                            "Content-Type: text/html\r\n"
-//                            "Content-Length: " + std::to_string(errorPage.length()) + "\r\n\r\n" +
-//                            errorPage;
-
-
-    
-
+    std::string messages_error = getMessage(code);
+    // std::string errorPage = "<html><head><title>" + std::to_string(code) + " " + messages_error + "</title><style>*{font-family:\"Arial\";}</style></head><body><center><br/><h1>" + std::to_string(code) + " - " + messages_error +
+    //    "</h1><hr/></center></body></html>";
+    //     std::string response = "HTTP/1.1 " + std::to_string(code) + " " + messages_error + "\r\n"
+    //                            "Content-Type: text/html\r\n"
+    //                            "Content-Length: " + std::to_string(errorPage.length()) + "\r\n\r\n" +
+    //                            errorPage;
 }
 void Http_req ::CheckLoc()
 {
-   
+
     if (this->_loca.getIndex().size() != 0)
     {
+      
 
         std ::vector<std ::string> index = this->_loca.getIndex();
         // check if index file are exit
         /// ==> get first index string
         std ::string main_index = index.at(0);
-       // std ::cout << "==>" << this->_loca.getRoot() << std ::endl;
+        // std ::cout << "==>" << this->_loca.getRoot() << std ::endl;
 
         // std ::cerr << "index  name==>" << main_index << std ::endl;
-      //  std ::cout << "==> index" << main_index << std ::endl;
+        //  std ::cout << "==> index" << main_index << std ::endl;
         _target += main_index;
+        in_out=true;
+        _status["200"]="OK";
+        
     }
     else
     {
         if (this->_loca.getAutoIndex())
         {
+            std :: cout <<"JEEEEEEEE\n";
             /// Here We shloud Send DirectoryListe
-            //std ::cout << _target << std ::endl;
+            // std ::cout << _target << std ::endl;
             std ::string dirpath = _target;
 
-            std::string toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
+            toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
 
             DIR *dir = opendir(dirpath.c_str());
             if (!dir)
@@ -551,10 +564,10 @@ void Http_req ::CheckLoc()
             }
             else
             {
-               
+
                 struct dirent *list;
                 list = readdir(dir);
-               // std :: cout << path << std :: endl;
+                // std :: cout << path << std :: endl;
                 while (list != NULL)
                 {
                     if (list->d_type == DT_DIR)
@@ -572,42 +585,23 @@ void Http_req ::CheckLoc()
                     list = readdir(dir);
                 }
                 toHtml += "</pre>\n</body>\n</html>";
-              
+
                 closedir(dir);
-                int output=send(1,toHtml.c_str(),toHtml.length(),0);
-               if(output <=0)
-               {
-                SendErrorClient(500);
                 in_out =true;
-                return ;
-                
-               }
-               else
-               {
-                in_out =true;
-                return ;
-               }
+               _status["200"]="OK";
                
-            //    else if(flag_error==0)
-            //    {
-
-            //    }
+               return ;
                
-               
-                
-
             }
-            
         }
         else
         {
             SendErrorClient(403);
-            in_out=true;
-            return ;
+            in_out = true;
+            return;
         }
     }
 }
-
 
 // =====> Let Start Get
 void Http_req::LetGet()
@@ -623,10 +617,8 @@ void Http_req::LetGet()
     }
     else
     {
-        
     }
-    
-
+    std :: cout << "sssdffd\n";
 }
 /*=============== 14 PART (begin)==================*/
 void Http_req::mimeParse()
@@ -658,8 +650,8 @@ void Http_req::mimeParse()
     }
 }
 
-void Http_req::contentLenght(){
-
+void Http_req::contentLenght()
+{
 }
 
 std::string randNameGen()
@@ -684,6 +676,7 @@ void Http_req::LetPost()
     else if (_loca.getUpload() == true)
     {
 
+         in_out = true;
         mimeParse();
 
         if (header["content-length"] == " 0")
@@ -704,10 +697,11 @@ void Http_req::LetPost()
                 str = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
             else
                 str = "Upload/" + randNameGen() + ".txt";
-            
-            if(header["transfer-encoding"] == " chunked"){
-                while(body.find("/r/n") != std::string::npos)
-                        body.erase(body.find("/r/n"));
+
+            if (header["transfer-encoding"] == " chunked")
+            {
+                while (body.find("/r/n") != std::string::npos)
+                    body.erase(body.find("/r/n"));
             }
             std::ofstream file(str.c_str(), std::ios::app);
             file << body;
@@ -725,7 +719,6 @@ void Http_req::LetPost()
 }
 
 /*=============== 14 PART (end)==================*/
-
 
 Http_req::~Http_req()
 {
