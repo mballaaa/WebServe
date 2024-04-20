@@ -12,7 +12,8 @@ public:
     Cgi(Http_req &);
     void _setupEnv(Http_req &);
     
-    /**/
+    /*---utils---*/
+    std::string size_t_to_string(size_t);
     ~Cgi();
 };
 
