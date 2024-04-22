@@ -63,6 +63,7 @@ public: // amine: i made this public for now
     void mimeParse();
     void chunked();
     void contentLenght();
+    std::string randNameGen();
 
 /*=============== 14 PART (end)==================*/
 public:
@@ -72,8 +73,8 @@ public:
     void debugFunction();
     Http_req(Server server);
     //Http_req(std::string req,int byterec, std::map<int, Server> listenrs);
-   void parse_re(std ::string bufer,int bytee);
-   int StautRe(std ::string request);
+    void parse_re(std ::string bufer,int bytee);
+    int StautRe(std ::string request);
     int MoreValidation();
     void LetGet();
     void CheckLoc();

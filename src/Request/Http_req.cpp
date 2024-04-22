@@ -664,7 +664,7 @@ void Http_req::contentLenght(){
 
 }
 
-std::string randNameGen()
+std::string Http_req::randNameGen()
 {
     srand(time(NULL));
     std::string c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -724,7 +724,6 @@ void Http_req::LetPost()
                 make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
             else
                 make_name = "Upload/" + randNameGen() + ".txt";
-
             }
 
             std::ofstream file(make_name.c_str(), std::ios::app);
