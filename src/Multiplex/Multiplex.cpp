@@ -2,6 +2,7 @@
 
 #include "../../includes/Request/Http_req.hpp"
 #include "../../includes/Response/Response.hpp"
+#include "../../includes/cgi/Cgi.hpp"
 SOCKET Multiplex::epollFD;
 Multiplex::listeners_t Multiplex::listeners;
 Multiplex::requests_t Multiplex::requests;
@@ -224,17 +225,18 @@ void Multiplex::start(void)
                  */
                 SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLOUT);
             }
-            else if (events[i].events && EPOLLOUT && requests[events[i].data.fd].getFlag() == true) // check if we have EPOLLOUT (connection socket ready to write)
+            else if (events[i].events && EPOLLOUT) // check if we have EPOLLOUT (connection socket ready to write)
             {
                 /**
                  * Set connection socket to EPOLLIN to read another request in the next iteration
                  */
                 SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
-                std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n") ;
+                // std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n") ;
                 // // std::string response("HTTP/1.1 302 Found\r\nLocation: http://example.com/new-page\r\n\r\n") ; // redirection response
-                // Response resp(reqqq);
-                // s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
-                s = write (events[i].data.fd, response.c_str(), response.size());
+                Cgi cgi(reqqq);
+                Response resp(reqqq);
+                s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
+                // s = write (events[i].data.fd, response.c_str(), response.size());
                 if (s == -1)
                     throw std::runtime_error("Cant write response") ;
                 // // std::cerr << FOREBLU ;

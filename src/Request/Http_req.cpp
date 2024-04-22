@@ -72,6 +72,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
         header = obj.header;
         server = obj.server;
         _loca = obj._loca;
+        make_name = obj.make_name;
         // byterec = obj.byterec;
         /*=============== 14 PART (begin)==================*/
         _status = obj._status;
@@ -692,7 +693,7 @@ void Http_req::LetPost()
 {
     /*location not found*/
     // std::cout << "------------------- ORIGIN BODY (BEGIN)------------------- " << std::endl;
-    std::cout << body << std::endl;
+    std::cout << path << std::endl;
     // std::cout << "------------------- ORIGIN BODY (END)------------------- " << std::endl;
     if (_loca.getUploadPath() == "Not Found")
     {
@@ -717,7 +718,7 @@ void Http_req::LetPost()
             /*First check if the extension exist */
            
             static int i  = 0;
-            std::cout << "---------- I =>> " << i << std::endl;
+            // std::cout << "---------- I =>> " << i << std::endl;
             std::string str;
             if(!i){
             if (_mime.find(header["content-type"].substr(1)) != _mime.end())
@@ -733,7 +734,6 @@ void Http_req::LetPost()
                 std::cout << "File Upload Error" << std::endl;
                 return ;
             }
-            std::cout << " i: " <<i << std::endl;            
             std::istringstream body_forstream(body);
             std::string chunk_sizeString;
             if(header["transfer-encoding"] == " chunked"){
@@ -792,7 +792,7 @@ void Http_req::LetPost()
                             break;
                 }
                 i++;
-                std::cout << "----------------- I = " << i << "-------------" << std::endl;
+                // std::cout << "----------------- I = " << i << "-------------" << std::endl;
             }
             else{
                 file << body;

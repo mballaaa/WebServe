@@ -10,13 +10,12 @@ private:
     std::map<std::string,std::string> _env;
     std::map<std::string,std::string> _executablefile;
     std::map<int,std::string>           _argv;
-    Http_req &request;
-
 public:
     Cgi(Http_req &);
     void _setupEnv(Http_req &);
-    std::string executeCgi();
+    std::string executeCgi(Http_req &request);
     void fill_executablefile();
+    std::string cgiResponse(Http_req &request,std::string _cgibody);
     
     /*---utils---*/
     std::string size_t_to_string(size_t);

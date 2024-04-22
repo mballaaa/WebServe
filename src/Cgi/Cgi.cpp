@@ -6,6 +6,7 @@
 
 Cgi::Cgi(Http_req &request){
     _setupEnv(request);
+    executeCgi(request);
 }
 
 std::string Cgi::size_t_to_string(size_t nbr){
@@ -17,10 +18,11 @@ std::string Cgi::size_t_to_string(size_t nbr){
 }
 
 template<typename first,typename second>
-char **Cgi:: **envMap_to_char(std::map<first,second> _env){
+char **Cgi:: envMap_to_char(std::map<first,second> _env){
     char **env = new char *[_env.size()+1];
     int i = 0;
-    for(std::map<std::string,std::string>::iterator it = _env.begin();it!=_env.end();it++){
+    typename std::map<first,second>::iterator it = _env.begin();
+    for(;it!=_env.end();it++){
         std::string key_value = it->first + "=" + it->second;
         env[i] = new char[key_value.size()+1];
         env[i] = strcpy(env[i], key_value.c_str());
@@ -61,9 +63,12 @@ std::string Cgi::fileExtension(std::string filename){
 void Cgi::_setupEnv(Http_req &request){
     std::map<std::string,std::string> headers = request.getHeader();
     Server server = request.getServer();
-
     _env["CONTENT_LENGTH"] = size_t_to_string(request.getBody().size());
-    _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
+    std::cout << headers["content-type"] << std::endl;
+    if(headers["content-type"] != "")
+        _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
+    else
+        _env["CONTENT_TYPE"] = "";
 	// _env["REDIRECT_STATUS"] = "200"; //know more about REDIRECTE_STATUS
     _env["PATH_INFO"] = request.getPath();
     _env["PATH_TRANSLATED"] = request.getPath();
@@ -86,26 +91,46 @@ void Cgi::_setupEnv(Http_req &request){
 
 }
 
+std::string Cgi::cgiResponse(Http_req &request,std::string _cgibody){
 
+    std::string httpResponse;
+    if(_cgibody.find("\r\n\r\n") == std::string::npos){
+        _cgibody = "Content-type: text/html; charset=UTF-8\r\n\r\n" + _cgibody;
+    }
+    request.header["content-type"] = "text/html";
+    request._status["200"] = "OK";
+    size_t pos = _cgibody.find("\r\n\r\n");
+    std::string headers = _cgibody.substr(0,pos);
+    std::string body = _cgibody.substr(pos+4);
 
-std::string Cgi::executeCgi(){
+    return httpResponse;
+}
+
+std::string Cgi::executeCgi(Http_req &request){
     std::string _cgibody;
    
 
-    char **env = envMap_to_char(_env);
-    char **argv = envMap_to_char(_argv);
+    std::string outputfilename = request.randNameGen();
 
-    int input = open(request.make_name.c_str(),O_RDONLY);
-    int output = open(request.randNameGen().c_str(), O_CREAT | O_RDWR);
+    int input = open(request.make_name.c_str(),O_RDONLY); //The make_name file wasn't always created.
+    int output = open("jj.txt", O_RDWR);
+
     if (input == -1 || output == -1) {
         std::cerr << "Error opening files\n";
-        return NULL;
+        return "\0";
     }
 
 
+    char **env = envMap_to_char(_env);
+    char **argv = envMap_to_char(_argv);
     pid_t pid = fork();
-    if(pid < 0)
+    if(pid < 0){
+        for (int i = 0;env[i];i++)
+            delete[] env[i];
+        for (int i = 0;argv[i];i++)
+            delete[] argv[i];
         return "FORK FAILED";
+    }
     else if(!pid){
         dup2(output,1);
         dup2(input,0);
@@ -117,10 +142,33 @@ std::string Cgi::executeCgi(){
         waitpid(-1,&status,0);
         if (WIFEXITED(status) && WEXITSTATUS(status) != 0){
             std::cout << "WAITPID ERROR" << std::endl;
+            for (int i = 0;env[i];i++)
+                delete[] env[i];
+            for (int i = 0;argv[i];i++)
+                 delete[] argv[i];
             exit(1);
         }
     }
+
+    std::ifstream _filename(outputfilename.c_str());
+    if(!_filename.is_open())
+        std::cout << "_filename opening ERROR" << std::endl;
+    std::string line;
+    while(getline(_filename,line)){
+        _cgibody += line + "\n";
+    }
+    for (int i = 0;env[i];i++)
+        delete[] env[i];
+    // delete[] env;
+    for (int i = 0;argv[i];i++)
+        delete[] argv[i];
+    // delete[] argv;
     
+    close(input);
+    close(output);
+    _filename.close();
+
+    // cgiResponse(request,_cgibody);
     return _cgibody;
 }
 
