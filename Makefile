@@ -2,7 +2,7 @@ CXX = c++
 
 NAME = webserv
 
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -g3 -fsanitize=address
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 #-g3 -fsanitize=address
 
 SRC =	main.cpp						\
 		src/Location.cpp				\

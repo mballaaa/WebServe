@@ -18,45 +18,6 @@ Http_req::Http_req(Server server)
     in_out = false;
 }
 
-// Http_req::Http_req(std ::string req, int byterec, std::map<int, Server> listners)
-// {
-
-//     // std :: cerr << s.getClientMaxBodySize();
-
-//     //  std::map<SOCKET,Server> ::iterator it;
-
-//     // for (it =listners.begin() ;it !=listners.end();++it)
-
-//     // {
-
-//     //     std ::cerr << "********* here***********\n";
-//     //     std :: cerr << it->second.getClientMaxBodySize() << std ::endl;
-//     //     std ::cerr << "********* here***********\n";
-//     std::map<int, Server>::iterator it;
-
-//     it = listners.begin();
-
-//     this->req = req;
-//     this->byterec = byterec;
-//     this->server = it->second;
-//    // std :: cerr << "====>root"  << server.getRoot() << std ::endl;
-//    /// See location
-
-// //    std :: cerr << "Yessss\n";
-// //    std::map<std::string ,Location> getLocation=server.getLocations();
-// //         std ::cerr << "==>\n" ;
-// //    std::map<std::string, Location>::iterator it_loc;
-// //     for (it_loc = getLocation.begin(); it_loc != getLocation.end(); ++it_loc) {
-// //     std :: cerr << it_loc->first << std ::endl;
-// // }
-//     // for(it_loc = getLocation.begin();it_loc !=getLocation.end();++it_loc)
-//     // {
-//     //     std :: cerr << " =>" << it_loc->first << std ::endl;
-//     // }
-//     // parse_re(req, byterec); // amine: I commented this line
-
-// }
-
 // copyy
 Http_req &Http_req::operator=(const Http_req &obj)
 {
@@ -139,18 +100,20 @@ const bool &Http_req::getFlag() const
         *****2Header
 
 */
-bool is_same(std::string key, std::string target)
-{
-    // key is valuee from config location
-    //  //target ==is path request
-
-    if (target.length() < key.length())
+bool comparePaths(const std::string& target, const std::string& key) {
+    
+    if(key.length() < target.length())
     {
-
-        return false;
+        return (false);
     }
+    std ::cout << "this target " << target << std :: endl;
+    std::cout <<   "this key " <<  key << std ::endl;
+    size_t j = 0;
+    while (j < target.size() && j < key.size() && target[j] == key[j])
+        j++;
 
-    return target.compare(0, key.length(), key) == 0 && (target.length() == key.length() || target[key.length()] == '/');
+    return (j == target.size() && j == key.size()) ||
+           (j == key.size() && ((j < target.size() && target[j] == '/') || (j > 0 && target[j - 1] == '/')));
 }
 int check_path(std ::string path)
 {
@@ -218,7 +181,7 @@ int Http_req::MoreValidation()
     }
     if (http_ver != "HTTP/1.1")
     {
-        // std ::cout << "ddddd2\n";
+    // std ::cout << "ddddd2\n";
         return (0);
     }
 
@@ -228,6 +191,8 @@ int Http_req::MoreValidation()
     size_t content_len;
     if (header.find("content-length") != header.end())
     {
+       // std ::cout << "SSSSSSSSSSSSSSSSSSSSSJDKJDKLFJLKDFJKLDFJKLDFJKLDFKLDFLKFDJLK\n";
+        //std ::cout << "sss" << header.find("content-length")->second << std ::endl;
         content_len = strtol(header["content-length"].c_str(), &endptr, 10);
         if (endptr == header["content-length"].c_str())
         {
@@ -251,37 +216,35 @@ int Http_req::MoreValidation()
 
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
         return (0);
-    
 
     this->_target = this->path;
-
+  
     // now let check if match or not
-    std::map<std ::string, Location> location = this->server.getLocations();
-    std::map<std::string, Location>::iterator it;
-    int flag = 0;
-    std ::string key;
-    for (it = location.begin(); it != location.end(); it++)
+  std::map<std::string, Location> location = this->server.getLocations();
+std::map<std::string, Location>::iterator it;
+int flag = 0;
+std::string key;
+for (it = location.begin(); it != location.end(); it++)
+{
+    key = it->first;
+   
+
+    if (comparePaths(_target, key))
     {
-
-        key = it->first;
-
-        if (is_same(key, _target))
-        {
-
-            // std :: cerr << "is same\n" << std ::endl;
-            flag++;
-            this->_loca = it->second;
-            break;
-        }
+        
+        flag++;
+        this->_loca = it->second;
+        break;
     }
+}
+ 
+if (flag == 0)
+{
+    _status["404"]="Page Not Found";
+    std :: cout << "Not match \n";
+    return 0;
+}
 
-    if (flag == 0)
-    {
-        std ::cerr << "Not Match \n";
-
-        // if not found any match
-        return (0); /// No match akhouuya
-    }
 
     /// std :: cerr << "weech\n";
     Location::redirection_t red = this->_loca.getReturn();
@@ -346,11 +309,15 @@ void Http_req::debugFunction()
     // //std :: cout << "this ===?\n";
     //  std :: cout << this->body << std::endl;
 }
+ long hex_to_decimal(const std::string& hexString) {
+    char* endPtr;
+    return strtol(hexString.c_str(), &endPtr, 16);
+}
 int Http_req::StautRe(std::string request)
 {
 
     //////////////////
-    std ::cout << request << std ::endl;
+   // std ::cout << request << std ::endl;
 
     std ::string my_req = "";
     // Set flag that can tell us is request are finshied
@@ -364,6 +331,7 @@ int Http_req::StautRe(std::string request)
     res = 0;
 
     a++;
+   
 
     if (!is_finsh && len_req != std ::string ::npos)
     {
@@ -400,9 +368,36 @@ int Http_req::StautRe(std::string request)
             }
             // debugFunction();
         }
-
+       
         size_t body_start = len_req + 4;
-        this->body = my_req.substr(body_start);
+         this->body = my_req.substr(body_start);
+     //    std ::cout << body ;
+         
+        if (header.find("transfer-encoding") != header.end())
+        {
+            //
+            //std :: cout << "sss\n";
+            std ::string sizeChunk;
+            size_t startchu = body.find("\r\n");
+           
+            if (startchu != std ::string::npos)
+            {
+              //  std :: cout << startchu << std ::endl;
+
+                 sizeChunk = body.substr(0, startchu);
+                size_t sizeHex=hex_to_decimal(sizeChunk);
+                (void) sizeHex;
+                if(header.find("transfer-encoding")->second ==" chunked")
+                {
+                    body=my_req.substr(body_start+sizeChunk.length()+2);
+
+                }
+                
+                
+
+            }
+        }
+       
 
         is_finsh = true;
     }
@@ -413,11 +408,15 @@ int Http_req::StautRe(std::string request)
 
     // std :: cerr << "this body ==>"  <<body << std ::endl;
 
-   
     if (is_finsh == true)
-    { debugFunction();
-        if (MoreValidation())
+    {
+        debugFunction();
+        if (MoreValidation()==0)
         {
+            in_out =true;
+            return (0);
+
+
         }
     }
     //======> check path
@@ -428,28 +427,32 @@ int Http_req::StautRe(std::string request)
 
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
-    std::ofstream outputFile("request.txt", std::ios_base::app);
+    // std::ofstream outputFile("request.txt", std::ios_base::app);
 
-    if (outputFile.is_open())
-    {
-        // Output body to the file
-        outputFile << this->body;
+    // if (outputFile.is_open())
+    // {
+    //     // Output body to the file
+    //     outputFile << bufer;
 
-        // Close the file
-        outputFile.close();
-    }
-    //std :: cout << bufer << std ::endl;
+    //     // Close the file
+        
+    // }
+    // outputFile.close();
+    // std :: cout << bufer << std ::endl;
     (void)bufer;
     (void)bytee;
 
-    if (!StautRe(bufer) || bytee < 0)
+    if (!StautRe(bufer)|| bytee < 0)
     {
+       
         in_out = true;
-        std :: cout << "Skrtaaaaaaaaaaaaaaaaaaaaaaa7\n";
+        std ::cout << "Skrtaaaaaaaaaaaaaaaaaaaaaaa7\n";
         return;
     }
     else
     {
+         std ::cout << "ddddddd\n";
+      
         if (method == "GET")
         {
             // std :: cout << "YEssss\n";
@@ -460,10 +463,9 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         {
             LetPost();
         }
-        
+
         /*=============== 14 PART (end)==================*/
     }
-   
 }
 
 bool Is_dir(const char *ptr)
@@ -513,24 +515,12 @@ std ::string getMessage(int code)
         return "Unknown Error";
     }
 }
-void SendErrorClient(int code)
-{
-    (void)code;
-    // Prepare Message ouput
-    std::string messages_error = getMessage(code);
-    // std::string errorPage = "<html><head><title>" + std::to_string(code) + " " + messages_error + "</title><style>*{font-family:\"Arial\";}</style></head><body><center><br/><h1>" + std::to_string(code) + " - " + messages_error +
-    //    "</h1><hr/></center></body></html>";
-    //     std::string response = "HTTP/1.1 " + std::to_string(code) + " " + messages_error + "\r\n"
-    //                            "Content-Type: text/html\r\n"
-    //                            "Content-Length: " + std::to_string(errorPage.length()) + "\r\n\r\n" +
-    //                            errorPage;
-}
-void Http_req ::CheckLoc()
+
+void Http_req ::CheckLoc(int *is_file)
 {
 
     if (this->_loca.getIndex().size() != 0)
     {
-      
 
         std ::vector<std ::string> index = this->_loca.getIndex();
         // check if index file are exit
@@ -541,15 +531,16 @@ void Http_req ::CheckLoc()
         // std ::cerr << "index  name==>" << main_index << std ::endl;
         //  std ::cout << "==> index" << main_index << std ::endl;
         _target += main_index;
-        in_out=true;
-        _status["200"]="OK";
-        
+        in_out = true;
+        _status["200"] = "OK";
+        *is_file=1;
+    
     }
     else
     {
         if (this->_loca.getAutoIndex())
         {
-            std :: cout <<"JEEEEEEEE\n";
+            
             /// Here We shloud Send DirectoryListe
             // std ::cout << _target << std ::endl;
             std ::string dirpath = _target;
@@ -587,39 +578,62 @@ void Http_req ::CheckLoc()
                 toHtml += "</pre>\n</body>\n</html>";
 
                 closedir(dir);
-                in_out =true;
-               _status["200"]="OK";
-               
-               return ;
-               
+                in_out = true;
+                _status["200"] = "OK";
+                return;
             }
         }
         else
         {
-            SendErrorClient(403);
+            //SendErrorClient(403);
+            std :: cout << "Yesss iam here\n";
             in_out = true;
+            _status["403"]="Forbidden";
             return;
         }
     }
+    
 }
 
-// =====> Let Start Get
+
 void Http_req::LetGet()
 {
+    
+    int is_file=0;
+    std :: cout << _target << std ::endl;
     std ::string URI = this->_target;
     int check_type = is_file_dir(URI);
     // std :: cerr << "output" << check_type << std ::endl;
     if (check_type == IS_DIR)
     {
+        
 
-        // std ::cerr << "hEYY\n";
-        CheckLoc();
+       
+        CheckLoc(&is_file);
     }
     else
     {
-    }
-    std :: cout << "sssdffd\n";
+       
+        struct stat sb;
+        if(stat(URI.c_str(),&sb)==0)
+        {
+    //         if((sb.st_mode & S_IFREG ) || is_file)
+    //         {
+    //             std::ifstream file(filename.c_str(), std::ios::binary);
+    
+	// if (file)
+	// {
+	
+            
+    //     }
+        
+       
+        }
+    in_out=true;
+    _status["200"]="ok";
+    //std ::cout << "sssdffd\n";
 }
+    }
 /*=============== 14 PART (begin)==================*/
 void Http_req::mimeParse()
 {
@@ -676,7 +690,7 @@ void Http_req::LetPost()
     else if (_loca.getUpload() == true)
     {
 
-         in_out = true;
+        in_out = true;
         mimeParse();
 
         if (header["content-length"] == " 0")

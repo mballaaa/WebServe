@@ -76,14 +76,15 @@ void Multiplex::start(void)
                 std::cerr << eventName[EPOLLHUP];
             std::cerr << std::endl;
 
-            if ((events[i].events & EPOLLERR) ||
-                (events[i].events & EPOLLHUP))
+            if ((events[i].events & EPOLLERR))
             {
-                /* An error has occured on this fd, or the socket is not
-                    ready for reading (why were we notified then?) */
-                // fprintf (stderr, "epoll error\n");
+                // /* An error has occured on this fd, or the socket is not
+                //     ready for reading (why were we notified then?) */
+                // // fprintf (stderr, "epoll error\n");
                 close(events[i].data.fd);
-                perror("EPOLLERR | EPOLLHUP");
+                perror("EPOLLERR");
+                 close (events[i].data.fd);
+                //     // requests.erase(events[i].data.fd) ;
                 continue;
             }
             else if (listeners.find(events[i].data.fd) != listeners.end()) // Check if socket belong to a server
@@ -133,7 +134,7 @@ void Multiplex::start(void)
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
                 continue;
             }
-            else if (events[i].events & EPOLLIN) // check if we have EPOLLIN (connection socket ready to read)
+            else if (events[i].events & EPOLLIN )  // check if we have EPOLLIN (connection socket ready to read)
             {
                 /**
                  * We have a notification on the connection socket meaning there is more data to be read
@@ -142,9 +143,10 @@ void Multiplex::start(void)
                 ssize_t bytesReceived;  // number of bytes read returned
                 char buf[R_SIZE] = {0}; // read buffer
 
-                bytesReceived = read(events[i].data.fd, buf, sizeof(char) * R_SIZE - 1);
+                bytesReceived = read(events[i].data.fd, buf,  R_SIZE - 1);
                 if (bytesReceived == -1)
                 {
+                       std :: cout << "Jeeeeeeeerrrrrr\n";
                     perror("read");
                     // printf ("Closed connection on descriptor %d\n",
                     // events[i].data.fd);
@@ -158,6 +160,7 @@ void Multiplex::start(void)
                 }
                 else if (bytesReceived == 0)
                 {
+                    std :: cout << "Jeeeeeeee\n";
                     /* End of file. The remote has closed the
                         connection. */
                     // printf ("Closed connection on descriptor %d by client\n",
@@ -175,8 +178,18 @@ void Multiplex::start(void)
                 std::cerr << FOREGRN;
                 std::cerr << "============== Request ==============" << std::endl;
                 std::cerr << "==============+++++++++==============" << std::endl;
+                  std::ofstream outputFile("buffer.txt", std::ios_base::app);
+
+                if (outputFile.is_open())
+                {
+                    // Output body to the file
+                    outputFile << buf;
+
+                    // Close the file
+                    outputFile.close();
+                }
                
-                std::string toSTing(buf); // Convert received data to string using the total bytes received
+                std::string toSTing(buf,bytesReceived); // Convert received data to string using the total bytes received
                  //Http_req &currRequest = requests.find(events[i].data.fd)->second;
                // std::cout << "fddddd " << requests[events[i].data.fd].is_finsh << std::endl;
                 requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
@@ -188,7 +201,7 @@ void Multiplex::start(void)
                 std::cerr << "==============+++++++++==============" << std::endl;
                 std::cerr << "==============+++++++++==============" << std::endl;
 
-                //   file:///home/mballa/Downloads/get.jpg
+                
                 std::cerr << RESETTEXT;
                 if (s == -1)
                 {
@@ -203,23 +216,23 @@ void Multiplex::start(void)
                  */
                 SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLOUT);
             }
-            else if (events[i].events && EPOLLOUT && requests[events[i].data.fd].getFlag() == true) // check if we have EPOLLOUT (connection socket ready to write)
+            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true) // check if we have EPOLLOUT (connection socket ready to write)
             {
         
                 
                 SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
              
                 Response resp(requests[events[i].data.fd]);
-                std :: cout << "Jeeee\n" ;
+              //  std :: cout << "Jeeee\n" ;
                 if(resp.getResponse().empty())
                 {
                     std :: cout << "IS empty\n";
                 }
                 else{
-                     std :: cout << "IS not empty\n";
+                   //  std :: cout << "IS not empty\n";
                 }
                 s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
-         
+                
                 
                    std::cout << "============== Response ==============" << std::endl ;
                
