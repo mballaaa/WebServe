@@ -57,6 +57,23 @@ Http_req::Http_req(Server server)
 
 // }
 
+Http_req::Http_req(const Http_req &obj)
+{
+     req = obj.req;
+    _target = obj._target;
+    method = obj.method;
+    path = obj.path;
+    http_ver = obj.http_ver;
+    header = obj.header;
+    server = obj.server;
+    _loca = obj._loca;
+    byterec = obj.byterec;
+    toHtml = obj.toHtml;
+    /*=============== 14 PART (begin)==================*/
+    _status = obj._status;
+    /*=============== 14 PART (end)==================*/
+}
+
 // copyy
 Http_req &Http_req::operator=(const Http_req &obj)
 {

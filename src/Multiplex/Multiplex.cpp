@@ -52,12 +52,9 @@ void Multiplex::start(void)
     eventName[EPOLLHUP] = "EPOLLHUP";
 
     /* The event loop */
-    Http_req reqqq;
-
     while (1)
     {
         int eventCount; // Number of events epoll_wait returned
-        /// i add this to get some data from config file like clientMaxSize
 
         eventCount = epoll_wait(epollFD, events, SOMAXCONN, -1); // Waiting for new event to occur
         std::cerr << eventCount << " events ready" << std::endl;
@@ -79,8 +76,6 @@ void Multiplex::start(void)
             if ((events[i].events & EPOLLERR) ||
                 (events[i].events & EPOLLHUP))
             {
-                /* An error has occured on this fd, or the socket is not
-                    ready for reading (why were we notified then?) */
                 // fprintf (stderr, "epoll error\n");
                 close(events[i].data.fd);
                 perror("EPOLLERR | EPOLLHUP");
@@ -88,8 +83,6 @@ void Multiplex::start(void)
             }
             else if (listeners.find(events[i].data.fd) != listeners.end()) // Check if socket belong to a server
             {
-                /* We have a notification on the listening socket, which
-                    means one or more incoming connections. */
                 struct sockaddr in_addr;
                 socklen_t in_len;
                 int infd;
@@ -122,51 +115,22 @@ void Multiplex::start(void)
                     // printf("Accepted connection on descriptor %d "
                     //         "(host=%s, port=%s)\n", infd, hbuf, sbuf);
                 }
-
-                /**
-                 * Make the incoming socket non-blocking and add it to the list of fds to monitor.
-                 */
                 SocketManager::makeSocketNonBlocking(infd);
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
                 // mballa: create and add request object after accepting new client
                 // Http_req my_obg;
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
-                continue;
             }
             else if (events[i].events & EPOLLIN) // check if we have EPOLLIN (connection socket ready to read)
             {
-                /**
-                 * We have a notification on the connection socket meaning there is more data to be read
-                 */
-
                 ssize_t bytesReceived;  // number of bytes read returned
                 char buf[R_SIZE] = {0}; // read buffer
 
                 bytesReceived = read(events[i].data.fd, buf, sizeof(char) * R_SIZE - 1);
-                if (bytesReceived == -1)
+                if (bytesReceived == -1 || bytesReceived == 0)
                 {
                     perror("read");
-                    // printf ("Closed connection on descriptor %d\n",
-                    // events[i].data.fd);
-
-                    /* Closing the descriptor will make epoll remove it
-                        from the set of descriptors which are monitored. */
                     close(events[i].data.fd);
-                    // mballa:remove request from map after closing connection
-                    requests.erase(events[i].data.fd);
-                    continue;
-                }
-                else if (bytesReceived == 0)
-                {
-                    /* End of file. The remote has closed the
-                        connection. */
-                    // printf ("Closed connection on descriptor %d by client\n",
-                    // events[i].data.fd);
-
-                    /* Closing the descriptor will make epoll remove it
-                        from the set of descriptors which are monitored. */
-                    close(events[i].data.fd);
-                    // mballa: remove request from map after closing connection
                     requests.erase(events[i].data.fd);
                     continue;
                 }
