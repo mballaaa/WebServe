@@ -16,14 +16,14 @@ void Response::fillResponseHeadre(Http_req request){
     std::map<std::string,std::string>::iterator it2 = h.begin();
     std::stringstream ss;
     ss << _resbody.size();
-    std::cerr << "------------------RESP------------------" << std::endl; 
+    // std::cerr << "------------------RESP------------------" << std::endl; 
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
     h["content-length"] = ss.str(); 
     for(;it2 != h.end();it2++)
         _resheaders += it2->first+":"+it2->second+"\r\n";
   
     _resheaders += "\r\n";
-    std::cerr << "------------------RESP------------------" << std::endl; 
+    // std::cerr << "------------------RESP------------------" << std::endl; 
 
 
 }
