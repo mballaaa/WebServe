@@ -106,7 +106,8 @@ void Lexer::nextSym( void )
 {
 	if (it != tokens.end())
 		prev = it++ ;
-	sym = nameSyms[*it] ;
+	if (it != tokens.end())
+		sym = nameSyms[*it] ;
 	// std::cerr << std::setw(10) << std::left << getSymbolName(sym) << " ";
 	// std::cerr << *it << std::endl ;
 }
