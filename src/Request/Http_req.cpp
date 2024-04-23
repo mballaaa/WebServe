@@ -350,7 +350,7 @@ int Http_req::StautRe(std::string request)
 {
 
     //////////////////
-    std ::cout << request << std ::endl;
+    // std ::cout << request << std ::endl;
 
     std ::string my_req = "";
     // Set flag that can tell us is request are finshied

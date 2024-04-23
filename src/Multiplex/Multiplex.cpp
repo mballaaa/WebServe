@@ -170,12 +170,6 @@ void Multiplex::start(void)
                     requests.erase(events[i].data.fd);
                     continue;
                 }
-
-                /* Write the buffer to standard output */
-                std::cerr << FOREGRN;
-                std::cerr << "============== Request ==============" << std::endl;
-                std::cerr << "==============+++++++++==============" << std::endl;
-               
                 std::string toSTing(buf); // Convert received data to string using the total bytes received
                  //Http_req &currRequest = requests.find(events[i].data.fd)->second;
                // std::cout << "fddddd " << requests[events[i].data.fd].is_finsh << std::endl;
@@ -183,32 +177,9 @@ void Multiplex::start(void)
                  //currRequest.parse_re(toSTing, bytesReceived); // Pass totalBytesReceived instead of bytesReceived
                  //reqqq = currRequest;
 
-                // //std :: cout << "HEY\n";
-
-                std::cerr << "==============+++++++++==============" << std::endl;
-                std::cerr << "==============+++++++++==============" << std::endl;
-
-                //   file:///home/mballa/Downloads/get.jpg
-                std::cerr << RESETTEXT;
-                if (s == -1)
-                {
-                    perror("write");
-                    throw std::runtime_error("Could not write in ");
-                }
-
-                /**
-                 * Set connection socket to EPOLLOUT to write reponse in the next iteration
-                 * don't forget that if you didnt set the connection to EPOLLOUT the program
-                 * wont send your response and keep waiting for EPOLLIN
-                 */
-                SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLOUT);
             }
             else if (events[i].events && EPOLLOUT && requests[events[i].data.fd].getFlag() == true) // check if we have EPOLLOUT (connection socket ready to write)
             {
-        
-                
-                SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
-             
                 Response resp(requests[events[i].data.fd]);
                 std :: cout << "Jeeee\n" ;
                 if(resp.getResponse().empty())
@@ -218,12 +189,8 @@ void Multiplex::start(void)
                 else{
                      std :: cout << "IS not empty\n";
                 }
-                s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
-         
-                
-                   std::cout << "============== Response ==============" << std::endl ;
-               
-
+                s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());       
+                std::cout << "============== Response ==============" << std::endl ;
             }
         }
     }
