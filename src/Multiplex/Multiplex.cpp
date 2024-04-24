@@ -55,31 +55,33 @@ void Multiplex::start(void)
         int eventCount;
 
         eventCount = epoll_wait(epollFD, events, SOMAXCONN, -1); // Waiting for new event to occur
-        std::cerr << eventCount << " events ready" << std::endl;
+        // std::cerr << eventCount << " events ready" << std::endl;
         for (int i = 0; i < eventCount; i++)
         {
-            std::cerr << "descriptor " << events[i].data.fd << " ";
-            if (events[i].events & EPOLLOUT)
-                std::cerr << eventName[EPOLLOUT];
-            if (events[i].events & EPOLLIN)
-                std::cerr << eventName[EPOLLIN];
-            if (events[i].events & EPOLLET)
-                std::cerr << eventName[EPOLLET];
-            if (events[i].events & EPOLLERR)
-                std::cerr << eventName[EPOLLERR];
-            if (events[i].events & EPOLLHUP)
-                std::cerr << eventName[EPOLLHUP];
-            std::cerr << std::endl;
+            // std::cerr << "descriptor " << events[i].data.fd << " ";
+            // if (events[i].events & EPOLLOUT)
+            //     std::cerr << eventName[EPOLLOUT];
+            // if (events[i].events & EPOLLIN)
+            //     std::cerr << eventName[EPOLLIN];
+            // if (events[i].events & EPOLLET)
+            //     std::cerr << eventName[EPOLLET];
+            // if (events[i].events & EPOLLERR)
+            //     std::cerr << eventName[EPOLLERR];
+            // if (events[i].events & EPOLLHUP)
+            //     std::cerr << eventName[EPOLLHUP];
+            // std::cerr << std::endl;
 
             if ((events[i].events & EPOLLERR))
             {
+
                 close(events[i].data.fd);
                 perror("EPOLLERR");
                  close (events[i].data.fd);
                 requests.erase(events[i].data.fd) ;
                 continue;
             }
-            else if (listeners.find(events[i].data.fd) != listeners.end()) // Check if socket belong to a server
+            else 
+            if (listeners.find(events[i].data.fd) != listeners.end()) // Check if socket belong to a server
             {
                 struct sockaddr in_addr;
                 socklen_t in_len;
@@ -117,7 +119,7 @@ void Multiplex::start(void)
                 SocketManager::makeSocketNonBlocking(infd);
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
-                continue;
+                output.open("testfile.txt") ;
             }
             else if (events[i].events & EPOLLIN )  // check if we have EPOLLIN (connection socket ready to read)
             {
@@ -127,6 +129,7 @@ void Multiplex::start(void)
                 bytesReceived = read(events[i].data.fd, buf,  R_SIZE - 1);
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
+
                     close(events[i].data.fd);
                     requests.erase(events[i].data.fd);
                     continue;
@@ -135,6 +138,7 @@ void Multiplex::start(void)
                 std::string toSTing(buf,bytesReceived);
 
                 requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
+
             }
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true)
             {
@@ -150,6 +154,7 @@ void Multiplex::start(void)
                 if (s == -1)
                     perror("write") ;
                 std::cout << "============== Response ==============" << std::endl ;
+
             }
         }
     }

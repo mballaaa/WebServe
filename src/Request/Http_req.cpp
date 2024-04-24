@@ -18,6 +18,62 @@ Http_req::Http_req(Server server)
     in_out = false;
 }
 
+// Http_req::Http_req(std ::string req, int byterec, std::map<int, Server> listners)
+// {
+
+//     // std :: cerr << s.getClientMaxBodySize();
+
+//     //  std::map<SOCKET,Server> ::iterator it;
+
+//     // for (it =listners.begin() ;it !=listners.end();++it)
+
+//     // {
+
+//     //     std ::cerr << "********* here***********\n";
+//     //     std :: cerr << it->second.getClientMaxBodySize() << std ::endl;
+//     //     std ::cerr << "********* here***********\n";
+//     std::map<int, Server>::iterator it;
+
+//     it = listners.begin();
+
+//     this->req = req;
+//     this->byterec = byterec;
+//     this->server = it->second;
+//    // std :: cerr << "====>root"  << server.getRoot() << std ::endl;
+//    /// See location
+
+// //    std :: cerr << "Yessss\n";
+// //    std::map<std::string ,Location> getLocation=server.getLocations();
+// //         std ::cerr << "==>\n" ;
+// //    std::map<std::string, Location>::iterator it_loc;
+// //     for (it_loc = getLocation.begin(); it_loc != getLocation.end(); ++it_loc) {
+// //     std :: cerr << it_loc->first << std ::endl;
+// // }
+//     // for(it_loc = getLocation.begin();it_loc !=getLocation.end();++it_loc)
+//     // {
+//     //     std :: cerr << " =>" << it_loc->first << std ::endl;
+//     // }
+//     // parse_re(req, byterec); // amine: I commented this line
+
+// }
+
+Http_req::Http_req(const Http_req &obj)
+{
+     req = obj.req;
+    _target = obj._target;
+    method = obj.method;
+    path = obj.path;
+    http_ver = obj.http_ver;
+    header = obj.header;
+    server = obj.server;
+    _loca = obj._loca;
+    byterec = obj.byterec;
+    toHtml = obj.toHtml;
+    /*=============== 14 PART (begin)==================*/
+    _status = obj._status;
+    /*=============== 14 PART (end)==================*/
+}
+
 // copyy
 Http_req &Http_req::operator=(const Http_req &obj)
 {
@@ -318,6 +374,7 @@ int Http_req::StautRe(std::string request)
 
     //////////////////
    // std ::cout << request << std ::endl;
+
 
     std ::string my_req = "";
     // Set flag that can tell us is request are finshied

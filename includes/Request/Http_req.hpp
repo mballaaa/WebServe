@@ -72,6 +72,7 @@ public: // amine: i made this public for now
     /*=============== 14 PART (end)==================*/
 public:
     Http_req();
+    Http_req(const Http_req &obj);
     Http_req &operator=(const Http_req &obj);
     void debugFunction();
     Http_req(Server server);
