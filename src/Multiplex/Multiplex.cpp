@@ -201,9 +201,10 @@ void Multiplex::start(void)
                 // Http_req htt(buf,bytesReceived,listeners);
                 // call some function
                 std::string toSTing(buf, bytesReceived); // Convert received data to string using the total bytes received
-                Http_req &currRequest = requests.find(events[i].data.fd)->second;
-                currRequest.parse_re(toSTing, bytesReceived); // Pass totalBytesReceived instead of bytesReceived
-                reqqq = currRequest;
+                requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
+                // Http_req &currRequest = requests.find(events[i].data.fd)->second;
+                // currRequest.parse_re(toSTing, bytesReceived); // Pass totalBytesReceived instead of bytesReceived
+                // reqqq = currRequest;
 
                 // //std :: cout << "HEY\n";
 
@@ -233,8 +234,9 @@ void Multiplex::start(void)
                 SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
                 // std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n") ;
                 // // std::string response("HTTP/1.1 302 Found\r\nLocation: http://example.com/new-page\r\n\r\n") ; // redirection response
-                Cgi cgi(reqqq);
-                Response resp(reqqq);
+                Cgi cgi(requests[events[i].data.fd]);
+                std::cerr << "Response OUT" << std::endl;
+                Response resp(requests[events[i].data.fd]);
                 s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
                 // s = write (events[i].data.fd, response.c_str(), response.size());
                 if (s == -1)

@@ -7,6 +7,7 @@
 Cgi::Cgi(Http_req &request){
     _setupEnv(request);
     executeCgi(request);
+    
 }
 
 std::string Cgi::size_t_to_string(size_t nbr){
@@ -24,6 +25,20 @@ char **Cgi:: envMap_to_char(std::map<first,second> _env){
     typename std::map<first,second>::iterator it = _env.begin();
     for(;it!=_env.end();it++){
         std::string key_value = it->first + "=" + it->second;
+        env[i] = new char[key_value.size()+1];
+        env[i] = strcpy(env[i], key_value.c_str());
+        i++;
+    }
+    env[i] = NULL;
+    return env;
+}
+
+char **avMap_to_char(std::map<int,std::string> _env){
+    char **env = new char *[_env.size()+1];
+    int i = 0;
+    std::map<int,std::string>::iterator it = _env.begin();
+    for(;it!=_env.end();it++){
+        std::string key_value =it->second;
         env[i] = new char[key_value.size()+1];
         env[i] = strcpy(env[i], key_value.c_str());
         i++;
@@ -67,11 +82,13 @@ void Cgi::_setupEnv(Http_req &request){
     std::cout << headers["content-type"] << std::endl;
     if(headers["content-type"] != "")
         _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
-    else
+    else{
+
         _env["CONTENT_TYPE"] = "";
-	// _env["REDIRECT_STATUS"] = "200"; //know more about REDIRECTE_STATUS
-    _env["PATH_INFO"] = request.getPath();
-    _env["PATH_TRANSLATED"] = request.getPath();
+    }
+	_env["REDIRECT_STATUS"] = "CGI"; //know more about REDIRECTE_STATUS
+    _env["PATH_INFO"] = request.getPath().substr(1);
+    _env["PATH_TRANSLATED"] = request.getPath().substr(1);
     _env["QUERY_STRING"] = ""; // get the query with getMethod
     _env["REMOTE_ADDR"] =   server.getHost();
     _env["REQUEST_METHOD"] = request.getMethod();
@@ -83,92 +100,137 @@ void Cgi::_setupEnv(Http_req &request){
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     
     std::string extension = fileExtension(request.getPath());
-    if(extension != ""){
-        _argv[0] = _executablefile[extension];
-        _argv[1] = request.getFlag();
-    }
+    std::cerr << "Heloo "+extension << std::endl;
 
+    fill_executablefile();
+
+    if(extension != "" && _executablefile.find(extension) != _executablefile.end()){
+        _argv[0] = _executablefile[extension];
+        _argv[1] = request.getPath().substr(1);
+    }
+    else    
+    {
+        /*=====Must be in a separate func=====*/
+        request._status.clear();
+        request._status["404"] = "Not found";
+        
+        std::ifstream errof("www/html/Page not found · GitHub Pages.html");
+        std::string line;
+        request.body = "";
+        while(getline(errof,line)){
+            request.body += line + "\n";
+        }
+        errof.close();
+        /*===================================*/
+    }
 
 }
 
-std::string Cgi::cgiResponse(Http_req &request,std::string _cgibody){
+void Cgi::cgiResponse(Http_req &request,std::string _cgibody){
 
-    std::string httpResponse;
-    if(_cgibody.find("\r\n\r\n") == std::string::npos){
-        _cgibody = "Content-type: text/html; charset=UTF-8\r\n\r\n" + _cgibody;
-    }
     request.header["content-type"] = "text/html";
     request._status["200"] = "OK";
     size_t pos = _cgibody.find("\r\n\r\n");
-    std::string headers = _cgibody.substr(0,pos);
     std::string body = _cgibody.substr(pos+4);
-
-    return httpResponse;
+    request.body = body;
+    
 }
+
+void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
+
+    if(_cgibody.find("\r\n\r\n") == std::string::npos)
+        _cgibody = "Status: 500 Internal Server Error\r\nContent-type: text/html; charset=UTF-8\r\n\r\n";
+    request.header["content-type"] = "text/html";
+   
+    std::string::size_type index2= _cgibody.find("\r",12);
+    request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
+    
+    std::ifstream errof("www/html/500.html");
+    std::string line;
+    request.body = "";
+    while(getline(errof,line)){
+        request.body += line + "\n";
+    }
+    std::cout << request.body << std::endl;
+    errof.close();
+}
+
+void freeptr(char **env,char **argv){
+    for (int i = 0;env[i];i++)
+        delete[] env[i];
+    for (int i = 0;argv[i];i++)
+        delete[] argv[i];
+}
+
 
 std::string Cgi::executeCgi(Http_req &request){
     std::string _cgibody;
-   
+    std::string outputfilename = "HHH"+request.randNameGen();
+    int input;
 
-    std::string outputfilename = request.randNameGen();
-
-    int input = open(request.make_name.c_str(),O_RDONLY); //The make_name file wasn't always created.
-    int output = open("jj.txt", O_RDWR);
-
-    if (input == -1 || output == -1) {
-        std::cerr << "Error opening files\n";
+    if(request._status.find("404") != request._status.end())
         return "\0";
-    }
+    request._status.clear(); //clear status;
+
+    if(request.make_name == "")
+        input = 0;//The make_name file wasn't always created.
+    else
+        input = open(request.make_name.c_str(),O_RDONLY); 
+
+    int output = open(outputfilename.c_str(),  O_CREAT | O_RDWR,0666);
+
+    if ( output == -1 || input == -1)
+        return "\0";
 
 
     char **env = envMap_to_char(_env);
-    char **argv = envMap_to_char(_argv);
+    char **argv = avMap_to_char(_argv);
+
     pid_t pid = fork();
-    if(pid < 0){
-        for (int i = 0;env[i];i++)
-            delete[] env[i];
-        for (int i = 0;argv[i];i++)
-            delete[] argv[i];
-        return "FORK FAILED";
-    }
+
+    if(pid < 0)
+        freeptr(env,argv);
     else if(!pid){
-        dup2(output,1);
-        dup2(input,0);
-        execve(argv[0],argv,env);
+        if(input != 0)
+            dup2(input,STDIN_FILENO);
+        dup2(output, STDOUT_FILENO);
+        execve(argv[0], argv,env);
         exit(1);
     }
     else{
         int status;
         waitpid(-1,&status,0);
+        std::cerr << "ERRRRRRRRROR" << std::endl;
         if (WIFEXITED(status) && WEXITSTATUS(status) != 0){
-            std::cout << "WAITPID ERROR" << std::endl;
-            for (int i = 0;env[i];i++)
-                delete[] env[i];
-            for (int i = 0;argv[i];i++)
-                 delete[] argv[i];
-            exit(1);
+            std::cerr << "WAITPID ERROR" << std::endl;
+            freeptr(env,argv);
+            std::ifstream _filename(outputfilename.c_str());
+            if(!_filename.is_open())
+                std::cout << "_filename opening ERROR" << std::endl;
+            std::string line;
+            while(getline(_filename,line)){
+                _cgibody += line + "\n";
+            }
+            close(output);
+            close(input);
+            cgiErrorResponse(request,_cgibody);
+            unlink(outputfilename.c_str());//remove output file
+            return "\0";
         }
     }
 
-    std::ifstream _filename(outputfilename.c_str());
-    if(!_filename.is_open())
-        std::cout << "_filename opening ERROR" << std::endl;
-    std::string line;
-    while(getline(_filename,line)){
-        _cgibody += line + "\n";
-    }
-    for (int i = 0;env[i];i++)
-        delete[] env[i];
-    // delete[] env;
-    for (int i = 0;argv[i];i++)
-        delete[] argv[i];
-    // delete[] argv;
-    
-    close(input);
     close(output);
-    _filename.close();
+    close(input);
+    std::ifstream _filename(outputfilename.c_str());
+    std::string line;
 
-    // cgiResponse(request,_cgibody);
+    while(getline(_filename,line))
+        _cgibody += line + "\n";
+    freeptr(env,argv);//free pointers
+    _filename.close();
+    unlink(outputfilename.c_str());//remove output file
+
+    cgiResponse(request,_cgibody);
     return _cgibody;
 }
 

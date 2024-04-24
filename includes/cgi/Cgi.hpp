@@ -15,8 +15,8 @@ public:
     void _setupEnv(Http_req &);
     std::string executeCgi(Http_req &request);
     void fill_executablefile();
-    std::string cgiResponse(Http_req &request,std::string _cgibody);
-    
+    void cgiResponse(Http_req &request,std::string _cgibody);
+    void cgiErrorResponse(Http_req &request,std::string _cgibody);
     /*---utils---*/
     std::string size_t_to_string(size_t);
     std::string fileExtension(std::string filename);

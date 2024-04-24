@@ -1,8 +1,7 @@
 #include "../../includes/Response/Response.hpp"
 
 Response::Response(Http_req request){
-    (void) request;
-
+    
     fillResponseBody(request);
     fillResponseHeadre(request);
     _response = _resheaders + _resbody;
@@ -15,11 +14,12 @@ void Response::fillResponseHeadre(Http_req request){
     std::map<std::string,std::string> h;
     std::stringstream ss;
     ss << _resbody.size();
-    std::cerr << "------------------RESP------------------" << std::endl; 
+    
+    std::cerr << "------------------RESP------------------" << it1->first << std::endl; 
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
 
     h["content-length"] = ss.str();
-    h["content-type"] = "text/html";
+    h["content-type"] = request.header["content-type"];
     h["connection"] = "closed";
     h["host"] = "127.0.0.1:9090";
 
@@ -78,6 +78,8 @@ void Response::noContent(){
 
 /*Fill  Resposne Body*/
 void Response::fillResponseBody(Http_req request){
+    if(request._loca.getCgi()==false){
+        std::cout << "ALOOO\r" << std::endl;
     if(request._status.find("201") != request._status.end())
         created();
     else if(request._status.find("403") != request._status.end())
@@ -86,6 +88,9 @@ void Response::fillResponseBody(Http_req request){
         notFound();
     else if(request._status.find("204") != request._status.end())
         noContent();
+    }
+    else 
+        _resbody = request.getBody();
 
 }
 

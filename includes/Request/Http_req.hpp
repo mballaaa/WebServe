@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
  #include <sys/socket.h>
+// #include "../../includes/cgi/Cgi.hpp"
 #include "../Server.hpp"
 #include <cerrno>
 #include <cstdio>
@@ -36,6 +37,7 @@ public: // amine: i made this public for now
     std ::string body;
     bool is_finsh;
     bool in_out;
+    bool cgi_in;
 
    std::map<std::string, std::string> header;
     Server server;

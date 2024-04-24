@@ -73,6 +73,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
         server = obj.server;
         _loca = obj._loca;
         make_name = obj.make_name;
+        body = obj.body;
         // byterec = obj.byterec;
         /*=============== 14 PART (begin)==================*/
         _status = obj._status;
@@ -695,6 +696,12 @@ void Http_req::LetPost()
     // std::cout << "------------------- ORIGIN BODY (BEGIN)------------------- " << std::endl;
     std::cout << path << std::endl;
     // std::cout << "------------------- ORIGIN BODY (END)------------------- " << std::endl;
+    _loca.setCgi("on");
+    cgi_in = false;
+    if(_loca.getCgi() == false)
+        std::cout << "cgi =>>> " << "FALSE" << std::endl;
+    else
+        std::cout << "cgi =>>> " << "True" << std::endl;
     if (_loca.getUploadPath() == "Not Found")
     {
         /*Status 404*/
