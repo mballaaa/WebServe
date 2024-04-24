@@ -16,7 +16,7 @@
 #include <fcntl.h>
 #include <vector>
 #include <algorithm>
-
+#include <sys/stat.h>
 #include "SocketManager.hpp"
 #include "Server.hpp"
 #include "Request/Http_req.hpp"
