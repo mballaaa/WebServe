@@ -73,6 +73,7 @@ void Response::forrbiden(){
     file.close();
 }
 
+
 void Response::notFound(){
     std::ifstream file("www/html/Page not found · GitHub Pages.html");
     std::string line;
@@ -80,7 +81,21 @@ void Response::notFound(){
         while (getline(file,line))
             _resbody += line+"\n";
     }
+    
     file.close();
+}
+void Response::listDirectory(std ::string html)
+{
+std::ifstream file("www/html/listDirectory.html");
+std::string line;
+    if(file.is_open()){
+        while (getline(file,line))
+            html += line+"\n";
+    }
+    file.close();
+    
+    _resbody = html;
+    
 }
 
 void Response::noContent(){

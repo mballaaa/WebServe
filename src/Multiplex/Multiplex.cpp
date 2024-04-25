@@ -13,6 +13,7 @@ Multiplex::host_port_map_t Multiplex::hostPortMap;
 
 void Multiplex::setup(const servers_t &servers)
 {
+    
     if (servers.empty())
     {
         throw std::runtime_error("Servers are not set");
@@ -135,28 +136,28 @@ void Multiplex::start(void)
                 response[events[i].data.fd].cgi._waitreturn = 1;
                 continue;
             }
-            else if (events[i].events & EPOLLIN ) // check if we have EPOLLIN (connection socket ready to read)
+            else if (events[i].events & EPOLLIN) // check if we have EPOLLIN (connection socket ready to read)
             {
                 /**
                  * We have a notification on the connection socket meaning there is more data to be read
-                */
-               
-                ssize_t bytesReceived; // number of bytes read returned
+                 */
+
+                ssize_t bytesReceived;  // number of bytes read returned
                 char buf[R_SIZE] = {0}; // read buffer
 
-                bytesReceived = read (events[i].data.fd, buf, sizeof(char) * R_SIZE - 1);
-           if (bytesReceived == -1)
+                bytesReceived = read(events[i].data.fd, buf, sizeof(char) * R_SIZE - 1);
+                if (bytesReceived == -1)
                 {
-                    perror ("read");
+                    perror("read");
                     // printf ("Closed connection on descriptor %d\n",
                     // events[i].data.fd);
 
                     /* Closing the descriptor will make epoll remove it
                         from the set of descriptors which are monitored. */
-                    close (events[i].data.fd);
+                    close(events[i].data.fd);
                     // mballa:remove request from map after closing connection
-                    requests.erase(events[i].data.fd) ;
-                    continue ;
+                    requests.erase(events[i].data.fd);
+                    continue;
                 }
                 else if (bytesReceived == 0)
                 {
@@ -167,46 +168,23 @@ void Multiplex::start(void)
 
                     /* Closing the descriptor will make epoll remove it
                         from the set of descriptors which are monitored. */
-                    close (events[i].data.fd);
+                    close(events[i].data.fd);
                     // mballa: remove request from map after closing connection
-                    requests.erase(events[i].data.fd) ;
-                    continue ;
+                    requests.erase(events[i].data.fd);
+                    continue;
                 }
 
                 /* Write the buffer to standard output */
                 std::cerr << FOREGRN;
                 std::cerr << "============== Request ==============" << std::endl;
                 std::cerr << "==============+++++++++==============" << std::endl;
-                //  s = write (1, buf, bytesReceived);
-                // get
-                //  start parse
-
-                // here you have to parse the headers
-                // for the body you have to consider the content length or chunked encoding
-                // also remember you cant store the hole body in a variable so you have to store it in a file
-                //
-                // currRequest.http_req.req = std::string(buf) ;
-                // currRequest.http_req.byterec = bytesReceived ;
-                // currRequest.http_req.server = currRequest.getServer() ;
-                // currRequest.http_req.parse_re(std::string(buf),bytesReceived) ;
-                // if (currRequest.http_req.state == Http_req::HEADER)
-                // {
-                //     s = write (1, currRequest.http_req.body.c_str(), strlen(currRequest.http_req.body.c_str())) ;
-                //     currRequest.http_req.state = Http_req::BODY ;
-
-                // }
-                // else if (currRequest.http_req.state == Http_req::BODY)
-                // {
-                //     s = write (1, buf, bytesReceived) ;
-                // }
-
-                // Http_req htt(buf,bytesReceived,listeners);
-                // call some function
-                std::string toSTing(buf, bytesReceived); // Convert received data to string using the total bytes received
+               
+                std::string toSTing(buf); // Convert received data to string using the total bytes received
+                 //Http_req &currRequest = requests.find(events[i].data.fd)->second;
+               // std::cout << "fddddd " << requests[events[i].data.fd].is_finsh << std::endl;
                 requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
-                // Http_req &currRequest = requests.find(events[i].data.fd)->second;
-                // currRequest.parse_re(toSTing, bytesReceived); // Pass totalBytesReceived instead of bytesReceived
-                // reqqq = currRequest;
+                 //currRequest.parse_re(toSTing, bytesReceived); // Pass totalBytesReceived instead of bytesReceived
+                 //reqqq = currRequest;
 
                 // //std :: cout << "HEY\n";
 
