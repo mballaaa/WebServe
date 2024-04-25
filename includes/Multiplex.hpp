@@ -20,6 +20,9 @@
 #include "SocketManager.hpp"
 #include "Server.hpp"
 #include "Request/Http_req.hpp"
+#include "Response/Response.hpp"// For "JaQen" Response
+#include "cgi/Cgi.hpp"// For "JaQen" Response
+
 
 #define RESETTEXT  "\x1B[0m" // Set all colors back to normal.
 #define FOREBLK  "\x1B[30m" // Black
@@ -41,11 +44,15 @@ public:
 	typedef std::map<std::string, SOCKET> host_port_map_t ;
 	typedef struct epoll_event epoll_event_t ;
     typedef std::map<SOCKET, Http_req> requests_t ;
+    typedef std::map<SOCKET, Response> response_t ; // For "JaQen" Response
+    // typedef std::map<SOCKET, Cgi> cgi_t ; // For "JaQen" Response
 	
 private:
 	static SOCKET 			epollFD ;
 	static listeners_t		listeners ;
 	static requests_t		requests ;
+	static response_t		response ; // For "JaQen" Response
+	// static cgi_t		cgi ; // For "JaQen" Response
     static epoll_event_t 	events[SOMAXCONN] ;
 	static host_port_map_t	hostPortMap ;
 

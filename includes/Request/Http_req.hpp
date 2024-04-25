@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
  #include <sys/socket.h>
-// #include "../../includes/cgi/Cgi.hpp"
 #include "../Server.hpp"
 #include <cerrno>
 #include <cstdio>
@@ -38,8 +37,8 @@ public: // amine: i made this public for now
     bool is_finsh;
     bool in_out;
     bool cgi_in;
-
-   std::map<std::string, std::string> header;
+    
+    std::map<std::string, std::string> header;
     Server server;
     Location _loca;
 /*=============== 14 PART (begin)==================*/

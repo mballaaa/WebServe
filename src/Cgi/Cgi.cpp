@@ -4,10 +4,7 @@
 #include <sys/wait.h>
 
 
-Cgi::Cgi(Http_req &request){
-    _setupEnv(request);
-    executeCgi(request);
-    
+Cgi::Cgi(){
 }
 
 std::string Cgi::size_t_to_string(size_t nbr){
@@ -113,17 +110,21 @@ void Cgi::_setupEnv(Http_req &request){
         /*=====Must be in a separate func=====*/
         request._status.clear();
         request._status["404"] = "Not found";
-        
-        std::ifstream errof("www/html/Page not found · GitHub Pages.html");
-        std::string line;
-        request.body = "";
-        while(getline(errof,line)){
-            request.body += line + "\n";
-        }
-        errof.close();
+        wriToBody(request,"www/html/Page not found · GitHub Pages.html");
+        _waitreturn = 1;
+        return ;
         /*===================================*/
     }
-
+    executeCgi(request);
+}
+void Cgi::wriToBody(Http_req &request,std::string str){
+    std::ifstream errof(str.c_str());
+    std::string line;
+    request.body = "";
+    while(getline(errof,line)){
+        request.body += line + "\n";
+    }
+    errof.close();
 }
 
 void Cgi::cgiResponse(Http_req &request,std::string _cgibody){
@@ -144,15 +145,7 @@ void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
    
     std::string::size_type index2= _cgibody.find("\r",12);
     request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
-    
-    std::ifstream errof("www/html/500.html");
-    std::string line;
-    request.body = "";
-    while(getline(errof,line)){
-        request.body += line + "\n";
-    }
-    std::cout << request.body << std::endl;
-    errof.close();
+    wriToBody(request,"www/html/500.html");
 }
 
 void freeptr(char **env,char **argv){
@@ -163,13 +156,17 @@ void freeptr(char **env,char **argv){
 }
 
 
-std::string Cgi::executeCgi(Http_req &request){
+void Cgi::executeCgi(Http_req &request){
     std::string _cgibody;
-    std::string outputfilename = "HHH"+request.randNameGen();
+    if(!_waitstatus)
+        outputfilename = "HHH"+request.randNameGen();
     int input;
 
-    if(request._status.find("404") != request._status.end())
-        return "\0";
+    if(request._status.find("404") != request._status.end()){
+        
+        unlink(outputfilename.c_str());//remove output file
+        return ;
+    }
     request._status.clear(); //clear status;
 
     if(request.make_name == "")
@@ -180,33 +177,34 @@ std::string Cgi::executeCgi(Http_req &request){
     int output = open(outputfilename.c_str(),  O_CREAT | O_RDWR,0666);
 
     if ( output == -1 || input == -1)
-        return "\0";
+        return ;
 
 
-    char **env = envMap_to_char(_env);
-    char **argv = avMap_to_char(_argv);
 
-    pid_t pid = fork();
+    if(!_waitstatus){
+        startTime = clock();
+        std::cerr << "KAAAAAAAMAL" << std::endl;
+        pid = fork();
+
+    }
+    _waitstatus = 1;
 
     if(pid < 0)
-        freeptr(env,argv);
+        return ;
     else if(!pid){
+        env = envMap_to_char(_env);
+        argv = avMap_to_char(_argv);
         if(input != 0)
             dup2(input,STDIN_FILENO);
         dup2(output, STDOUT_FILENO);
         execve(argv[0], argv,env);
-        exit(1);
+        exit(0);
     }
     else{
-        int status;
-        waitpid(-1,&status,0);
+        _waitreturn = waitpid(-1,&status,WNOHANG);
         std::cerr << "ERRRRRRRRROR" << std::endl;
         if (WIFEXITED(status) && WEXITSTATUS(status) != 0){
-            std::cerr << "WAITPID ERROR" << std::endl;
-            freeptr(env,argv);
             std::ifstream _filename(outputfilename.c_str());
-            if(!_filename.is_open())
-                std::cout << "_filename opening ERROR" << std::endl;
             std::string line;
             while(getline(_filename,line)){
                 _cgibody += line + "\n";
@@ -215,23 +213,35 @@ std::string Cgi::executeCgi(Http_req &request){
             close(input);
             cgiErrorResponse(request,_cgibody);
             unlink(outputfilename.c_str());//remove output file
-            return "\0";
+            kill(pid,SIGTERM);
+            return ;
         }
     }
-
     close(output);
     close(input);
-    std::ifstream _filename(outputfilename.c_str());
-    std::string line;
-
-    while(getline(_filename,line))
-        _cgibody += line + "\n";
-    freeptr(env,argv);//free pointers
-    _filename.close();
-    unlink(outputfilename.c_str());//remove output file
-
-    cgiResponse(request,_cgibody);
-    return _cgibody;
+    if(_waitreturn){
+        std::cerr << "DAAAAZ" << std::endl;
+        std::string line;
+        std::ifstream _filename(outputfilename.c_str());
+        while(getline(_filename,line))
+            _cgibody += line + "\n";
+        _filename.close();
+        cgiResponse(request,_cgibody);
+        unlink(outputfilename.c_str());//remove output file
+        return ;
+    }
+    endTime = clock();
+    double elapsedTime = static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC;
+    if(elapsedTime>=2){
+        kill(pid,SIGTERM);
+        request._status.clear();
+        request._status["504"] = "Gateway timeout";
+        wriToBody(request,"www/html/508.html");
+        request.header["content-type"] = "text/html";
+        unlink(outputfilename.c_str());//remove output file
+        _waitreturn = 1;
+    }
+    return ;
 }
 
 Cgi::~Cgi()

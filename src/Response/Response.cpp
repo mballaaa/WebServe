@@ -1,14 +1,11 @@
 #include "../../includes/Response/Response.hpp"
 
-Response::Response(Http_req request){
-    
-    fillResponseBody(request);
-    fillResponseHeadre(request);
-    _response = _resheaders + _resbody;
+Response::Response(){   
 }
 
+
 /*Fill Response Header*/
-void Response::fillResponseHeadre(Http_req request){
+void Response::fillResponseHeadre(Http_req &request){
 
     std::map<std::string,std::string>::iterator it1 = request._status.begin();
     std::map<std::string,std::string> h;
@@ -34,6 +31,27 @@ void Response::fillResponseHeadre(Http_req request){
 
 
 }
+
+/*Fill  Resposne Body*/
+void Response::fillResponseBody(Http_req &request){
+    if(request._loca.getCgi()==false){
+        std::cout << "ALOOO\r" << std::endl;
+    if(request._status.find("201") != request._status.end())
+        created();
+    else if(request._status.find("403") != request._status.end())
+        forrbiden();
+    else if(request._status.find("404") != request._status.end())
+        notFound();
+    else if(request._status.find("204") != request._status.end())
+        noContent();
+    }
+    else 
+        _resbody = request.getBody();
+    fillResponseHeadre(request);
+    _response = _resheaders + _resbody;
+
+}
+
 void Response::created(){
 
     std::ifstream file("www/html/201.html");
@@ -76,23 +94,6 @@ void Response::noContent(){
     file.close();
 }
 
-/*Fill  Resposne Body*/
-void Response::fillResponseBody(Http_req request){
-    if(request._loca.getCgi()==false){
-        std::cout << "ALOOO\r" << std::endl;
-    if(request._status.find("201") != request._status.end())
-        created();
-    else if(request._status.find("403") != request._status.end())
-        forrbiden();
-    else if(request._status.find("404") != request._status.end())
-        notFound();
-    else if(request._status.find("204") != request._status.end())
-        noContent();
-    }
-    else 
-        _resbody = request.getBody();
-
-}
 
 std::string Response::getResHeaders(){
     return _resheaders;

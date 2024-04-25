@@ -6,6 +6,8 @@
 SOCKET Multiplex::epollFD;
 Multiplex::listeners_t Multiplex::listeners;
 Multiplex::requests_t Multiplex::requests;
+Multiplex::response_t Multiplex::response;// For "JaQen" Response
+// Multiplex::cgi_t Multiplex::cgi;// For "JaQen" Response
 Multiplex::epoll_event_t Multiplex::events[SOMAXCONN] = {};
 Multiplex::host_port_map_t Multiplex::hostPortMap;
 
@@ -50,9 +52,7 @@ void Multiplex::start(void)
     eventName[EPOLLOUT] = "EPOLLOUT";
     eventName[EPOLLERR] = "EPOLLERR";
     eventName[EPOLLHUP] = "EPOLLHUP";
-
     /* The event loop */
-    Http_req reqqq;
 
     while (1)
     {
@@ -131,6 +131,8 @@ void Multiplex::start(void)
                 // mballa: create and add request object after accepting new client
                 // Http_req my_obg;
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
+                response[events[i].data.fd].cgi._waitstatus = 0;
+                response[events[i].data.fd].cgi._waitreturn = 1;
                 continue;
             }
             else if (events[i].events & EPOLLIN ) // check if we have EPOLLIN (connection socket ready to read)
@@ -224,48 +226,27 @@ void Multiplex::start(void)
                  * don't forget that if you didnt set the connection to EPOLLOUT the program
                  * wont send your response and keep waiting for EPOLLIN
                  */
-                SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLOUT);
+                // SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLOUT);
             }
-            else if (events[i].events && EPOLLOUT) // check if we have EPOLLOUT (connection socket ready to write)
+            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true) // check if we have EPOLLOUT (connection socket ready to write)
             {
-                /**
-                 * Set connection socket to EPOLLIN to read another request in the next iteration
-                 */
-                SocketManager::epollCtlSocket(events[i].data.fd, EPOLL_CTL_MOD, EPOLLIN) ;
-                // std::string response("HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/html\r\n\r\nHello World!\n") ;
-                // // std::string response("HTTP/1.1 302 Found\r\nLocation: http://example.com/new-page\r\n\r\n") ; // redirection response
-                Cgi cgi(requests[events[i].data.fd]);
-                std::cerr << "Response OUT" << std::endl;
-                Response resp(requests[events[i].data.fd]);
-                s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
-                // s = write (events[i].data.fd, response.c_str(), response.size());
-                if (s == -1)
-                    throw std::runtime_error("Cant write response") ;
-                // // std::cerr << FOREBLU ;
-                // std::cout << "============== Response ==============" << std::endl ;
-                // std::cerr << "==============++++++++++==============" << std::endl ;
-                // // write (1, resp.getResponse().c_str(), resp.getResponse().size());
-                // // write (1, response.c_str(), response.size());
-                // // exit(0);
-                // std::cerr << "==============+++++++++==============" << std::endl ;
-                // std::cerr << "==============+++++++++==============" << std::endl ;
-                // // std::cerr << RESETTEXT ;
-                /**
-                 * Incas the client request Connection: close we close the connection
-                 * else the connection remains open and waiting for another rquest from the client
-                 */
-                // if (requests.find(events[i].data.fd)->second.request.find("Connection: close") != std::string::npos)
-                // {
-                //     printf ("Closed connection on descriptor %d\n",
-                //             events[i].data.fd);
-                //     /* Closing the descriptor will make epoll remove it
-                //         from the set of descriptors which are monitored. */
-                //     close (events[i].data.fd);
-                //     // requests.erase(events[i].data.fd) ;
-                // }
-                /**
-                 * clear request buffer after processing it and sending request
-                 */
+                if(requests[events[i].data.fd]._loca.getCgi() == true){
+
+                    response[events[i].data.fd].cgi._setupEnv(requests[events[i].data.fd]);
+                    std::cout << response[events[i].data.fd].cgi._waitreturn << std::endl;
+
+                    if(response[events[i].data.fd].cgi._waitreturn){
+                        response[events[i].data.fd].fillResponseBody(requests[events[i].data.fd]);
+                        s = write (events[i].data.fd, response[events[i].data.fd].getResponse().c_str(), response[events[i].data.fd].getResponse().size());
+                        close (events[i].data.fd);
+                        std::cout << "=?>>>>> STOPP"<< std::endl;
+                    }
+                }
+                else{
+                    response[events[i].data.fd].fillResponseBody(requests[events[i].data.fd]);
+                    s = write (events[i].data.fd, response[events[i].data.fd].getResponse().c_str(), response[events[i].data.fd].getResponse().size());
+                    close (events[i].data.fd);
+                }
                 std::cerr << "Response Sent" << std::endl;
             }
         }

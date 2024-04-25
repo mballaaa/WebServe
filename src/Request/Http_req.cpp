@@ -693,19 +693,11 @@ int hexStringToInt(const std::string& hexString) {
 void Http_req::LetPost()
 {
     /*location not found*/
-    // std::cout << "------------------- ORIGIN BODY (BEGIN)------------------- " << std::endl;
-    std::cout << path << std::endl;
-    // std::cout << "------------------- ORIGIN BODY (END)------------------- " << std::endl;
     _loca.setCgi("on");
-    cgi_in = false;
-    if(_loca.getCgi() == false)
-        std::cout << "cgi =>>> " << "FALSE" << std::endl;
-    else
-        std::cout << "cgi =>>> " << "True" << std::endl;
     if (_loca.getUploadPath() == "Not Found")
     {
         /*Status 404*/
-        // in_out = true;
+        in_out = true;
         _status["404"] = "Not Found";
     }
     else if (_loca.getUpload() == true)
@@ -716,6 +708,7 @@ void Http_req::LetPost()
         {
             /*Status 204*/
             _status["204"] = "No Content";
+            in_out = true;
             return;
         }
         int dirCheck = mkdir("Upload", 0777);
@@ -723,9 +716,7 @@ void Http_req::LetPost()
         if (!dirCheck || errno == EEXIST)
         {
             /*First check if the extension exist */
-           
             static int i  = 0;
-            // std::cout << "---------- I =>> " << i << std::endl;
             std::string str;
             if(!i){
             if (_mime.find(header["content-type"].substr(1)) != _mime.end())
@@ -736,7 +727,6 @@ void Http_req::LetPost()
 
             std::ofstream file(make_name.c_str(), std::ios::app);
             
-            // std::ofstream file(make_name.c_str(), std::ios::app);
             if(!file.is_open()){
                 std::cout << "File Upload Error" << std::endl;
                 return ;
@@ -766,28 +756,21 @@ void Http_req::LetPost()
                         /*READ THE (CHUNKED SIZE - FILE SIZE) FROM THE BODY*/
                         chunk_sizeString = body.substr(0,chunksize-to_file.size());
                         to_file += chunk_sizeString;
-                            body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
-                        
-                            chunk_sizeString = body.substr(0,body.find("\r\n"));
-                      
-                        
-                        
+                        body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
+                        chunk_sizeString = body.substr(0,body.find("\r\n"));
                         chunksize = hexStringToInt(chunk_sizeString);
                         classChunksizeString = chunk_sizeString;
                         t = 0;
                         file << to_file;
                         to_file.erase();
-                        
-                            body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
+                        body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
                         
                     }
                     if(!chunksize){
-                        // in_out = true;
+                        in_out = true;
                         break;
                     }
                     if(to_file.size() == chunksize){
-                        // std::cout << "ERRRRRRRRRRRRRRRRRRROR" << std::endl;
-
                         file << to_file;
                         to_file.erase();
                     }
@@ -799,23 +782,22 @@ void Http_req::LetPost()
                             break;
                 }
                 i++;
-                // std::cout << "----------------- I = " << i << "-------------" << std::endl;
             }
             else{
                 file << body;
+                in_out = true;
                 file.close();
+                _status["201"] = "Created";
                 i++;
             }
         }
         /*Status 201*/
-        _status["201"] = "Created";
     }
     else if (_loca.getUpload() == false)
     {
         /*Status 403*/
         _status["403"] = "Forbidden";
     }
-    in_out = true;
 }
 
 /*=============== 14 PART (end)==================*/
