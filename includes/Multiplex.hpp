@@ -16,10 +16,11 @@
 #include <fcntl.h>
 #include <vector>
 #include <algorithm>
-
+#include <sys/stat.h>
 #include "SocketManager.hpp"
 #include "Server.hpp"
 #include "Request/Http_req.hpp"
+#include <fstream>
 #include "Response/Response.hpp"// For "JaQen" Response
 #include "cgi/Cgi.hpp"// For "JaQen" Response
 

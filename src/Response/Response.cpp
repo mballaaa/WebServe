@@ -35,9 +35,17 @@ void Response::fillResponseHeadre(Http_req &request){
 /*Fill  Resposne Body*/
 void Response::fillResponseBody(Http_req &request){
     if(request._loca.getCgi()==false){
-        std::cout << "ALOOO\r" << std::endl;
-    if(request._status.find("201") != request._status.end())
+        std::cout << "ALOOO" << std::endl;
+        // std::map<std::string,std::string>::iterator it = request._status.begin();
+        // std::cout << it->first << std::endl;
+        // std::cout << it->second << std::endl;
+        std::cout << "ALOOO" << std::endl;
+
+    if(request._status.find("201") != request._status.end()){
+        std::cout << "ALOOO" << std::endl;
+
         created();
+    }
     else if(request._status.find("403") != request._status.end())
         forrbiden();
     else if(request._status.find("404") != request._status.end())
@@ -61,6 +69,8 @@ void Response::created(){
             _resbody += line+"\n";
     }
     file.close();
+        std::cout << "ALOOO" << std::endl;
+
 }
 void Response::forrbiden(){
     
@@ -108,6 +118,27 @@ void Response::noContent(){
     }
     file.close();
 }
+#include <cstring>
+void Response::send_get(Http_req request)
+{
+    // std :: cout << "sss\n";
+    ///  std ::cout << "baaamam\n";
+ if (!request.toHtml.empty()) {
+        listDirectory(request.toHtml);
+    } else {
+        request.file.open(request._target.c_str(), std::ios::binary); // Open the file again
+        if (request.file.is_open()) {
+            std::string line;
+            while (getline(request.file, line)) {
+                _resbody += line + "\n";
+            }
+            request.file.close(); 
+        } else {
+            
+        }
+    }
+}
+
 
 
 std::string Response::getResHeaders(){
