@@ -20,6 +20,7 @@
 #include "SocketManager.hpp"
 #include "Server.hpp"
 #include "Request/Http_req.hpp"
+#include <fstream>
 
 #define RESETTEXT  "\x1B[0m" // Set all colors back to normal.
 #define FOREBLK  "\x1B[30m" // Black

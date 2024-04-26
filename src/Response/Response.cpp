@@ -83,11 +83,24 @@ void Response::noContent(){
     }
     file.close();
 }
+#include <cstring>
 void Response::send_get(Http_req request)
 {
-    if(!request.toHtml.empty())
-    {
+    // std :: cout << "sss\n";
+    ///  std ::cout << "baaamam\n";
+ if (!request.toHtml.empty()) {
         listDirectory(request.toHtml);
+    } else {
+        request.file.open(request._target.c_str(), std::ios::binary); // Open the file again
+        if (request.file.is_open()) {
+            std::string line;
+            while (getline(request.file, line)) {
+                _resbody += line + "\n";
+            }
+            request.file.close(); 
+        } else {
+            
+        }
     }
 }
 
