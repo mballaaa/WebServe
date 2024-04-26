@@ -47,7 +47,6 @@ public: // amine: i made this public for now
     bool in_out;
     bool _headerParsed;
     size_t lencontent;
-    std::string to_file;
     bool cgi_in;
     
      std::map<std::string, std::string> header;
@@ -62,13 +61,6 @@ public: // amine: i made this public for now
     std::string classChunksizeString;
     bool sec_flag;
     std::string make_name;
-    
-
-/*=============== 14 PART (end)==================*/
-    int byterec;
-/*=============== 14 PART (begin)==================*/
-    const std::map<std::string,std::string>& getStatus() const;
-/*=============== 14 PART (end)==================*/
 
     /*=============== 14 PART (end)==================*/
     int byterec;
