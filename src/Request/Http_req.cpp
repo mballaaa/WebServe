@@ -312,7 +312,7 @@ void Http_req::debugFunction()
     // std ::cout << "type mthode=>" << this->method << std ::endl;
     // std ::cout << "path=>" << this->path << std ::endl;
     // std ::cout << "vers=>" << this->http_ver << std ::endl;
-    std::ofstream outputFile("output.txt", std::ios_base::app);
+    std::ofstream outputFile("bodyy.txt", std::ios_base::app);
 
     if (outputFile.is_open())
     {
@@ -438,6 +438,7 @@ int Http_req::StautRe(std::string request)
         debugFunction();
         if (MoreValidation()==0)
         {
+            std :: cout << "dddddd\n";
             in_out =true;
             return (0);
 
@@ -452,17 +453,19 @@ int Http_req::StautRe(std::string request)
 
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
-    // std::ofstream outputFile("request.txt", std::ios_base::app);
+    std::ofstream outputFile("request.txt", std::ios_base::app);
 
-    // if (outputFile.is_open())
-    // {
-    //     // Output body to the file
-    //     outputFile << bufer;
+    if (outputFile.is_open())
+    {
+    std :: cout << "ssss\n";
+    
+        // Output body to the file
+        outputFile << bufer;
 
-    //     // Close the file
+        // Close the file
         
-    // }
-    // outputFile.close();
+    }
+    outputFile.close();
     // std :: cout << bufer << std ::endl;
     (void)bufer;
     (void)bytee;
