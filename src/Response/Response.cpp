@@ -16,14 +16,14 @@ void Response::fillResponseHeadre(Http_req request){
     std::map<std::string,std::string>::iterator it2 = h.begin();
     std::stringstream ss;
     ss << _resbody.size();
-    std::cerr << "------------------RESP------------------" << std::endl; 
+    // std::cerr << "------------------RESP------------------" << std::endl; 
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
     h["content-length"] = ss.str(); 
     for(;it2 != h.end();it2++)
         _resheaders += it2->first+":"+it2->second+"\r\n";
   
     _resheaders += "\r\n";
-    std::cerr << "------------------RESP------------------" << std::endl; 
+    // std::cerr << "------------------RESP------------------" << std::endl; 
 
 
 }
@@ -83,11 +83,24 @@ void Response::noContent(){
     }
     file.close();
 }
+#include <cstring>
 void Response::send_get(Http_req request)
 {
-    if(!request.toHtml.empty())
-    {
+    // std :: cout << "sss\n";
+    ///  std ::cout << "baaamam\n";
+ if (!request.toHtml.empty()) {
         listDirectory(request.toHtml);
+    } else {
+        request.file.open(request._target.c_str(), std::ios::binary); // Open the file again
+        if (request.file.is_open()) {
+            std::string line;
+            while (getline(request.file, line)) {
+                _resbody += line + "\n";
+            }
+            request.file.close(); 
+        } else {
+            
+        }
     }
 }
 
