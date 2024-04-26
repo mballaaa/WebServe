@@ -10,55 +10,20 @@ static int a = 0;
 /*=============== 14 PART (begin)==================*/
 Http_req::Http_req() {}
 /*=============== 14 PART (end)==================*/
-Http_req::Http_req(Server server)
+Http_req::Http_req(Server& server)
 {
     toHtml = "";
     is_finsh = false;
     this->server = server;
     in_out = false;
+    
 }
 
-// Http_req::Http_req(std ::string req, int byterec, std::map<int, Server> listners)
-// {
 
-//     // std :: cerr << s.getClientMaxBodySize();
-
-//     //  std::map<SOCKET,Server> ::iterator it;
-
-//     // for (it =listners.begin() ;it !=listners.end();++it)
-
-//     // {
-
-//     //     std ::cerr << "********* here***********\n";
-//     //     std :: cerr << it->second.getClientMaxBodySize() << std ::endl;
-//     //     std ::cerr << "********* here***********\n";
-//     std::map<int, Server>::iterator it;
-
-//     it = listners.begin();
-
-//     this->req = req;
-//     this->byterec = byterec;
-//     this->server = it->second;
-//    // std :: cerr << "====>root"  << server.getRoot() << std ::endl;
-//    /// See location
-
-// //    std :: cerr << "Yessss\n";
-// //    std::map<std::string ,Location> getLocation=server.getLocations();
-// //         std ::cerr << "==>\n" ;
-// //    std::map<std::string, Location>::iterator it_loc;
-// //     for (it_loc = getLocation.begin(); it_loc != getLocation.end(); ++it_loc) {
-// //     std :: cerr << it_loc->first << std ::endl;
-// // }
-//     // for(it_loc = getLocation.begin();it_loc !=getLocation.end();++it_loc)
-//     // {
-//     //     std :: cerr << " =>" << it_loc->first << std ::endl;
-//     // }
-//     // parse_re(req, byterec); // amine: I commented this line
-
-// }
 
 Http_req::Http_req(const Http_req &obj)
 {
+   
      req = obj.req;
     _target = obj._target;
     method = obj.method;
@@ -71,7 +36,11 @@ Http_req::Http_req(const Http_req &obj)
     toHtml = obj.toHtml;
     /*=============== 14 PART (begin)==================*/
     _status = obj._status;
+    _mime=obj._mime;
     /*=============== 14 PART (end)==================*/
+    in_out = obj.in_out ;
+    is_close = obj.is_close ;
+    bodycount = obj.bodycount ;
 }
 
 // copyy
@@ -81,18 +50,22 @@ Http_req &Http_req::operator=(const Http_req &obj)
     {
 
         req = obj.req;
-        _target = obj._target;
-        method = obj.method;
-        path = obj.path;
-        http_ver = obj.http_ver;
-        header = obj.header;
-        server = obj.server;
-        _loca = obj._loca;
-        byterec = obj.byterec;
-        toHtml = obj.toHtml;
-        /*=============== 14 PART (begin)==================*/
-        _status = obj._status;
-        /*=============== 14 PART (end)==================*/
+    _target = obj._target;
+    method = obj.method;
+    path = obj.path;
+    http_ver = obj.http_ver;
+    header = obj.header;
+    server = obj.server;
+    _loca = obj._loca;
+    byterec = obj.byterec;
+    toHtml = obj.toHtml;
+    /*=============== 14 PART (begin)==================*/
+    _status = obj._status;
+    _mime=obj._mime;
+    /*=============== 14 PART (end)==================*/
+    in_out = obj.in_out ;
+    is_close = obj.is_close ;
+    bodycount = obj.bodycount ;
     }
     return *this;
 }
@@ -157,13 +130,8 @@ const bool &Http_req::getFlag() const
 
 */
 bool comparePaths(const std::string& target, const std::string& key) {
-    
-    if(key.length() < target.length())
-    {
-        return (false);
-    }
-    std ::cout << "this target " << target << std :: endl;
-    std::cout <<   "this key " <<  key << std ::endl;
+ 
+   
     size_t j = 0;
     while (j < target.size() && j < key.size() && target[j] == key[j])
         j++;
@@ -503,16 +471,17 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     {
        
         in_out = true;
-        std ::cout << "Skrtaaaaaaaaaaaaaaaaaaaaaaa7\n";
+        std ::cout << "Baaaad Request\n";
         return;
     }
     else
     {
-         std ::cout << "ddddddd\n";
+         
       
         if (method == "GET")
         {
             // std :: cout << "YEssss\n";
+            // std ::cout << "sssss\n"
             LetGet();
         }
         /*=============== 14 PART (begin)==================*/
@@ -578,18 +547,25 @@ void Http_req ::CheckLoc(int *is_file)
 
     if (this->_loca.getIndex().size() != 0)
     {
-
+        
         std ::vector<std ::string> index = this->_loca.getIndex();
+
         // check if index file are exit
         /// ==> get first index string
+       // std :: cout << 
+      //  std ::cout << this->_loca.getRoot() << std ::endl;
+
         std ::string main_index = index.at(0);
         // std ::cout << "==>" << this->_loca.getRoot() << std ::endl;
 
         // std ::cerr << "index  name==>" << main_index << std ::endl;
         //  std ::cout << "==> index" << main_index << std ::endl;
         _target += main_index;
+        
+      
         in_out = true;
         _status["200"] = "OK";
+    
         *is_file=1;
     
     }
@@ -657,7 +633,7 @@ void Http_req::LetGet()
 {
     
     int is_file=0;
-    std :: cout << _target << std ::endl;
+   // std :: cout << _target << std ::endl;
     std ::string URI = this->_target;
     int check_type = is_file_dir(URI);
     // std :: cerr << "output" << check_type << std ::endl;
@@ -667,30 +643,38 @@ void Http_req::LetGet()
 
        
         CheckLoc(&is_file);
+       
     }
-    else
-    {
+    
        
         struct stat sb;
+        
+      
         if(stat(URI.c_str(),&sb)==0)
         {
-    //         if((sb.st_mode & S_IFREG ) || is_file)
-    //         {
-    //             std::ifstream file(filename.c_str(), std::ios::binary);
-    
-	// if (file)
-	// {
-	
-            
-    //     }
-        
+           
+            if((sb.st_mode & S_IFREG ) || is_file)
+            {
+                   
+                    _status["200"]="ok";
+                    in_out=true;
+                    
+                    return ;
+                 }
+                
+            }
+            else
+            {
+                
+                _status["403"]="Forbidden";
+                in_out =true;
+                return ;
+            }
        
-        }
-    in_out=true;
-    _status["200"]="ok";
-    //std ::cout << "sssdffd\n";
 }
-    }
+   // in_out=true;
+   
+    //std ::cout << "sssdffd\n";    
 /*=============== 14 PART (begin)==================*/
 void Http_req::mimeParse()
 {

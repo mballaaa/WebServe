@@ -71,7 +71,8 @@ void Multiplex::start(void)
             //     std::cerr << eventName[EPOLLHUP];
             // std::cerr << std::endl;
 
-            if ((events[i].events & EPOLLERR))
+            if ((events[i].events & EPOLLERR)
+                || events[i].events & EPOLLHUP)
             {
 
                 close(events[i].data.fd);
@@ -119,9 +120,9 @@ void Multiplex::start(void)
                 SocketManager::makeSocketNonBlocking(infd);
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
-                output.open("testfile.txt") ;
+               
             }
-            else if (events[i].events & EPOLLIN )  // check if we have EPOLLIN (connection socket ready to read)
+            else if (events[i].events & EPOLLIN  && !requests[events[i].data.fd].getFlag() == true)   // check if we have EPOLLIN (connection socket ready to read)
             {
                 ssize_t bytesReceived;
                 char buf[R_SIZE] = {0};
@@ -134,10 +135,21 @@ void Multiplex::start(void)
                     requests.erase(events[i].data.fd);
                     continue;
                 }
-               
+                 // std::ofstream outputFile("reqq.txt", std::ios_base::app);
+
+    // if (outputFile.is_open())
+    // {
+    //     // Output body to the file
+    //     outputFile << buf;
+
+    //     // Close the file
+        
+    // }
+    // outputFile.close();
                 std::string toSTing(buf,bytesReceived);
 
-                requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
+
+               requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
 
             }
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true)
@@ -152,9 +164,15 @@ void Multiplex::start(void)
                 }
                 s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
                 if (s == -1)
-                    perror("write") ;
-                std::cout << "============== Response ==============" << std::endl ;
-
+                {
+                   // perror("write ====>") ;
+                     close(events[i].data.fd);
+                    requests.erase(events[i].data.fd);
+                }
+                    
+           //     std::cout << "============== Response ==============" << std::endl ;
+                // s = write (events[i].data.fd, "HTTP/1.1 201 OK\r\n\r\n", 19) ;
+              
             }
         }
     }

@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <sstream>
 #include <algorithm>
+#include <fstream>
 #include "dirent.h"
 #define IS_DIR 0
 #define IS_FILE 1
@@ -28,26 +29,19 @@ public: // amine: i made this public for now
     bool is_close;
     std ::string my_req;
     size_t bodycount;
-    typedef enum
-    {
-        START,
-        HEADER,
-        BODY,
-        DONE,
-        WAITCLOSE
-    } State_t;
+    //
+     std ::ifstream file;
+
     std ::string toHtml;
-    State_t state;
     std ::string method;
     std::string path;
     std ::string http_ver;
     std ::string body;
     bool is_finsh;
-    bool is_body_finsh;
+
     bool in_out;
-    bool _headerParsed;
-    size_t lencontent;
-    std::string to_file;
+    
+    
 
     std::map<std::string, std::string> header;
     Server server;
@@ -75,7 +69,7 @@ public:
     Http_req(const Http_req &obj);
     Http_req &operator=(const Http_req &obj);
     void debugFunction();
-    Http_req(Server server);
+   Http_req(Server& server);
     // Http_req(std::string req,int byterec, std::map<int, Server> listenrs);
     void parse_re(std ::string bufer, int bytee);
     int StautRe(std ::string request);
