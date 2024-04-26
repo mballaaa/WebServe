@@ -228,18 +228,23 @@ int Http_req::MoreValidation()
 
         if (maxx_size < content_len)
         {
+            std :: cout << "dd22dd\n";
             // std :: cout << "ddddd3\n";
             return (0);
         }
     }
-    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
+    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != " chunked")
     {
-        ;
-        return (0);
+       // std :: cout << "dd1dd\n";
+       // return (0);
     }
 
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
+    {
+        std :: cout << "dddd\n";
         return (0);
+    }
+        
 
     this->_target = this->path;
   
@@ -329,7 +334,8 @@ void Http_req::debugFunction()
 
     //      std ::cerr << it->first << ":" << it->second << std ::endl;
     // }
-    //
+    
+        //
     // //std :: cout << "this ===?\n";
     //  std :: cout << this->body << std::endl;
 }
@@ -400,6 +406,7 @@ int Http_req::StautRe(std::string request)
          
         if (header.find("transfer-encoding") != header.end())
         {
+            std :: cout << "sssssssssss\n";
             //
             //std :: cout << "sss\n";
             std ::string sizeChunk;
