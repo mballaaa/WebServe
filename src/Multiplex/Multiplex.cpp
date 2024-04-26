@@ -122,7 +122,7 @@ void Multiplex::start(void)
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
                
             }
-            else if (events[i].events & EPOLLIN  && !requests[events[i].data.fd].getFlag() == true)   // check if we have EPOLLIN (connection socket ready to read)
+            else if (events[i].events & EPOLLIN  )   // check if we have EPOLLIN (connection socket ready to read)
             {
                 ssize_t bytesReceived;
                 char buf[R_SIZE] = {0};
