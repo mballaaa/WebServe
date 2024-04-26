@@ -232,11 +232,11 @@ int Http_req::MoreValidation()
             return (0);
         }
     }
-    // if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
-    // {
-    //     ;
-    //     return (0);
-    // }
+    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
+    {
+        ;
+        return (0);
+    }
 
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
         return (0);
