@@ -370,6 +370,16 @@ int Http_req::StautRe(std::string request)
         std::istringstream input(my_req);
         input >> this->method >> this->path >> this->http_ver;
 
+        while (path.find("%") != std::string::npos)
+        {
+            unsigned int x ;
+            std::string hexCode = path.substr(path.find("%")+1, 2) ;
+            std::stringstream ss ;
+            ss << std::hex << hexCode ;
+            ss >> x ;
+            path.replace(path.find("%"), 3, std::string(1, x)) ;
+        }
+
         std ::string next_line;
         std ::getline(input, next_line);
 
@@ -582,7 +592,6 @@ void Http_req ::CheckLoc(int *is_file)
         {
             
             /// Here We shloud Send DirectoryListe
-            // std ::cout << _target << std ::endl;
             std ::string dirpath = _target;
 
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
@@ -598,20 +607,19 @@ void Http_req ::CheckLoc(int *is_file)
 
                 struct dirent *list;
                 list = readdir(dir);
-                // std :: cout << path << std :: endl;
                 while (list != NULL)
                 {
                     if (list->d_type == DT_DIR)
                     {
-                        toHtml += "<a href=\"" + (std::string(_target) + "/" + std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
+                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
                     }
                     else if (list->d_type == DT_LNK)
                     {
-                        toHtml += "<a href=\"" + (std::string(_target) + "/" + std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a>\n";
+                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a>\n";
                     }
                     else if (list->d_type == DT_REG)
                     {
-                        toHtml += "<a href=\"" + (std::string(_target) + "/" + std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a> \n";
+                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a> \n";
                     }
                     list = readdir(dir);
                 }
@@ -640,7 +648,6 @@ void Http_req::LetGet()
 {
     
     int is_file=0;
-   // std :: cout << _target << std ::endl;
     std ::string URI = this->_target;
     int check_type = is_file_dir(URI);
     // std :: cerr << "output" << check_type << std ::endl;
@@ -673,7 +680,7 @@ void Http_req::LetGet()
             else
             {
                 
-                _status["403"]="Forbidden";
+                _status["404"]="Forbidden";
                 in_out =true;
                 return ;
             }
