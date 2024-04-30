@@ -253,17 +253,20 @@ int Http_req::MoreValidation()
 std::map<std::string, Location>::iterator it;
 int flag = 0;
 std::string key;
+size_t foundSize = 0 ;
 for (it = location.begin(); it != location.end(); it++)
 {
     key = it->first;
-   
 
-    if (comparePaths(_target, key))
+    // if (comparePaths(_target, key))
+    if (_target.find(key) != std::string::npos)
     {
-        
-        flag++;
-        this->_loca = it->second;
-        break;
+        if (foundSize < key.length())
+        {
+            foundSize = key.length() ;
+            this->_loca = it->second;
+        }
+        flag = 1;
     }
 }
  
@@ -560,8 +563,7 @@ std ::string getMessage(int code)
 
 void Http_req ::CheckLoc(int *is_file)
 {
-
-    if (this->_loca.getIndex().size() != 0)
+    if (this->_loca.getAutoIndex() && this->_loca.getIndex().size() != 0)
     {
         
         std ::vector<std ::string> index = this->_loca.getIndex();
@@ -587,7 +589,7 @@ void Http_req ::CheckLoc(int *is_file)
     }
     else
     {
-        if (this->_loca.getAutoIndex())
+        if (!this->_loca.getAutoIndex())
         {
             
             /// Here We shloud Send DirectoryListe
