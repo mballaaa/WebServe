@@ -130,26 +130,15 @@ void Multiplex::start(void)
                 bytesReceived = read(events[i].data.fd, buf,  R_SIZE - 1);
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
-
-                    close(events[i].data.fd);
                     requests.erase(events[i].data.fd);
+                    close(events[i].data.fd);
                     continue;
                 }
-                 // std::ofstream outputFile("reqq.txt", std::ios_base::app);
 
-    // if (outputFile.is_open())
-    // {
-    //     // Output body to the file
-    //     outputFile << buf;
-
-    //     // Close the file
-        
-    // }
-    // outputFile.close();
                 std::string toSTing(buf,bytesReceived);
 
 
-               requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
+                requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
 
             }
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true)
@@ -165,14 +154,11 @@ void Multiplex::start(void)
                 s = write (events[i].data.fd, resp.getResponse().c_str(), resp.getResponse().size());
                 if (s == -1)
                 {
-                   // perror("write ====>") ;
-                     close(events[i].data.fd);
-                    requests.erase(events[i].data.fd);
+                   perror("write ====>") ;
                 }
-                    
-           //     std::cout << "============== Response ==============" << std::endl ;
-                // s = write (events[i].data.fd, "HTTP/1.1 201 OK\r\n\r\n", 19) ;
-              
+                requests.erase(events[i].data.fd);
+                close(events[i].data.fd);
+                continue ;
             }
         }
     }

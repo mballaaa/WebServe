@@ -452,7 +452,7 @@ int Http_req::StautRe(std::string request)
 
     if (is_finsh == true)
     {
-        debugFunction();
+        // debugFunction();
         if (MoreValidation()==0)
         {
             in_out =true;
@@ -531,7 +531,6 @@ bool Is_dir(const char *ptr)
 }
 int is_file_dir(std::string uri)
 {
-
     if (Is_dir(uri.c_str()))
         return 0;
     return 1;

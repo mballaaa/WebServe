@@ -12,13 +12,14 @@ Response::Response(Http_req request){
 void Response::fillResponseHeadre(Http_req request){
 
     std::map<std::string,std::string>::iterator it1 = request._status.begin();
-    std::map<std::string,std::string> h = request.header;
-    std::map<std::string,std::string>::iterator it2 = h.begin();
+    // std::map<std::string,std::string> h = request.header;
+    std::map<std::string,std::string> h;
     std::stringstream ss;
     ss << _resbody.size();
     // std::cerr << "------------------RESP------------------" << std::endl; 
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
-    h["content-length"] = ss.str(); 
+    h["Content-Length"] = " " + ss.str(); 
+    std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)
         _resheaders += it2->first+":"+it2->second+"\r\n";
   
@@ -70,7 +71,6 @@ std::string line;
     file.close();
     
     _resbody = html;
-    
 }
 
 void Response::noContent(){
@@ -99,7 +99,6 @@ void Response::send_get(Http_req request)
             }
             request.file.close(); 
         } else {
-            
         }
     }
 }
