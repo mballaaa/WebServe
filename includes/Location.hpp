@@ -6,6 +6,8 @@
 #include <map>
 #include <cstdlib>
 
+class Server ;
+
 class Location
 {
 public:
@@ -24,6 +26,7 @@ private:
 	std::string					_upload_path ;
 public:
 	Location( void ) ;
+	Location( const Server& server ) ;
 	Location( const Location& rhs ) ;
 	Location& operator=( const Location& rhs ) ;
 	~Location( void ) ;

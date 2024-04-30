@@ -18,6 +18,8 @@ void Response::fillResponseHeadre(Http_req request){
     ss << _resbody.size();
     // std::cerr << "------------------RESP------------------" << std::endl; 
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
+    if (request._status.find("302") != request._status.end())
+        h["Location"] = " " + request.path + "/" ;
     h["Content-Length"] = " " + ss.str(); 
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)
@@ -119,6 +121,8 @@ void Response::fillResponseBody(Http_req request)
     else if(request._status.find("404") != request._status.end())
         notFound();
     else if(request._status.find("204") != request._status.end())
+        noContent();
+    else if (request._status.find("302") != request._status.end())
         noContent();
 
 }

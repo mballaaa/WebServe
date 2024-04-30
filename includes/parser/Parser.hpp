@@ -28,7 +28,7 @@ private:
     static bool expect( const std::string& sym ) ;
     static bool accept( const std::string& sym ) ;
     static Server createServer( void ) ;
-    static Location createLocation( void ) ;
+    static Location createLocation( const Server& server ) ;
 
     Parser( void ) ;
     Parser( const Parser& rhs ) ;

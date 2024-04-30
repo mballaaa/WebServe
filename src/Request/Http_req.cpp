@@ -170,9 +170,9 @@ std::string to_stringmetohd(int value)
 std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)
 {
     std ::string result;
-    // std ::cerr << "==> path:" << path << std ::endl;
-    // std ::cerr << "==>locationpath:" << loac_value << std ::endl;
-    // std ::cerr << "==>root:" << root << std ::endl;
+    std ::cerr << "==> path:" << path << std ::endl;
+    std ::cerr << "==>locationpath:" << loac_value << std ::endl;
+    std ::cerr << "==>root:" << root << std ::endl;
     size_t it = path.find(loac_value);
 
     if (it != std ::string::npos)
@@ -247,6 +247,7 @@ int Http_req::MoreValidation()
         
 
     this->_target = this->path;
+    std::cout << "path " << path << std::endl ;
   
     // now let check if match or not
   std::map<std::string, Location> location = this->server.getLocations();
@@ -256,20 +257,23 @@ std::string key;
 size_t foundSize = 0 ;
 for (it = location.begin(); it != location.end(); it++)
 {
-    key = it->first;
 
     // if (comparePaths(_target, key))
-    if (_target.find(key) != std::string::npos)
+    if (_target.find(it->first) != std::string::npos)
     {
-        if (foundSize < key.length())
+        if (foundSize < it->first.length())
         {
+            key = it->first;
             foundSize = key.length() ;
             this->_loca = it->second;
+            std::cout << key << std::endl ;
         }
         flag = 1;
     }
 }
  
+std::cout << _loca ;
+
 if (flag == 0)
 {
     _status["404"]="Page Not Found";
@@ -307,9 +311,9 @@ if (flag == 0)
     }
     /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
 
-    _target = SetRootLoc(_target, key, this->server.getRoot());
+    _target = SetRootLoc(_target, key, this->_loca.getRoot());
 
-    //  std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
+     std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
 
     return (1);
 }
@@ -651,41 +655,38 @@ void Http_req::LetGet()
     int is_file=0;
     std ::string URI = this->_target;
     int check_type = is_file_dir(URI);
-    // std :: cerr << "output" << check_type << std ::endl;
+
+    if (check_type == IS_DIR && _target[_target.length() - 1] != '/')
+    {
+        _status["302"] = "Found" ;
+        in_out = true ;
+        return ;
+    }
+
     if (check_type == IS_DIR)
     {
-        
-
-       
         CheckLoc(&is_file);
-       
     }
     
-       
-        struct stat sb;
+    struct stat sb;
+
+    if(stat(URI.c_str(),&sb)==0)
+    {
         
-      
-        if(stat(URI.c_str(),&sb)==0)
+        if((sb.st_mode & S_IFREG ) || is_file)
         {
-           
-            if((sb.st_mode & S_IFREG ) || is_file)
-            {
-                   
-                    _status["200"]="ok";
-                    in_out=true;
-                    
-                    return ;
-                 }
-                
-            }
-            else
-            {
-                
-                _status["404"]="Forbidden";
-                in_out =true;
-                return ;
-            }
-       
+            _status["200"]="ok";
+            in_out=true;
+            return ;
+        }
+    }
+    else
+    {
+        
+        _status["404"]="Forbidden";
+        in_out =true;
+        return ;
+    }
 }
    // in_out=true;
    

@@ -1,6 +1,11 @@
 #include "../includes/Location.hpp"
+#include "../includes/Server.hpp"
 
 Location::Location( void ) : _autoIndex(false), _index(), _allowedMethods(), _return(), _root("/var/www"), _cgi(false), _upload(false), _upload_path("/var/upload")
+{
+}
+
+Location::Location( const Server& server ) : _autoIndex(false), _index(server.getIndex()), _allowedMethods(), _return(), _root(server.getRoot()), _cgi(false), _upload(false), _upload_path("/var/upload")
 {
 }
 
