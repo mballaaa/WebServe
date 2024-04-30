@@ -10,13 +10,16 @@ void Response::fillResponseHeadre(Http_req &request){
     std::map<std::string,std::string>::iterator it1 = request._status.begin();
     std::map<std::string,std::string> h;
     std::stringstream ss;
-    ss << _resbody.size();
+    std::ifstream in_file("www/html/201.html", std::ios::binary);
+    in_file.seekg(0, std::ios::end);
+    int file_size = in_file.tellg();
+    ss << file_size;
     
     std::cerr << "------------------RESP------------------" << it1->first << std::endl; 
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
 
     h["content-length"] = ss.str();
-    h["content-type"] = request.header["content-type"];
+    // h["content-type"] = request.header["content-type"];
     h["connection"] = "closed";
     h["host"] = "127.0.0.1:9090";
 
@@ -44,7 +47,7 @@ void Response::fillResponseBody(Http_req &request){
     if(request._status.find("201") != request._status.end()){
         std::cout << "ALOOO" << std::endl;
 
-        created();
+        created(request);
     }
     else if(request._status.find("403") != request._status.end())
         forrbiden();
@@ -56,22 +59,40 @@ void Response::fillResponseBody(Http_req &request){
     else 
         _resbody = request.getBody();
     fillResponseHeadre(request);
-    _response = _resheaders + _resbody;
-
-}
-
-void Response::created(){
-
-    std::ifstream file("www/html/201.html");
-    std::string line;
-    if(file.is_open()){
-        while (getline(file,line))
-            _resbody += line+"\n";
+    if(request.sendHeaders == false){
+        std::cout << "HEADER FALSE" << std::endl;
+        _resheaders = "";
     }
-    file.close();
-        std::cout << "ALOOO" << std::endl;
+    else
+        std::cout << "HEADER TRUE" << std::endl;
+    _response = _resheaders + _resbody;
+}
+
+void Response::created(Http_req &request){
+    char buff [50];
+    ssize_t bytesReceived;
+
+    if(request.fd<0){
+        std::cout << "request.fdFD ERROR" << std::endl;
+        return;
+    }
+
+    bytesReceived = read(request.fd, buff, 49);
+    if(bytesReceived == 0){
+        _resbody = "";
+        close(request.fd);
+        // std::cout << "BYTe error"<< std::endl;
+        // exit(1);
+        return;
+    }
+    std::string line = std::string(buff,bytesReceived);
+    std::cout << "buff====> " << line << std::endl;
+    _resbody = line;
+
+    std::cout << "ALOOO" << std::endl;
 
 }
+
 void Response::forrbiden(){
     
     std::ifstream file("www/html/403.html");

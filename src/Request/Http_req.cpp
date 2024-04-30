@@ -1,5 +1,6 @@
 #include "../../includes/Request/Http_req.hpp"
 #include <unistd.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <cerrno>
 #include <cstring>
@@ -17,6 +18,8 @@ Http_req::Http_req(Server& server)
     is_finsh = false;
     this->server = server;
     in_out = false;
+    sendHeaders = true;
+    i  = 0;
     
 }
 
@@ -37,9 +40,11 @@ Http_req::Http_req(const Http_req &obj)
     toHtml = obj.toHtml;
     i = obj.i;
     body = obj.body;
+    sendHeaders = obj.sendHeaders;
     /*=============== 14 PART (begin)==================*/
     _status = obj._status;
     _mime=obj._mime;
+    fd = obj.fd;
     /*=============== 14 PART (end)==================*/
     in_out = obj.in_out ;
     is_close = obj.is_close ;
@@ -63,8 +68,10 @@ Http_req &Http_req::operator=(const Http_req &obj)
     make_name = obj.make_name;
         body = obj.body;
         i = obj.i;
+        fd = obj.fd;
         // byterec = obj.byterec;
     toHtml = obj.toHtml;
+    sendHeaders = obj.sendHeaders;
     /*=============== 14 PART (begin)==================*/
     _status = obj._status;
     _mime=obj._mime;
@@ -396,7 +403,7 @@ int Http_req::StautRe(std::string request)
 
                 /// debug function
             }
-            // debugFunction();
+            debugFunction();
         }
        
         size_t body_start = len_req + 4;
@@ -440,7 +447,7 @@ int Http_req::StautRe(std::string request)
 
     if (is_finsh == true)
     {
-        debugFunction();
+        // debugFunction();
         if (MoreValidation()==0)
         {
             std :: cout << "dddddd\n";
@@ -458,19 +465,19 @@ int Http_req::StautRe(std::string request)
 
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
-    std::ofstream outputFile("request.txt", std::ios_base::app);
+    // std::ofstream outputFile("request.txt", std::ios_base::app);
 
-    if (outputFile.is_open())
-    {
-    std :: cout << "ssss\n";
+    // if (outputFile.is_open())
+    // {
+    // std :: cout << "ssss\n";
     
-        // Output body to the file
-        outputFile << this->body;
+    //     // Output body to the file
+    //     outputFile << this->body;
 
-        // Close the file
+    //     // Close the file
         
-    }
-    outputFile.close();
+    // }
+    // outputFile.close();
     // std :: cout << bufer << std ::endl;
     (void)bufer;
     (void)bytee;
@@ -480,6 +487,11 @@ void Http_req::parse_re(std ::string bufer, int bytee)
        
         in_out = true;
         std ::cout << "Baaaad Request\n";
+        _status.clear();
+        _status["400"] = "Bad request";
+        // _status.clear();
+        header["content-lenght"] = "0";
+        // body = "BADD";
         return;
     }
     else
@@ -718,11 +730,18 @@ void Http_req::contentLenght()
 
 std::string Http_req::randNameGen()
 {
-    srand(time(NULL));
-    std::string c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    std::string name;
-    for (int i = 0; i < 5; i++)
-        name += c[rand() % (sizeof(c) - 1)];
+    // Get the current time in seconds since the epoch
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    // Convert the current time to milliseconds
+    long long milliseconds = (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000LL);
+
+    // Convert milliseconds to a string
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(13) << milliseconds; // 13 digits for milliseconds
+    std::string name =ss.str(); // Prefix with desired name
+
     return name;
 }
 
@@ -738,25 +757,6 @@ int hexStringToInt(const std::string& hexString) {
     int intValue;
     ss >> intValue; // Extract the integer value
     return intValue;
-}
-
-bool checkSize(std::string name,std::string size){
-
-    std::ifstream file(name.c_str(), std::ios::binary);
-
-    // Check if the file is open
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file!" << std::endl;
-        return 1;
-    }
-
-    file.seekg(0, std::ios::end); // Move the file pointer to the end
-    std::ifstream::pos_type fileSize = file.tellg(); // Get the position, which is the file size
-    file.seekg(0, std::ios::beg); // Move the fil
-    file.close();
-    if(atoi(size.c_str()) == fileSize)
-        return true;
-    return false;
 }
 
 void Http_req::LetPost()
@@ -778,6 +778,7 @@ void Http_req::LetPost()
             /*Status 204*/
             _status["204"] = "No Content";
             in_out = true;
+            // exit(1);
             return;
         }
         int dirCheck = mkdir("Upload", 0777);
@@ -797,74 +798,54 @@ void Http_req::LetPost()
                 std::cout << "File Upload Error" << std::endl;
                 return ;
             }
-            std::istringstream body_forstream(body);
-            std::string chunk_sizeString;
-
             if(header["transfer-encoding"] == " chunked"){
 
                 if(!i){
-                    std::getline(body_forstream,chunk_sizeString,'\r');
-                    classChunksizeString = chunk_sizeString;
-                    chunksize = hexStringToInt(chunk_sizeString);
+                    classChunksizeString = body.substr(0,body.find("\r\n")+2);
+                    body = body.substr(body.find("\r\n")+2);
+                    chunksize = hexStringToInt(classChunksizeString);
                 }
-
-                size_t t = to_file.size();
-                while(chunksize >= to_file.size()){
-                    if(body.find(classChunksizeString) != std::string::npos)
-                            chunk_sizeString = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);       
+                to_file += body;
+                while(1){
+                    if(chunksize<=to_file.size()){
+                        if(to_file.find("\r\n",chunksize+2) != std::string::npos){
+                            std::string correct = to_file.substr(0,chunksize);
+                            file << correct;
+                            to_file.erase(0,chunksize+2);
+                            if(to_file.size()){
+                                classChunksizeString = to_file.substr(0,to_file.find("\r\n")+2);
+                                chunksize = hexStringToInt(classChunksizeString);
+                                to_file.erase(0,classChunksizeString.size());
+                            }
+                        }
+                        else
+                            break;
+                        if(!chunksize){
+                            _status["201"] = "Created";
+                            header["content-type"] = "text/html";
+                            file.close();
+                            break;
+                        }
+                    }
                     else
-                        chunk_sizeString = body;
-                    if(chunk_sizeString.size()+to_file.size() <= chunksize){
-                        to_file += chunk_sizeString;
-                    }
-                    else{
-                        /*READ THE (CHUNKED SIZE - FILE SIZE) FROM THE BODY*/
-                        std::istringstream body_forst(body);
-                        std::string line;
-                        getline(body_forst,line,'\r');
-                        if(line  == classChunksizeString)
-                            body = body.substr(classChunksizeString.size()+2);
-                        chunk_sizeString = body.substr(0,chunksize-to_file.size());
-                        to_file += chunk_sizeString;
-                        body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
-                        chunk_sizeString = body.substr(0,body.find("\r\n"));
-                        if(!body.size())
-                                break;
-                        chunksize = hexStringToInt(chunk_sizeString);
-                        classChunksizeString = chunk_sizeString;
-                        t = 0;
-                        file << to_file;
-                        to_file.erase();
-                        body = body.substr(body.find(chunk_sizeString)+chunk_sizeString.size()+2);
-                    }
-                    if(!chunksize){
-                        in_out = true;
-                        _status["201"] = "Created";
-                        header["content-type"] = "text/html";
                         break;
-                    }
-                    if(to_file.size() == chunksize){
-                        file << to_file;
-                        to_file.erase();
-                    }
-                    if(!i){
-                        if((t+body.size()-classChunksizeString.size()) == to_file.size()+2)
-                            break;
-                    }else
-                        if((t+body.size()) == to_file.size())
-                            break;
                 }
-                i++;
+                i=1;
             }
             else{
                 file << body;
-                if(checkSize(make_name.c_str(),header["content-length"].substr(1)) == true)
-                    in_out = true;
                 file.close();
-                _status["201"] = "Created";
-                header["content-type"] = "text/html";
-
-                i++;
+                std::ifstream in_file(make_name.c_str(), std::ios::binary);
+                in_file.seekg(0, std::ios::end);
+                int file_size = in_file.tellg();
+                std::cout << "content-length =>> = " << std::atoi(header["content-length"].substr(1).c_str()) << std::endl;
+                std::cout << "file size =>> = " << file_size << std::endl;
+                if(std::atoi(header["content-length"].substr(1).c_str()) == file_size){
+                        in_out = true;
+                        _status["201"] = "Created";
+                        header["content-type"] = "text/html";
+                        fd = open("www/html/201.html",O_RDWR);
+                    }
             }
         }
         /*Status 201*/

@@ -3,6 +3,9 @@
 
 #include"../Request/Http_req.hpp"
 #include"../cgi/Cgi.hpp"
+
+#define R_SIZE 1024
+
 class Response
 {
 private:
@@ -19,11 +22,12 @@ public:
     void fillResponseBody(Http_req&);
     
     Cgi cgi;
+    int i;
     std::string getResponse();
     /*-------------Body TYPE(begin)-------------*/
     void notFound();
     void forrbiden();
-    void created();
+    void created(Http_req &request);
     void noContent();
     /*start mballa*/
     void listDirectory(std::string);

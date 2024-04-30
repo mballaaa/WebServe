@@ -5,6 +5,8 @@
 
 
 Cgi::Cgi(){
+    _waitreturn = 1;
+    _waitstatus = 0;
 }
 
 std::string Cgi::size_t_to_string(size_t nbr){
@@ -169,8 +171,9 @@ void Cgi::executeCgi(Http_req &request){
     }
     request._status.clear(); //clear status;
 
-    if(request.make_name == "")
+    if(request.make_name == ""){
         input = 0;//The make_name file wasn't always created.
+    }
     else
         input = open(request.make_name.c_str(),O_RDONLY); 
 
@@ -235,7 +238,7 @@ void Cgi::executeCgi(Http_req &request){
     if(elapsedTime>=2){
         kill(pid,SIGTERM);
         request._status.clear();
-        request._status["504"] = "Gateway timeout";
+        request._status["508"] = "Gateway timeout";
         wriToBody(request,"www/html/508.html");
         request.header["content-type"] = "text/html";
         unlink(outputfilename.c_str());//remove output file

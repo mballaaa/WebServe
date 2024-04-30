@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <sstream>
 #include <algorithm>
+#include <fcntl.h>
 #include <fstream>
 #include "dirent.h"
 #define IS_DIR 0
@@ -54,8 +55,9 @@ public: // amine: i made this public for now
     std::string to_file;
     size_t chunksize;
     std::string classChunksizeString;
-    bool sec_flag;
     std::string make_name;
+    int fd;
+    bool sendHeaders;
 
     /*=============== 14 PART (end)==================*/
     int byterec;
