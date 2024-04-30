@@ -5,6 +5,8 @@
 
 
 Cgi::Cgi(){
+    _waitstatus = 0;
+    _waitreturn = 1;
 }
 
 std::string Cgi::size_t_to_string(size_t nbr){
@@ -115,6 +117,8 @@ void Cgi::_setupEnv(Http_req &request){
         return ;
         /*===================================*/
     }
+    std::cerr << "SAAAALm" << std::endl;
+
     executeCgi(request);
 }
 void Cgi::wriToBody(Http_req &request,std::string str){
@@ -131,10 +135,12 @@ void Cgi::cgiResponse(Http_req &request,std::string _cgibody){
 
     request.header["content-type"] = "text/html";
     request._status["200"] = "OK";
+    if(_cgibody.find("\r\n\r\n") == std::string::npos)
+        _cgibody ="\r\n\r\n"+_cgibody; 
     size_t pos = _cgibody.find("\r\n\r\n");
     std::string body = _cgibody.substr(pos+4);
     request.body = body;
-    
+    std::cout << "=>>> ALOOOOOQ" << std::endl;
 }
 
 void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
@@ -176,6 +182,13 @@ void Cgi::executeCgi(Http_req &request){
 
     int output = open(outputfilename.c_str(),  O_CREAT | O_RDWR,0666);
 
+    std::cerr << "KAAAAAAAMAL33333" << std::endl;
+    std::cerr << "in = " << input << std::endl;
+    std::cerr << "out = " << output << std::endl;
+    std::cerr << "outname = " << outputfilename << std::endl;
+    std::cerr << "wait = " << _waitstatus << std::endl;
+
+
     if ( output == -1 || input == -1)
         return ;
 
@@ -192,6 +205,7 @@ void Cgi::executeCgi(Http_req &request){
     if(pid < 0)
         return ;
     else if(!pid){
+        
         env = envMap_to_char(_env);
         argv = avMap_to_char(_argv);
         if(input != 0)
@@ -219,6 +233,7 @@ void Cgi::executeCgi(Http_req &request){
     }
     close(output);
     close(input);
+    std::cerr << "WAit=>>>> "<< _waitreturn << std::endl;
     if(_waitreturn){
         std::cerr << "DAAAAZ" << std::endl;
         std::string line;
@@ -226,8 +241,9 @@ void Cgi::executeCgi(Http_req &request){
         while(getline(_filename,line))
             _cgibody += line + "\n";
         _filename.close();
+        std::cout << "cgibody =>> " << _cgibody << std::endl;
         cgiResponse(request,_cgibody);
-        unlink(outputfilename.c_str());//remove output file
+        // unlink(outputfilename.c_str());//remove output file
         return ;
     }
     endTime = clock();

@@ -11,7 +11,6 @@ private:
     std::string     _response;
 public:
     Response();
-    
     /*==============Member function===============*/
     std::string getResHeaders();
     std::string getResBody();

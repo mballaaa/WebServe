@@ -15,6 +15,8 @@
 #define IS_LINK 3
 #define IS_RED 2
 
+
+
 class Http_req
 {
 public:
@@ -31,6 +33,8 @@ public: // amine: i made this public for now
     size_t bodycount;
     //
      std ::ifstream file;
+     bool CGI_FLAG;
+     std ::map<std::string,std::string> cgiMap;
 
     std ::string toHtml;
     std ::string method;
@@ -43,6 +47,7 @@ public: // amine: i made this public for now
     bool _headerParsed;
     size_t lencontent;
     bool cgi_in;
+    std ::string GetFIle;
     
      std::map<std::string, std::string> header;
     Server server;
@@ -83,7 +88,9 @@ public:
     int StautRe(std ::string request);
     int MoreValidation();
     void LetGet();
+    void LetDelete();
    void CheckLoc(int *);
+   void loadCGIMap() ;
     ~Http_req();
 
     /*  Getter*/

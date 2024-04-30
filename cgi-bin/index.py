@@ -1,12 +1,12 @@
 import sys
 
-def count_lines():
-    line_count = 0
-    for line in sys.stdin:
-        line_count += 1
-    return line_count
+# def count_lines():
+#     line_count = 0
+#     for line in sys.stdin:
+#         line_count += 1
+#     return line_count
 
-def generate_html(line_count):
+def generate_html():
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -40,7 +40,7 @@ def generate_html(line_count):
     <body>
         <div class="container">
             <h1>Line Count</h1>
-            <p>Number of lines entered: {line_count}</p>
+            <p>Number of lines entered:8000</p>
         </div>
     </body>
     </html>
@@ -48,8 +48,8 @@ def generate_html(line_count):
     return html_content
 
 def main():
-    line_count = count_lines()
-    html_content = generate_html(line_count)
+    # line_count = count_lines()
+    html_content = generate_html()
     print(html_content)
 
 if __name__ == "__main__":

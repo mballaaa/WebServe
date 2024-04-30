@@ -163,13 +163,14 @@ void Multiplex::start(void)
             }
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true)
             {
-                std::cout << "=?>>>>> STOPP2"<< std::endl;
-                if(requests[events[i].data.fd]._loca.getCgi() == true){
+               
+                if(requests[events[i].data.fd]._loca.getCgi() == true && requests[events[i].data.fd].CGI_FLAG){
+                    std::cout << "=?>>>>> STOPP3"<< std::endl;
 
                     response[events[i].data.fd].cgi._setupEnv(requests[events[i].data.fd]);
                     std::cout << response[events[i].data.fd].cgi._waitreturn << std::endl;
 
-                    if(response[events[i].data.fd].cgi._waitreturn){
+                    if(response[events[i].data.fd].cgi._waitreturn  ){
                         response[events[i].data.fd].fillResponseBody(requests[events[i].data.fd]);
                         s = write (events[i].data.fd, response[events[i].data.fd].getResponse().c_str(), response[events[i].data.fd].getResponse().size());
                         close (events[i].data.fd);

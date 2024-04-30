@@ -3,7 +3,6 @@
 Response::Response(){   
 }
 
-
 /*Fill Response Header*/
 void Response::fillResponseHeadre(Http_req &request){
 
@@ -34,7 +33,22 @@ void Response::fillResponseHeadre(Http_req &request){
 
 /*Fill  Resposne Body*/
 void Response::fillResponseBody(Http_req &request){
-    if(request._loca.getCgi()==false){
+    
+   
+   std::map<std ::string,std ::string> ::iterator it=request._status.begin();
+   
+   for ( (void)it; it !=request._status.end(); it++)
+   {
+    std ::cout << "==>" << it->first << std ::endl;
+   }
+   
+  
+    if(request._status.find("200") !=request._status.end())
+    {
+       
+        send_get(request);
+    }
+    else if(request._loca.getCgi()==false){
         std::cout << "ALOOO" << std::endl;
         // std::map<std::string,std::string>::iterator it = request._status.begin();
         // std::cout << it->first << std::endl;
@@ -55,6 +69,7 @@ void Response::fillResponseBody(Http_req &request){
     }
     else 
         _resbody = request.getBody();
+    std :: cout <<"=>> " << request._status["201"] << std::endl;
     fillResponseHeadre(request);
     _response = _resheaders + _resbody;
 
