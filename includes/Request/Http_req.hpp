@@ -58,6 +58,7 @@ public: // amine: i made this public for now
     std::string make_name;
     int fd;
     bool sendHeaders;
+    
 
     /*=============== 14 PART (end)==================*/
     int byterec;
@@ -68,7 +69,7 @@ public: // amine: i made this public for now
     /*=============== 14 PART (begin)==================*/
 
     void LetPost();
-    void mimeParse();
+    int mimeParse();
     void chunked();
     void contentLenght();
     std::string randNameGen();

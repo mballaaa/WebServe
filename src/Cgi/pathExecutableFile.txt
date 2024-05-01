@@ -1,2 +1,0 @@
-php /usr/bin/php
-py  /usr/bin/python

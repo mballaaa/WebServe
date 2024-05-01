@@ -160,34 +160,32 @@ void Multiplex::start(void)
             }
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true)
             {
-                std::cout << "=?>>>>> STOPP2"<< std::endl;
                 std::map<std::string,std::string>::iterator test = requests[events[i].data.fd]._status.begin();
                 if(requests[events[i].data.fd]._loca.getCgi() == true && test->first != "400"){
-
-                    response[events[i].data.fd].cgi._setupEnv(requests[events[i].data.fd]);
-                    std::cout << "waitreturn =  " << response[events[i].data.fd].cgi._waitreturn << std::endl;
+                    if(requests[events[i].data.fd].sendHeaders == true)
+                        response[events[i].data.fd].cgi._setupEnv(requests[events[i].data.fd]);
                     if(response[events[i].data.fd].cgi._waitreturn){
                         response[events[i].data.fd].fillResponseBody(requests[events[i].data.fd]);
                         s = write (events[i].data.fd, response[events[i].data.fd].getResponse().c_str(), response[events[i].data.fd].getResponse().size());
-                        close (events[i].data.fd);
-                        requests.erase(events[i].data.fd) ;
-                        response.erase(events[i].data.fd) ;
-                        std::cout << "=?>>>>> STOPP"<< std::endl;
+                        if(response[events[i].data.fd].getResBody() == "\r\n0\r\n\r\n"){
+                            requests[events[i].data.fd].sendHeaders = true;
+                            unlink(response[events[i].data.fd].cgi.cgifile.c_str());
+                            requests.erase(events[i].data.fd) ;
+                            response.erase(events[i].data.fd) ;
+                            close (events[i].data.fd);
+                        }
+                        else
+                            requests[events[i].data.fd].sendHeaders = false;
                     }
                 }
                 else{
-                    std::cout << "=?WIHOUTTTTT"<< std::endl;
                     response[events[i].data.fd].fillResponseBody(requests[events[i].data.fd]);
                     s = write (events[i].data.fd, response[events[i].data.fd].getResponse().c_str(), response[events[i].data.fd].getResponse().size());
-                    if(response[events[i].data.fd].getResBody() == ""){
-                        std::cerr << "fd " << requests[events[i].data.fd].fd << std::endl;
-
+                    if(response[events[i].data.fd].getResBody() == "\r\n0\r\n\r\n"){
                         requests[events[i].data.fd].sendHeaders = true;
-                        close(requests[events[i].data.fd].fd);
                         requests.erase(events[i].data.fd) ;
-                        // response.erase(events[i].data.fd) ;
+                        response.erase(events[i].data.fd) ;
                         close (events[i].data.fd);
-                        // exit(0);
                     }
                     else
                         requests[events[i].data.fd].sendHeaders = false;

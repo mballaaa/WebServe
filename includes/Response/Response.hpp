@@ -23,10 +23,12 @@ public:
     
     Cgi cgi;
     int i;
+    
     std::string getResponse();
     /*-------------Body TYPE(begin)-------------*/
     void notFound();
     void forrbiden();
+    void fillBodyChunked(Http_req &request);
     void created(Http_req &request);
     void noContent();
     /*start mballa*/

@@ -695,7 +695,7 @@ void Http_req::LetGet()
    
     //std ::cout << "sssdffd\n";    
 /*=============== 14 PART (begin)==================*/
-void Http_req::mimeParse()
+int Http_req::mimeParse()
 {
     std::ifstream file("mime.types");
     std::string line;
@@ -705,7 +705,10 @@ void Http_req::mimeParse()
     if (!file.is_open())
     {
         std::cout << "Error : mimes.types could not be open" << std::endl;
-        return;
+        _status.clear();
+        _status["415"] = "Unsupported Media Type";
+        fd = open("www/html/415.html",O_RDWR);
+        return 1;
     }
 
     while (getline(file, line))
@@ -722,34 +725,24 @@ void Http_req::mimeParse()
             _mime[key] = value;
         }
     }
+    return 0;
 }
 
-void Http_req::contentLenght()
-{
-}
+
 
 std::string Http_req::randNameGen()
 {
-    // Get the current time in seconds since the epoch
     struct timeval tv;
     gettimeofday(&tv, NULL);
 
-    // Convert the current time to milliseconds
-    long long milliseconds = (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000LL);
+    size_t milliseconds = (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000LL);
 
-    // Convert milliseconds to a string
     std::stringstream ss;
-    ss << std::setfill('0') << std::setw(13) << milliseconds; // 13 digits for milliseconds
-    std::string name =ss.str(); // Prefix with desired name
+    ss << std::setfill('0') << std::setw(13) << milliseconds;
+    std::string name =ss.str(); 
 
     return name;
 }
-
-void getSize(std::string body){
-    
-    std::string size = body.substr(0,body.find("\r\n"));
-}
-
 
 int hexStringToInt(const std::string& hexString) {
     std::stringstream ss;
@@ -762,23 +755,20 @@ int hexStringToInt(const std::string& hexString) {
 void Http_req::LetPost()
 {
     /*location not found*/
-    if (_loca.getUploadPath() == "Not Found")
+    
+    if (_loca.getUpload() == true)
     {
-        /*Status 404*/
-        in_out = true;
-        _status["404"] = "Not Found";
-    }
-    else if (_loca.getUpload() == true)
-    {
-
+        
          in_out = true;
-        mimeParse();
+        
+        if(mimeParse())
+            return;
         if (header["content-length"] == " 0")
         {
             /*Status 204*/
             _status["204"] = "No Content";
             in_out = true;
-            // exit(1);
+            fd = open("www/html/204.html",O_RDWR);
             return;
         }
         int dirCheck = mkdir("Upload", 0777);
@@ -790,7 +780,12 @@ void Http_req::LetPost()
             if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == "")
                 make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
             else if(make_name == "")
-                make_name = "Upload/" + randNameGen() + ".txt";
+                {
+                    _status["415"] = "Unsupported Media Type";
+                    in_out = true;
+                    fd = open("www/html/415.html",O_RDWR);
+                    return;
+                }
 
             std::ofstream file(make_name.c_str(), std::ios::app);
             
@@ -799,7 +794,6 @@ void Http_req::LetPost()
                 return ;
             }
             if(header["transfer-encoding"] == " chunked"){
-
                 if(!i){
                     classChunksizeString = body.substr(0,body.find("\r\n")+2);
                     body = body.substr(body.find("\r\n")+2);
@@ -824,6 +818,8 @@ void Http_req::LetPost()
                             _status["201"] = "Created";
                             header["content-type"] = "text/html";
                             file.close();
+                            if(_loca.getCgi() == false)
+                                fd = open("www/html/201.html",O_RDWR);
                             break;
                         }
                     }
@@ -844,7 +840,8 @@ void Http_req::LetPost()
                         in_out = true;
                         _status["201"] = "Created";
                         header["content-type"] = "text/html";
-                        fd = open("www/html/201.html",O_RDWR);
+                        if(_loca.getCgi() == false)
+                            fd = open("www/html/201.html",O_RDWR);
                     }
             }
         }
