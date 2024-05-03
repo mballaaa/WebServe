@@ -3,14 +3,25 @@
 
 #include"../Request/Http_req.hpp"
 #include"../cgi/Cgi.hpp"
+
+#define R_BUFFER_SIZE 4096
+
 class Response
 {
 private:
-    std::string     _resheaders;
     std::string     _resbody;
     std::string     _response;
 public:
+    std::string chunkHeader ;
+    std::vector<char>   buffer ;
+    bool            fileOpened ;
+    std::string     _resheaders;
+    bool            headerSent ;
+    std::ifstream   file ;
+    size_t          readSize ;
     Response();
+    Response(const Response& obj);
+    const Response& operator=(const Response& obj);
     /*==============Member function===============*/
     std::string getResHeaders();
     std::string getResBody();

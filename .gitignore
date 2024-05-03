@@ -37,3 +37,5 @@ webserv
 .clang-format
 .clang-tidy
 .editorconfig
+
+Upload/

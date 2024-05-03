@@ -77,9 +77,8 @@ void Multiplex::start(void)
             // if ((events[i].events & EPOLLERR)
             //     || events[i].events & EPOLLHUP)
             // {
-
             //     close(events[i].data.fd);
-            //     perror("EPOLLERR");
+                // perror("EPOLLERR");
             //      close (events[i].data.fd);
             //     requests.erase(events[i].data.fd) ;
             //     continue;
@@ -177,16 +176,27 @@ void Multiplex::start(void)
                     }
                 }
                 else{
-                    std::cout << "=?WIHOUT"<< std::endl;
+                    if (!response[events[i].data.fd]->headerSent)
+                    {
+                        response[events[i].data.fd]->fillResponseHeadre(requests[events[i].data.fd]);
+                        s = write (events[i].data.fd, response[events[i].data.fd]->_resheaders.c_str(), response[events[i].data.fd]->_resheaders.size());
+                        response[events[i].data.fd]->headerSent = true ;
+                    }
                     response[events[i].data.fd]->fillResponseBody(requests[events[i].data.fd]);
-                    s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
-                    close (events[i].data.fd);
-                    requests.erase(events[i].data.fd) ;
-                    delete response[events[i].data.fd] ;
-                    response.erase(events[i].data.fd) ;
-                    close (events[i].data.fd);
+                    write (events[i].data.fd, response[events[i].data.fd]->chunkHeader.c_str(), response[events[i].data.fd]->chunkHeader.size());
+                    write (events[i].data.fd, &response[events[i].data.fd]->buffer[0], response[events[i].data.fd]->readSize);
+                    write (events[i].data.fd, "\r\n", 2);
+                    if (response[events[i].data.fd]->buffer.size() == 0)
+                    {
+                        std::cout << "finished buffer" << std::endl ;
+                        requests.erase(events[i].data.fd) ;
+                        delete response[events[i].data.fd] ;
+                        response.erase(events[i].data.fd) ;
+                        close (events[i].data.fd);
+                        continue ;
+                    }
                 }
-// std::cerr << "Response Sent" << std::endl;
+                // std::cerr << "Response Sent" << std::endl;
             }
         }
     }
