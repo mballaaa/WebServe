@@ -98,6 +98,7 @@ void Cgi::_setupEnv(Http_req &request){
     _env["SERVER_SOFTWARE"] = "Weebserv/1.0";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     
+    
     std::string extension = fileExtension(request.getPath());
     std::cerr << "Heloo "+extension << std::endl;
 
@@ -163,6 +164,7 @@ void freeptr(char **env,char **argv){
 
 
 void Cgi::executeCgi(Http_req &request){
+   
     std::string _cgibody;
     if(!_waitstatus)
         outputfilename = "HHH"+request.randNameGen();

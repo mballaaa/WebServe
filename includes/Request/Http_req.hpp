@@ -31,6 +31,7 @@ public: // amine: i made this public for now
     bool is_close;
     std ::string my_req;
     size_t bodycount;
+    std ::string query_string;
     //
      std ::ifstream file;
      bool CGI_FLAG;
@@ -91,6 +92,7 @@ public:
     void LetDelete();
    void CheckLoc(int *);
    void loadCGIMap() ;
+    bool delete_Dir(std::string);
     ~Http_req();
 
     /*  Getter*/

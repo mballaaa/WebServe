@@ -131,7 +131,7 @@ void Multiplex::start(void)
                 response[events[i].data.fd].cgi._waitreturn = 1;
                 continue;
             }
-            else if (events[i].events & EPOLLIN  )   // check if we have EPOLLIN (connection socket ready to read)
+            else if (events[i].events & EPOLLIN )   // check if we have EPOLLIN (connection socket ready to read)
             {
                 ssize_t bytesReceived;
                 char buf[R_SIZE] = {0};
@@ -164,8 +164,8 @@ void Multiplex::start(void)
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true)
             {
                
-                if(requests[events[i].data.fd]._loca.getCgi() == true && requests[events[i].data.fd].CGI_FLAG){
                     std::cout << "=?>>>>> STOPP3"<< std::endl;
+                if(requests[events[i].data.fd]._loca.getCgi() == true && requests[events[i].data.fd].CGI_FLAG){
 
                     response[events[i].data.fd].cgi._setupEnv(requests[events[i].data.fd]);
                     std::cout << response[events[i].data.fd].cgi._waitreturn << std::endl;
@@ -184,7 +184,7 @@ void Multiplex::start(void)
                     std::cout << "=?WIHOUT"<< std::endl;
                     response[events[i].data.fd].fillResponseBody(requests[events[i].data.fd]);
                     s = write (events[i].data.fd, response[events[i].data.fd].getResponse().c_str(), response[events[i].data.fd].getResponse().size());
-                    close (events[i].data.fd);
+                     close (events[i].data.fd);
                     requests.erase(events[i].data.fd) ;
                     response.erase(events[i].data.fd) ;
                 }

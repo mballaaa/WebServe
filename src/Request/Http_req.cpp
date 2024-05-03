@@ -18,12 +18,13 @@ Http_req::Http_req(Server &server)
     is_finsh = false;
     this->server = server;
     in_out = false;
-    CGI_FLAG=false;
+    CGI_FLAG = false;
+    query_string = "";
 }
 
 Http_req::Http_req(const Http_req &obj)
 {
-
+    query_string = obj.query_string;
     req = obj.req;
     _target = obj._target;
     method = obj.method;
@@ -46,7 +47,7 @@ Http_req::Http_req(const Http_req &obj)
     bodycount = obj.bodycount;
     CGI_FLAG = obj.CGI_FLAG;
     cgiMap = obj.cgiMap;
-    GetFIle=obj.GetFIle;
+    GetFIle = obj.GetFIle;
 }
 
 // copyy
@@ -54,6 +55,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
 {
     if (this != &obj)
     {
+        query_string = obj.query_string;
 
         req = obj.req;
         _target = obj._target;
@@ -77,7 +79,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
         bodycount = obj.bodycount;
         CGI_FLAG = obj.CGI_FLAG;
         cgiMap = obj.cgiMap;
-          GetFIle=obj.GetFIle;
+        GetFIle = obj.GetFIle;
     }
     return *this;
 }
@@ -234,6 +236,8 @@ int Http_req::MoreValidation()
 
         if (maxx_size < content_len)
         {
+            std ::cout << "3azziii\n";
+            exit(0);
             // std :: cout << "ddddd3\n";
             return (0);
         }
@@ -248,6 +252,14 @@ int Http_req::MoreValidation()
         return (0);
 
     this->_target = this->path;
+    // no we have to check for quesry string;
+
+    // size_t stat=path.find('?');
+    // if (stat != std::string ::npos)
+    // {
+    // 	_target=path.substr(0,stat);
+    //     query_string=_target.substr(stat+1,_target.length());
+    // }
 
     // now let check if match or not
     std::map<std::string, Location> location = this->server.getLocations();
@@ -307,6 +319,14 @@ int Http_req::MoreValidation()
             break;
         }
     }
+    // if(!is_exit)
+    // {
+    //     std ::cout << "sssssss\n";
+    //     exit(0);
+    //     in_out=true;
+    //     _status["403"]="NOt allowed";
+    //     return 0 ;
+    // }
     /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
 
     _target = SetRootLoc(_target, key, this->server.getRoot());
@@ -332,7 +352,7 @@ void Http_req::debugFunction()
     //     // Close the file
     //     outputFile.close();
     // }
-    ///// print headar
+    // ///// print headar
     //  std::map<std::string, std::string>::iterator it;
     // for (it = header.begin(); it != header.end(); it++)
     // {
@@ -454,6 +474,145 @@ int Http_req::StautRe(std::string request)
     res = 1;
     return (res);
 }
+void Http_req::LetDelete()
+{
+
+    struct stat infoo;
+    std::string URI = _target;
+    if (stat(_target.c_str(), &infoo) == 0)
+    {
+
+        if (S_ISREG(infoo.st_mode))
+        {
+            // CHECK PERMISSION
+            if (infoo.st_mode & S_IWUSR)
+            {
+                // here have dele file
+                if (unlink(URI.c_str()) == 0)
+                {
+
+                    _status["204"] = "No Content";
+                    in_out = true;
+                    return;
+                }
+            }
+            else
+            {
+                _status["403"] = "Forbbiden";
+                in_out = true;
+                return;
+            }
+        }
+        else if (S_ISDIR(infoo.st_mode))
+        {
+
+            if (infoo.st_mode & S_IWUSR)
+            {
+
+                bool check = delete_Dir(URI);
+
+                if (!check)
+                {
+                    in_out = true;
+                    return;
+                }
+                in_out = true;
+                _status["204"] = "No Content";
+                return;
+            }
+            else
+            {
+                _status["403"] = "Forbbiden";
+                in_out = true;
+                return;
+            }
+        }
+    }
+    else
+    {
+        _status["404"] = "Not found";
+        in_out = true;
+        return;
+    }
+}
+
+bool Http_req::delete_Dir(std::string pathh)
+{
+    DIR *ptr = opendir(pathh.c_str());
+
+    if (ptr != NULL)
+    {
+
+        struct dirent *list;
+
+        while (((list = readdir(ptr)) != NULL))
+        {
+            std::string filename = list->d_name;
+            std ::cout << filename << std ::endl;
+
+            if (filename == "." || filename == "..")
+            {
+                continue;
+            }
+
+            std::string full_path = pathh + "/" + filename;
+            struct stat fileStat;
+
+            if (stat(full_path.c_str(), &fileStat) == 0)
+            {
+
+                if (S_ISREG(fileStat.st_mode) && (fileStat.st_mode & S_IWUSR))
+                {
+
+                    if (unlink(full_path.c_str()) != 0)
+                    {
+
+                        perror("Error: Cannot delete file");
+                        _status["500"] = "Internal Server Error";
+                        closedir(ptr);
+                        return false;
+                    }
+                    _status["204"] = "No Content";
+                }
+                else if (S_ISDIR(fileStat.st_mode))
+                {
+                    delete_Dir(full_path);
+                }
+                else
+                {
+
+                    perror("Error: Cannot get file or directory information");
+                    _status["500"] = "Internal Server Error";
+                    closedir(ptr);
+                    return false;
+                }
+            }
+            else
+            {
+
+                _status["500"] = "Internal Server Error";
+                return false;
+            }
+        }
+
+        closedir(ptr);
+
+        if (rmdir(pathh.c_str()) != 0)
+        {
+            perror("Error : DIRECTOR DELETE");
+
+            return false;
+        }
+        return true;
+    }
+    else
+    {
+        perror("Error : can not open directory");
+        _status["403"] = "Not Found";
+
+        return false;
+    }
+}
 
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
@@ -484,7 +643,10 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         {
             LetPost();
         }
-
+        else if (method == "DELETE")
+        {
+            LetDelete();
+        }
         /*=============== 14 PART (end)==================*/
     }
 }
@@ -680,7 +842,6 @@ void Http_req::LetGet()
         if (this->_loca.getCgi())
         {
 
-            std ::cout << "sssssss\n";
             // cehck extions
             std ::string extension = fileExtension(URI);
             std ::cout << extension << std ::endl;
@@ -695,7 +856,8 @@ void Http_req::LetGet()
                     {
                         std ::cout << "yesss\n";
                         _status["200"] = "OK";
-                        CGI_FLAG=true;
+                        CGI_FLAG = true;
+
                         in_out = true;
                         return;
                     }
@@ -711,10 +873,9 @@ void Http_req::LetGet()
 
         if ((sb.st_mode & S_IFREG) || is_file)
         {
-        
-            
 
-            GetFIle=URI;
+            header["content-type"] = "text/html";
+            GetFIle = URI;
             _status["200"] = "ok";
             in_out = true;
 
@@ -725,7 +886,7 @@ void Http_req::LetGet()
     else
     {
 
-        _status["403"] = "Forbidden";
+        _status["404"] = "Not FOund";
         in_out = true;
         return;
     }
