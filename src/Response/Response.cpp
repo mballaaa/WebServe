@@ -1,8 +1,9 @@
 #include "../../includes/Response/Response.hpp"
+#include <unistd.h>
 
 Response::Response()
 {
-}
+    }
 
 /*Fill Response Header*/
 void Response::fillResponseHeadre(Http_req &request)
@@ -10,10 +11,12 @@ void Response::fillResponseHeadre(Http_req &request)
  std::map<std::string, std::string>::iterator it1 = request._status.begin();
     std::map<std::string, std::string> h;
     std::stringstream ss;
-    ss << _resbody.size();
-
+            ss << _resbody.size();
+    
     _resheaders = request.getHttpVersion() + " " + it1->first + " " + it1->second + "\r\n";
-
+    if (request._status.find("302") != request._status.end())
+        h["Location"] = " " + request.path + "/" ;
+    
     h["content-length"] = ss.str();
     h["connection"] = "closed";
     h["host"] = "127.0.0.1:9090";
@@ -27,6 +30,7 @@ void Response::fillResponseHeadre(Http_req &request)
         contentType = "video/mp4";
     } else {
         contentType = "application/octet-stream";
+        contentType = "text/html";
     }
     h["content-type"] = contentType;
 
@@ -35,7 +39,7 @@ void Response::fillResponseHeadre(Http_req &request)
         _resheaders += it2->first + ": " + it2->second + "\r\n";
 
     _resheaders += "\r\n";
-
+    
 }
 
 /*Fill  Resposne Body*/
@@ -49,7 +53,7 @@ void Response::fillResponseBody(Http_req &request)
     //     std ::cout << "==>" << it->first << std ::endl;
     // }
 
-    if (request._status.find("200") != request._status.end())
+        if (request._status.find("200") != request._status.end())
     {
 
         send_get(request);
@@ -80,12 +84,14 @@ void Response::fillResponseBody(Http_req &request)
             notFound();
         else if (request._status.find("204") != request._status.end())
             noContent();
+        else if (request._status.find("302") != request._status.end())
+            noContent();
     }
     else
         _resbody = request.getBody();
     // std :: cout <<"=>> " << request._status["201"] << std::endl;
-    fillResponseHeadre(request);
-    _response = _resheaders + _resbody;
+            fillResponseHeadre(request);
+        _response = _resheaders + _resbody;
 }
 
 void Response::created()
@@ -100,7 +106,7 @@ void Response::created()
     }
     file.close();
     std::cout << "ALOOO" << std::endl;
-}
+    }
 void Response::forrbiden()
 {
 
@@ -112,7 +118,7 @@ void Response::forrbiden()
             _resbody += line + "\n";
     }
     file.close();
-}
+    }
 
 void Response::notFound()
 {
@@ -125,7 +131,7 @@ void Response::notFound()
     }
 
     file.close();
-}
+    }
 void Response::listDirectory(std ::string html)
 {
     std::ifstream file("www/html/listDirectory.html");
@@ -151,7 +157,7 @@ void Response::noContent()
             _resbody += line + "\n";
     }
     file.close();
-}
+    }
 #include <cstring>
 void Response::send_get(Http_req request)
 {
@@ -163,7 +169,7 @@ void Response::send_get(Http_req request)
     }
     else
     {
-        request.file.open(request._target.c_str(), std::ios::binary); // Open the file again
+                request.file.open(request._target.c_str(), std::ios::binary); // Open the file again
         if (request.file.is_open())
         {
             std::string line;
@@ -175,8 +181,8 @@ void Response::send_get(Http_req request)
         }
         else
         {
-        }
-    }
+                    }
+            }
 }
 
 std::string Response::getResHeaders()

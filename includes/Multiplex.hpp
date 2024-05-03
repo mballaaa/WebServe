@@ -45,7 +45,7 @@ public:
 	typedef std::map<std::string, SOCKET> host_port_map_t ;
 	typedef struct epoll_event epoll_event_t ;
     typedef std::map<SOCKET, Http_req> requests_t ;
-    typedef std::map<SOCKET, Response> response_t ; // For "JaQen" Response
+    typedef std::map<SOCKET, Response*> response_t ; // For "JaQen" Response
     // typedef std::map<SOCKET, Cgi> cgi_t ; // For "JaQen" Response
 	
 private:

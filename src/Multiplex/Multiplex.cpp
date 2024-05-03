@@ -53,9 +53,6 @@ void Multiplex::start(void)
     eventName[EPOLLERR] = "EPOLLERR";
     eventName[EPOLLHUP] = "EPOLLHUP";
 
-    /* The event loop */
-    Http_req reqqq;
-
     while (1)
     {
         int eventCount;
@@ -77,17 +74,17 @@ void Multiplex::start(void)
             //     std::cerr << eventName[EPOLLHUP];
             // std::cerr << std::endl;
 
-            if ((events[i].events & EPOLLERR)
-                || events[i].events & EPOLLHUP)
-            {
+            // if ((events[i].events & EPOLLERR)
+            //     || events[i].events & EPOLLHUP)
+            // {
 
-                close(events[i].data.fd);
-                perror("EPOLLERR");
-                 close (events[i].data.fd);
-                requests.erase(events[i].data.fd) ;
-                continue;
-            }
-            else 
+            //     close(events[i].data.fd);
+            //     perror("EPOLLERR");
+            //      close (events[i].data.fd);
+            //     requests.erase(events[i].data.fd) ;
+            //     continue;
+            // }
+            // else 
             if (listeners.find(events[i].data.fd) != listeners.end()) // Check if socket belong to a server
             {
                 struct sockaddr in_addr;
@@ -127,8 +124,9 @@ void Multiplex::start(void)
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
                 requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
                 requests[events[i].data.fd].i = 0;
-                response[events[i].data.fd].cgi._waitstatus = 0;
-                response[events[i].data.fd].cgi._waitreturn = 1;
+                response.insert(std::make_pair(infd, new Response()));
+                // response[events[i].data.fd]->cgi._waitstatus = 0;
+                // response[events[i].data.fd]->cgi._waitreturn = 1;
                 continue;
             }
             else if (events[i].events & EPOLLIN )   // check if we have EPOLLIN (connection socket ready to read)
@@ -139,9 +137,11 @@ void Multiplex::start(void)
                 bytesReceived = read(events[i].data.fd, buf,  R_SIZE - 1);
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
-
+                    std::cout << "client closed " << std::endl ;
                     close(events[i].data.fd);
                     requests.erase(events[i].data.fd);
+                    delete response[events[i].data.fd] ;
+                    response.erase(events[i].data.fd) ;
                     continue;
                 }
                  // std::ofstream outputFile("reqq.txt", std::ios_base::app);
@@ -164,31 +164,29 @@ void Multiplex::start(void)
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true)
             {
                
-                    std::cout << "=?>>>>> STOPP3"<< std::endl;
+                    // std::cout << "=?>>>>> STOPP3"<< std::endl;
                 if(requests[events[i].data.fd]._loca.getCgi() == true && requests[events[i].data.fd].CGI_FLAG){
 
-                    response[events[i].data.fd].cgi._setupEnv(requests[events[i].data.fd]);
-                    std::cout << response[events[i].data.fd].cgi._waitreturn << std::endl;
+                    response[events[i].data.fd]->cgi._setupEnv(requests[events[i].data.fd]);
+                    std::cout << response[events[i].data.fd]->cgi._waitreturn << std::endl;
 
-                    if(response[events[i].data.fd].cgi._waitreturn  ){
-                        response[events[i].data.fd].fillResponseBody(requests[events[i].data.fd]);
-                        s = write (events[i].data.fd, response[events[i].data.fd].getResponse().c_str(), response[events[i].data.fd].getResponse().size());
-                        close (events[i].data.fd);
-                        requests.erase(events[i].data.fd) ;
-                        response.erase(events[i].data.fd) ;
-
-                        std::cout << "=?>>>>> STOPP"<< std::endl;
+                    if(response[events[i].data.fd]->cgi._waitreturn  ){
+                        response[events[i].data.fd]->fillResponseBody(requests[events[i].data.fd]);
+                        s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
+                        // std::cout << "=?>>>>> STOPP"<< std::endl;
                     }
                 }
                 else{
                     std::cout << "=?WIHOUT"<< std::endl;
-                    response[events[i].data.fd].fillResponseBody(requests[events[i].data.fd]);
-                    s = write (events[i].data.fd, response[events[i].data.fd].getResponse().c_str(), response[events[i].data.fd].getResponse().size());
-                     close (events[i].data.fd);
+                    response[events[i].data.fd]->fillResponseBody(requests[events[i].data.fd]);
+                    s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
+                    close (events[i].data.fd);
                     requests.erase(events[i].data.fd) ;
+                    delete response[events[i].data.fd] ;
                     response.erase(events[i].data.fd) ;
+                    close (events[i].data.fd);
                 }
-                std::cerr << "Response Sent" << std::endl;
+// std::cerr << "Response Sent" << std::endl;
             }
         }
     }

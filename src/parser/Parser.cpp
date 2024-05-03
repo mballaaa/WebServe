@@ -78,7 +78,7 @@ void Parser::_location( Server& s )
     std::string route(*curr) ;
     next() ;
     expect("{") ;
-    Location l = createLocation() ;
+    Location l = createLocation(s) ;
     s.appendLocation( route, l ) ;
     expect("}") ;
 }
@@ -234,9 +234,9 @@ Server Parser::createServer( void )
     return (s) ;
 }
 
-Location Parser::createLocation( void )
+Location Parser::createLocation( const Server& server )
 {
-    Location l ;
+    Location l = Location(server);
     while ( next() && *(--curr) != "}" )
     {
         if ( *curr == "allow_methods")

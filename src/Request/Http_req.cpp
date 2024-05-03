@@ -190,8 +190,7 @@ std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string
 
     if (it != std ::string::npos)
     {
-
-        path.replace(0, loac_value.length(), root);
+        path.replace(0, loac_value.length(), root + "/");
         return path;
     }
     return path;
@@ -265,24 +264,31 @@ int Http_req::MoreValidation()
     std::map<std::string, Location> location = this->server.getLocations();
     std::map<std::string, Location>::iterator it;
     int flag = 0;
-    std::string key;
+    std::string key = "";
+    size_t foundSize = 0 ;
     for (it = location.begin(); it != location.end(); ++it)
     {
-        const std::string &locationPath = it->first;
-        const Location &locationObj = it->second;
 
-        size_t j = 0;
-        while (j < _target.size() && j < locationPath.size() && _target[j] == locationPath[j])
-            j++;
-
-        if ((j == _target.size() && j == locationPath.size()) ||
-            (j == locationPath.size() && ((j < _target.size() && _target[j] == '/') || (j > 0 && _target[j - 1] == '/'))))
+        size_t count = 0;
+        size_t shorterLength = std::min(it->first.length(), _target.length());
+        for (size_t i = 0; i < shorterLength; ++i) {
+            if (it->first[i] == _target[i]) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (foundSize < count)
         {
-            this->_loca = locationObj;
-            flag++;
-            break;
+            foundSize = count ;
+            this->_loca = it->second;
+            key = it->first ;
+            flag = 1;
         }
     }
+
+    std::cout << "key: " << key << std::endl ;
+    std::cout << _loca << std::endl ;
 
     if (flag == 0)
     {
@@ -329,9 +335,9 @@ int Http_req::MoreValidation()
     // }
     /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
 
-    _target = SetRootLoc(_target, key, this->server.getRoot());
+    _target = SetRootLoc(_target, key, this->_loca.getRoot());
 
-    //  std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
+     std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
 
     return (1);
 }
@@ -392,6 +398,16 @@ int Http_req::StautRe(std::string request)
 
         std::istringstream input(my_req);
         input >> this->method >> this->path >> this->http_ver;
+
+        while (path.find("%") != std::string::npos)
+        {
+            unsigned int x ;
+            std::string hexCode = path.substr(path.find("%")+1, 2) ;
+            std::stringstream ss ;
+            ss << std::hex << hexCode ;
+            ss >> x ;
+            path.replace(path.find("%"), 3, std::string(1, x)) ;
+        }
 
         std ::string next_line;
         std ::getline(input, next_line);
@@ -589,7 +605,7 @@ bool Http_req::delete_Dir(std::string pathh)
             }
             else
             {
-
+                closedir(ptr);
                 _status["500"] = "Internal Server Error";
                 return false;
             }
@@ -609,7 +625,7 @@ bool Http_req::delete_Dir(std::string pathh)
     {
         perror("Error : can not open directory");
         _status["403"] = "Not Found";
-
+        closedir(ptr);
         return false;
     }
 }
@@ -702,7 +718,7 @@ std ::string getMessage(int code)
 void Http_req ::CheckLoc(int *is_file)
 {
 
-    if (this->_loca.getIndex().size() != 0)
+    if (this->_loca.getAutoIndex() && this->_loca.getIndex().size() != 0)
     {
 
         std ::vector<std ::string> index = this->_loca.getIndex();
@@ -725,7 +741,7 @@ void Http_req ::CheckLoc(int *is_file)
     }
     else
     {
-        if (this->_loca.getAutoIndex())
+        if (!this->_loca.getAutoIndex())
         {
 
             /// Here We shloud Send DirectoryListe
@@ -750,15 +766,15 @@ void Http_req ::CheckLoc(int *is_file)
                 {
                     if (list->d_type == DT_DIR)
                     {
-                        toHtml += "<a href=\"" + (std::string(_target) + "/" + std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
+                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
                     }
                     else if (list->d_type == DT_LNK)
                     {
-                        toHtml += "<a href=\"" + (std::string(_target) + "/" + std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a>\n";
+                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a>\n";
                     }
                     else if (list->d_type == DT_REG)
                     {
-                        toHtml += "<a href=\"" + (std::string(_target) + "/" + std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a> \n";
+                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a> \n";
                     }
                     list = readdir(dir);
                 }
@@ -828,9 +844,16 @@ void Http_req::LetGet()
 
     int check_type = is_file_dir(URI);
     // std :: cerr << "output" << check_type << std ::endl;
+
+    if (check_type == IS_DIR && path[path.length() - 1] != '/')
+    {
+        _status["302"] = "Found" ;
+        in_out = true ;
+        return ;
+    }
+
     if (check_type == IS_DIR)
     {
-
         CheckLoc(&is_file);
     }
 
