@@ -176,6 +176,7 @@ void Multiplex::start(void)
                     }
                 }
                 else{
+            
                     if (!response[events[i].data.fd]->headerSent)
                     {
                         response[events[i].data.fd]->fillResponseHeadre(requests[events[i].data.fd]);

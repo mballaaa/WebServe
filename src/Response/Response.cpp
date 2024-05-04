@@ -70,24 +70,15 @@ void Response::fillResponseHeadre(Http_req &request)
 void Response::fillResponseBody(Http_req &request)
 {
 
-    //std::map<std ::string, std ::string>::iterator it = request._status.begin();
-
-    // for ((void)it; it != request._status.end(); it++)
-    // {
-    //     std ::cout << "==>" << it->first << std ::endl;
-    // }
-
+   
     if (request._status.find("200") != request._status.end())
     {
         send_get(request);
+        ///std ::cout << "ddfdfsdfsfd\n";
     }
     else if (request.CGI_FLAG == false)
     {
-
-        // std::map<std::string,std::string>::iterator it = request._status.begin();
-        // std::cout << it->first << std::endl;
-        // std::cout << it->second << std::endl;
-        // std::cout << "ALOOO" << std::endl;
+   
 
         if (request._status.find("201") != request._status.end())
         {
@@ -98,7 +89,7 @@ void Response::fillResponseBody(Http_req &request)
         }
         else if (request._status.find("403") != request._status.end())
         {
-            std ::cout << "3ansd5456465465465nnn\n";
+           
             // exit(0);
 
             forrbiden();
@@ -204,6 +195,8 @@ void Response::listDirectory(std ::string html)
     std::string line;
     if (file.is_open())
     {
+        std::cout << "3ann\n";
+        
         while (getline(file, line))
             html += line + "\n";
     }
@@ -247,6 +240,7 @@ void Response::send_get(Http_req request)
     ///  std ::cout << "baaamam\n";
     if (!request.toHtml.empty())
     {
+       
         listDirectory(request.toHtml);
     }
     else

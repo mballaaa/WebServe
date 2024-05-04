@@ -183,17 +183,17 @@ std::string to_stringmetohd(int value)
 std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)
 {
     std ::string result;
-    // std ::cerr << "==> path:" << path << std ::endl;
-    // std ::cerr << "==>locationpath:" << loac_value << std ::endl;
-    // std ::cerr << "==>root:" << root << std ::endl;
+   
     size_t it = path.find(loac_value);
 
     if (it != std ::string::npos)
     {
-        path.replace(0, loac_value.length(), root + "/");
+
+        path.replace(0, loac_value.length(), root+loac_value);
         return path;
     }
     return path;
+
 }
 int Http_req::MoreValidation()
 {
@@ -287,16 +287,20 @@ int Http_req::MoreValidation()
         }
     }
 
-    std::cout << "key: " << key << std::endl ;
-    std::cout << _loca << std::endl ;
+    //  std::cout << "key: " << key << std::endl ;
+    // std::cout << _loca << std::endl ;
+  
+    
 
     if (flag == 0)
     {
+      
         _status["404"] = "Page Not Found";
         std ::cout << "Not match \n";
 
         return 0;
     }
+    
 
     /// std :: cerr << "weech\n";
     Location::redirection_t red = this->_loca.getReturn();
@@ -337,7 +341,7 @@ int Http_req::MoreValidation()
 
     _target = SetRootLoc(_target, key, this->_loca.getRoot());
 
-     std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
+    ///std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
 
     return (1);
 }
@@ -398,7 +402,7 @@ int Http_req::StautRe(std::string request)
 
         std::istringstream input(my_req);
         input >> this->method >> this->path >> this->http_ver;
-
+            /*amine do this*/
         while (path.find("%") != std::string::npos)
         {
             unsigned int x ;
@@ -408,7 +412,7 @@ int Http_req::StautRe(std::string request)
             ss >> x ;
             path.replace(path.find("%"), 3, std::string(1, x)) ;
         }
-
+           /*amine finsh*/
         std ::string next_line;
         std ::getline(input, next_line);
 
@@ -650,8 +654,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 
         if (method == "GET")
         {
-            // std :: cout << "YEssss\n";
-            // std ::cout << "sssss\n"
+            
             LetGet();
         }
         /*=============== 14 PART (begin)==================*/
@@ -667,7 +670,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     }
 }
 
-bool Is_dir(const char *ptr)
+bool Is_dir(const char *ptr,int *permission)
 {
     // std ::cerr << "ptr==>" << ptr << std ::endl;
     if (!access(ptr, X_OK | R_OK))
@@ -682,13 +685,14 @@ bool Is_dir(const char *ptr)
     }
     else
     {
+        *permission=1;
         return false;
     }
 }
-int is_file_dir(std::string uri)
+int is_file_dir(std::string uri,int *permission)
 {
 
-    if (Is_dir(uri.c_str()))
+    if (Is_dir(uri.c_str(),permission))
         return 0;
     return 1;
 }
@@ -717,10 +721,12 @@ std ::string getMessage(int code)
 
 void Http_req ::CheckLoc(int *is_file)
 {
+    std ::cout << _loca << std::endl;
 
-    if (this->_loca.getAutoIndex() && this->_loca.getIndex().size() != 0)
+    if (this->_loca.getIndex().size() != 1 )
     {
-
+    
+      
         std ::vector<std ::string> index = this->_loca.getIndex();
         // check if index file are exit
         /// ==> get first index string
@@ -738,16 +744,21 @@ void Http_req ::CheckLoc(int *is_file)
         _status["200"] = "OK";
 
         *is_file = 1;
+       
+       
     }
     else
     {
-        if (!this->_loca.getAutoIndex())
+       // std ::cout << "adhjdfjdf\n";
+       
+      
+        if (this->_loca.getAutoIndex() && this->_loca.getIndex().size()==1)
         {
-
+            
             /// Here We shloud Send DirectoryListe
             // std ::cout << _target << std ::endl;
             std ::string dirpath = _target;
-
+            std ::cout << dirpath << std ::endl;
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
 
             DIR *dir = opendir(dirpath.c_str());
@@ -758,7 +769,7 @@ void Http_req ::CheckLoc(int *is_file)
             }
             else
             {
-
+                
                 struct dirent *list;
                 list = readdir(dir);
                 // std :: cout << path << std :: endl;
@@ -781,6 +792,7 @@ void Http_req ::CheckLoc(int *is_file)
                 toHtml += "</pre>\n</body>\n</html>";
 
                 closedir(dir);
+             
                 in_out = true;
                 _status["200"] = "OK";
                 return;
@@ -789,7 +801,7 @@ void Http_req ::CheckLoc(int *is_file)
         else
         {
             // SendErrorClient(403);
-            std ::cout << "Yesss iam here\n";
+           
             in_out = true;
             _status["403"] = "Forbidden";
             return;
@@ -836,26 +848,32 @@ std::string fileExtension(std::string filename)
 }
 void Http_req::LetGet()
 {
+   
     loadCGIMap();
 
     int is_file = 0;
+    int permisson=0;
 
     std ::string URI = _target;
+    std ::cout << URI << std ::endl;
+    int check_type = is_file_dir(URI,&permisson);
 
-    int check_type = is_file_dir(URI);
+  
     // std :: cerr << "output" << check_type << std ::endl;
-
-    if (check_type == IS_DIR && path[path.length() - 1] != '/')
-    {
-        _status["302"] = "Found" ;
-        in_out = true ;
-        return ;
-    }
+ 
 
     if (check_type == IS_DIR)
     {
+        
         CheckLoc(&is_file);
     }
+     if(permisson)
+     {
+        _status["403"]="Not found";
+        in_out=true;
+        return ;
+     }
+    
 
     struct stat sb;
 
