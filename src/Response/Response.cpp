@@ -195,7 +195,7 @@ void Response::listDirectory(std ::string html)
     std::string line;
     if (file.is_open())
     {
-        std::cout << "3ann\n";
+        // std::cout << "3ann\n";
         
         while (getline(file, line))
             html += line + "\n";
@@ -237,7 +237,7 @@ void Response::noContent()
 void Response::send_get(Http_req request)
 {
     // std :: cout << "sss\n";
-    ///  std ::cout << "baaamam\n";
+    // std ::cout << "baaamam\n";
     if (!request.toHtml.empty())
     {
        

@@ -287,8 +287,8 @@ int Http_req::MoreValidation()
         }
     }
 
-    std::cout << "key: " << key << std::endl ;
-    std::cout << _loca << std::endl ;
+    // std::cout << "key: " << key << std::endl ;
+    // std::cout << _loca << std::endl ;
     
 
     if (flag == 0)
@@ -669,7 +669,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     }
 }
 
-bool Is_dir(const char *ptr,int *permission)
+bool Is_dir(const char *ptr)
 {
     // std ::cerr << "ptr==>" << ptr << std ::endl;
     if (!access(ptr, X_OK | R_OK))
@@ -684,14 +684,14 @@ bool Is_dir(const char *ptr,int *permission)
     }
     else
     {
-        *permission=1;
+   
         return false;
     }
 }
-int is_file_dir(std::string uri,int *permission)
+int is_file_dir(std::string uri)
 {
 
-    if (Is_dir(uri.c_str(),permission))
+    if (Is_dir(uri.c_str()))
         return 0;
     return 1;
 }
@@ -720,12 +720,12 @@ std ::string getMessage(int code)
 
 void Http_req ::CheckLoc(int *is_file)
 {
-    std ::cout << _loca << std::endl;
+    
 
-    if (this->_loca.getIndex().size() != 1 )
+    if (this->_loca.getIndex().size() != 0 )
     {
     
-      
+     
         std ::vector<std ::string> index = this->_loca.getIndex();
         // check if index file are exit
         /// ==> get first index string
@@ -748,11 +748,15 @@ void Http_req ::CheckLoc(int *is_file)
     }
     else
     {
-       // std ::cout << "adhjdfjdf\n";
+        // std ::cout << "adhjdfjdf\n";
+        // std::cout << this->_loca.getIndex().size();
+        // std ::cout <<  this->_loca.getAutoIndex() << std ::endl;
+        // exit(0);
        
       
-        if (this->_loca.getAutoIndex() && this->_loca.getIndex().size()==1)
+        if (this->_loca.getAutoIndex() && this->_loca.getIndex().size()==0)
         {
+            std ::cout << "yesssss\n";
             
             /// Here We shloud Send DirectoryListe
             // std ::cout << _target << std ::endl;
@@ -847,15 +851,17 @@ std::string fileExtension(std::string filename)
 }
 void Http_req::LetGet()
 {
-   
+   std ::cout << _loca << std ::endl;
+
+  
     loadCGIMap();
 
     int is_file = 0;
-    int permisson=0;
+   // int permisson=0;
 
     std ::string URI = _target;
-    std ::cout << URI << std ::endl;
-    int check_type = is_file_dir(URI,&permisson);
+   
+    int check_type = is_file_dir(URI);
 
   
     // std :: cerr << "output" << check_type << std ::endl;
@@ -863,22 +869,21 @@ void Http_req::LetGet()
 
     if (check_type == IS_DIR)
     {
+       
         
         CheckLoc(&is_file);
     }
-     if(permisson)
-     {
-        _status["403"]="Not found";
-        in_out=true;
-        return ;
-     }
+   
+   
     
 
     struct stat sb;
+ 
 
     if (stat(URI.c_str(), &sb) == 0)
     {
 
+      
         if (this->_loca.getCgi())
         {
 

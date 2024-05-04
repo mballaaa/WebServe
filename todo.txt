@@ -8,6 +8,7 @@ mballa :==> in part allow methode ( change enum for be handle only GET DELETE PO
 
 ====> SHLOUD close when use opendir
 ===> check if the path was existe
+===DIrectory check permission
 
 
 

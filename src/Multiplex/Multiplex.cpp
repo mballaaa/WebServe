@@ -115,8 +115,8 @@ void Multiplex::start(void)
                                 NI_NUMERICHOST | NI_NUMERICSERV);
                 if (s == 0)
                 {
-                    // printf("Accepted connection on descriptor %d "
-                    //         "(host=%s, port=%s)\n", infd, hbuf, sbuf);
+                    printf("Accepted connection on descriptor %d "
+                            "(host=%s, port=%s)\n", infd, hbuf, sbuf);
                 }
 
                 SocketManager::makeSocketNonBlocking(infd);
@@ -130,6 +130,7 @@ void Multiplex::start(void)
             }
             else if (events[i].events & EPOLLIN )   // check if we have EPOLLIN (connection socket ready to read)
             {
+                std::cout << "hhhhh" << std::endl ;
                 ssize_t bytesReceived;
                 char buf[R_SIZE] = {0};
 
@@ -189,7 +190,7 @@ void Multiplex::start(void)
                     write (events[i].data.fd, "\r\n", 2);
                     if (response[events[i].data.fd]->buffer.size() == 0)
                     {
-                        std::cout << "finished buffer" << std::endl ;
+                     
                         requests.erase(events[i].data.fd) ;
                         delete response[events[i].data.fd] ;
                         response.erase(events[i].data.fd) ;
