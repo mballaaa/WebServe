@@ -96,6 +96,7 @@ void Parser::_index( Location& l )
     /**
      * could have multiple index files
     */
+    l.clearIndex() ;
     expect("index") ;
     while ( *curr != ";" )
     {

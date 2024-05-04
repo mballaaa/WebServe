@@ -51,6 +51,8 @@ public:
 	void 						setUpload( const std::string& state ) ;
 	void 						setUploadPath( const std::string& path ) ;
 
+	void 						clearIndex( void ) ;
+
 } ;
 
 std::ostream& operator<<( std::ostream& os, const Location& location ) ;

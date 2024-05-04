@@ -96,6 +96,11 @@ void 						Location::setIndex( const std::string& _index )
     this->_index.push_back(_index) ;
 }
 
+void 						Location::clearIndex( void )
+{
+    this->_index.clear() ;
+}
+
 void 						Location::setAllowedMethods( const Methods_t& _allowedMethods )
 {
     this->_allowedMethods = _allowedMethods ;
@@ -172,6 +177,7 @@ std::ostream& operator<<( std::ostream& os, const Location& location )
             os << ", " ;
         
     }
+    os << std::endl ;
     
     Location::Methods_t methods = location.getAllowedMethods() ;
     Location::Methods_t::iterator itMethod = methods.begin() ;

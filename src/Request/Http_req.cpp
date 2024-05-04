@@ -287,9 +287,8 @@ int Http_req::MoreValidation()
         }
     }
 
-    //  std::cout << "key: " << key << std::endl ;
-    // std::cout << _loca << std::endl ;
-  
+    std::cout << "key: " << key << std::endl ;
+    std::cout << _loca << std::endl ;
     
 
     if (flag == 0)
