@@ -30,7 +30,6 @@ int SocketManager::createSocket( const char *host, const char *port, int ai_fami
         sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol) ;
         if (!ISVALIDSOCKET(sfd))
             continue ;
-        signal(SIGPIPE, SIG_IGN) ;
         if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &yes, sizeof(int)) == -1)
         {
             perror("setsockopt()") ;
@@ -96,6 +95,7 @@ int SocketManager::epollCtlSocket( int sfd, int op, uint32_t _events )
 
     event.data.fd = sfd;
     event.events = _events ;
+    signal(SIGPIPE, SIG_IGN) ;
     s = epoll_ctl (epollFD, op, sfd, &event);
     if (s == -1)
     {

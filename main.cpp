@@ -18,16 +18,18 @@
 int main( int argc, char **argv )
 {
 	Parser::servers_t servers ;
-	if (argc != 2)
-	{
-		std::cerr << USAGE << std::endl ;
-		return (2) ;
-	}
-	(void) argv ;
 	Lexer::tokens_t tokens ;
 	try
 	{
-		tokens = Lexer::checkSyntax(argv[1]) ;
+		if (argc != 2)
+		{
+			tokens = Lexer::checkSyntax("./default.conf") ;
+		}
+		else
+		{
+			tokens = Lexer::checkSyntax(argv[1]) ;
+		}
+
 		servers = Parser::parse(tokens) ;
 		// std::for_each(servers.begin(), servers.end(), print) ;
 		Multiplex::setup(servers) ;
