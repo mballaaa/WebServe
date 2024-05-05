@@ -191,18 +191,19 @@ void Response::notFound()
 }
 void Response::listDirectory(std ::string html)
 {
-    std::ifstream file("www/html/listDirectory.html");
-    std::string line;
-    if (file.is_open())
-    {
+    // std::ifstream file("www/html/listDirectory.html");
+    // std::string line;
+    // if (file.is_open())
+    // {
         // std::cout << "3ann\n";
         
-        while (getline(file, line))
-            html += line + "\n";
-    }
-    file.close();
-
-    _resbody = html;
+        // while (getline(file, line))
+            // html += line + "\n";
+    // }
+    // file.close();
+    buffer = std::vector<char>(html.begin(), html.end()) ;
+    readSize = html.size() ;
+    chunkHeader = sizeToHex(readSize) ;
 }
 
 void Response::noContent()
@@ -234,14 +235,14 @@ void Response::noContent()
     }
 }
 #include <cstring>
-void Response::send_get(Http_req request)
+void Response::send_get(Http_req &request)
 {
     // std :: cout << "sss\n";
     // std ::cout << "baaamam\n";
     if (!request.toHtml.empty())
     {
-       
         listDirectory(request.toHtml);
+        request.toHtml.clear() ;
     }
     else
     {

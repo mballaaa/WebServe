@@ -26,9 +26,11 @@ public:
 
 public: // amine: i made this public for now
         /// this the start line
+    std::ifstream configFile ;
     size_t uploadedFileSize ;
     // std::ofstream debugFileAmine ;
     bool        moreValidationDone ;
+    std::ofstream uploadFile ;
     std::string req;
     std::string _target;
     bool is_close;

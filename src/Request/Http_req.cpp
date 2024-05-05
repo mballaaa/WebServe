@@ -27,6 +27,7 @@ Http_req::Http_req(Server &server)
     i = 0 ;
     moreValidationDone = false ;
     uploadedFileSize = 0 ;
+    configFile.open("./src/Cgi/pathExecutableFile.txt");
     mimeParse();
 }
 
@@ -721,8 +722,6 @@ std ::string getMessage(int code)
 
 void Http_req ::CheckLoc(int *is_file)
 {
-    
-    
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     if (this->_loca.getIndex().size() != 0 )
     {
@@ -745,8 +744,6 @@ void Http_req ::CheckLoc(int *is_file)
         _status["200"] = "OK";
 
         *is_file = 1;
-       
-       
     }
     else
     {
@@ -774,7 +771,6 @@ void Http_req ::CheckLoc(int *is_file)
             }
             else
             {
-                
                 struct dirent *list;
                 list = readdir(dir);
                 // std :: cout << path << std :: endl;
@@ -820,7 +816,6 @@ void Http_req::loadCGIMap()
         return;
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 
-    std::ifstream configFile("./src/Cgi/pathExecutableFile.txt");
     if (configFile.is_open())
     {
         std::string line;
@@ -833,7 +828,6 @@ void Http_req::loadCGIMap()
                 cgiMap[ext] = path;
             }
         }
-        configFile.close();
     }
     else
     {
@@ -895,7 +889,7 @@ void Http_req::LetGet()
             // cehck extions
             // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
             std ::string extension = fileExtension(URI);
-            // std ::cout << extension << std ::endl;
+            std ::cout << "extension: " << extension << std ::endl;
             if (extension == "php" || extension == "python")
             {
                 std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
@@ -1054,14 +1048,15 @@ void Http_req::LetPost()
         {
             /*First check if the extension exist */
             std::string str;
-            if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == "")
-                make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
-            else if (make_name == "")
-                make_name = "Upload/" + randNameGen() + ".txt";
-                
-            std::ofstream file(make_name.c_str(), std::ios::app);
-
-            if (!file.is_open())
+            if (make_name == "")
+            {
+                if (_mime.find(header["content-type"].substr(1)) != _mime.end())
+                    make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+                else
+                    make_name = "Upload/" + randNameGen() + ".txt";
+                uploadFile.open(make_name.c_str());
+            }
+            if (!uploadFile.is_open())
             {
                 std::cout << "File Upload Error" << std::endl;
                 return;
@@ -1087,7 +1082,7 @@ void Http_req::LetPost()
                         if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
                         {
                             std::string correct = to_file.substr(0, chunksize);
-                            file << correct;
+                            uploadFile << correct;
                             to_file.erase(0, chunksize + 2);
                             if (to_file.size())
                             {
@@ -1103,7 +1098,7 @@ void Http_req::LetPost()
                         {
                             _status["201"] = "Created";
                             header["content-type"] = "text/html";
-                            file.close();
+                            uploadFile.close();
                             break;
                         }
                     }
@@ -1115,16 +1110,17 @@ void Http_req::LetPost()
             else
             {
                 uploadedFileSize += body.size() ;
-                file << body;
+                uploadFile << body;
                 // if(checkSize(make_name.c_str(),header["content-length"].substr(1)) == true)
                 size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10) ;
+                // std::cout << uploadedFileSize << "/" << fullSize << std::endl ;
                 if (uploadedFileSize == fullSize)
                 {
                     in_out = true;
                     _status["201"] = "Created";
                     header["content-type"] = "text/html";
+                    uploadFile.close();
                 }
-                file.close();
                 i++;
             }
         }
@@ -1143,4 +1139,7 @@ Http_req::~Http_req()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     // debugFileAmine.close() ;
+    configFile.close() ;
+    uploadFile.close() ;
+    file.close() ;
 }
