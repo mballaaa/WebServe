@@ -26,6 +26,9 @@ public:
 
 public: // amine: i made this public for now
         /// this the start line
+    size_t uploadedFileSize ;
+    // std::ofstream debugFileAmine ;
+    bool        moreValidationDone ;
     std::string req;
     std::string _target;
     bool is_close;
@@ -49,7 +52,7 @@ public: // amine: i made this public for now
     size_t lencontent;
     bool cgi_in;
     std ::string GetFIle;
-    
+        
      std::map<std::string, std::string> header;
     Server server;
     Location _loca;

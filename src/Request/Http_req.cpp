@@ -10,20 +10,29 @@ static int a = 0;
 /*=============== 14 PART (begin)==================*/
 Http_req::Http_req()
 {
+    // debugFileAmine.open("debug.log") ;
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 }
 /*=============== 14 PART (end)==================*/
 Http_req::Http_req(Server &server)
 {
+    // debugFileAmine.open("debug.log") ;
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     toHtml = "";
     is_finsh = false;
     this->server = server;
     in_out = false;
     CGI_FLAG = false;
     query_string = "";
+    i = 0 ;
+    moreValidationDone = false ;
+    uploadedFileSize = 0 ;
+    mimeParse();
 }
 
 Http_req::Http_req(const Http_req &obj)
 {
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     query_string = obj.query_string;
     req = obj.req;
     _target = obj._target;
@@ -48,11 +57,14 @@ Http_req::Http_req(const Http_req &obj)
     CGI_FLAG = obj.CGI_FLAG;
     cgiMap = obj.cgiMap;
     GetFIle = obj.GetFIle;
+    uploadedFileSize = obj.uploadedFileSize ;
+    moreValidationDone = obj.moreValidationDone ;
 }
 
 // copyy
 Http_req &Http_req::operator=(const Http_req &obj)
 {
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     if (this != &obj)
     {
         query_string = obj.query_string;
@@ -80,58 +92,60 @@ Http_req &Http_req::operator=(const Http_req &obj)
         CGI_FLAG = obj.CGI_FLAG;
         cgiMap = obj.cgiMap;
         GetFIle = obj.GetFIle;
+        uploadedFileSize = obj.uploadedFileSize ;
+        moreValidationDone = obj.moreValidationDone ;
     }
     return *this;
 }
 /*  Getter   */
 const std::string &Http_req::getTarget() const
 {
-    return _target;
+        return _target;
 }
 const std::string &Http_req::getBody() const
 {
-    return body;
+        return body;
 }
 
 const std::string &Http_req::getMethod() const
 {
-    return method;
+        return method;
 }
 
 const std::string &Http_req::getPath() const
 {
-    return path;
+        return path;
 }
 
 const std::string &Http_req::getHttpVersion() const
 {
-    return http_ver;
+        return http_ver;
 }
 
 const std::map<std::string, std::string> &Http_req::getHeader() const
 {
-    return header;
+        return header;
 }
 
 const Server &Http_req::getServer() const
 {
-    return server;
+        return server;
 }
 
 const Location &Http_req::getLocation() const
 {
-    return _loca;
+        return _loca;
 }
 /*=============== 14 PART (begin)==================*/
 
 const std::map<std::string, std::string> &Http_req::getStatus() const
 {
-    return _status;
+        return _status;
 }
 
 const bool &Http_req::getFlag() const
 {
-    return in_out;
+        return in_out;
 }
 /*=============== 14 PART (end)==================*/
 /*
@@ -146,26 +160,13 @@ const bool &Http_req::getFlag() const
 bool comparePaths(const std::string &target, const std::string &key)
 {
     // Check if the target starts with the key
-    if (target.compare(0, key.length(), key) != 0)
+        if (target.compare(0, key.length(), key) != 0)
         return false;
 
     // If the target is exactly the same as the key or the next character is a '/'
     return (target.length() == key.length() || target[key.length()] == '/');
 }
-int check_path(std ::string path)
-{
 
-    if (path.empty())
-    {
-        // return (0);
-    }
-    if (path.at(0) != '/')
-    {
-        // return (0);
-    }
-
-    return (1);
-}
 std::string to_stringmetohd(int value)
 {
     switch (value)
@@ -197,17 +198,12 @@ std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string
 }
 int Http_req::MoreValidation()
 {
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 
-    if (!check_path(this->path))
-    {
-
-        return 0;
-    }
     // /// check method
 
     if (method != "GET" && method != "POST" && method != "DELETE")
     {
-
         return (0);
     }
     if (http_ver != "HTTP/1.1")
@@ -319,6 +315,7 @@ int Http_req::MoreValidation()
     for (size_t i = 0; i < allowmethod.size(); i++)
     {
         // change to stirng
+        // debugFileAmine << "std::string to_stringmetohd(int value)" << std::endl ;
         std ::string get_methode = to_stringmetohd(allowmethod[i]);
         //  std :: cerr << "get methode==>\n" << get_methode << std ::endl;
         if (get_methode == this->method)
@@ -338,15 +335,17 @@ int Http_req::MoreValidation()
     // }
     /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
 
+    // debugFileAmine << "std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)" << std::endl ;
     _target = SetRootLoc(_target, key, this->_loca.getRoot());
 
     ///std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
-
+    moreValidationDone = 1 ;
     return (1);
 }
 void Http_req::debugFunction()
 {
-    // std ::cout << "Yesss\n";
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+        // std ::cout << "Yesss\n";
     // std ::cout << "our infoo\n";
     // std ::cout << "type mthode=>" << this->method << std ::endl;
     // std ::cout << "path=>" << this->path << std ::endl;
@@ -379,8 +378,9 @@ long hex_to_decimal(const std::string &hexString)
 }
 int Http_req::StautRe(std::string request)
 {
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 
-    //////////////////
+        //////////////////
     // std ::cout << request << std ::endl;
 
     std ::string my_req = "";
@@ -480,8 +480,7 @@ int Http_req::StautRe(std::string request)
 
     if (is_finsh == true)
     {
-        debugFunction();
-        if (MoreValidation() == 0)
+        if (!moreValidationDone && MoreValidation() == 0)
         {
             std ::cout << "dddddd\n";
             in_out = true;
@@ -496,7 +495,8 @@ int Http_req::StautRe(std::string request)
 void Http_req::LetDelete()
 {
 
-    struct stat infoo;
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+        struct stat infoo;
     std::string URI = _target;
     if (stat(_target.c_str(), &infoo) == 0)
     {
@@ -557,7 +557,8 @@ void Http_req::LetDelete()
 
 bool Http_req::delete_Dir(std::string pathh)
 {
-    DIR *ptr = opendir(pathh.c_str());
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+        DIR *ptr = opendir(pathh.c_str());
 
     if (ptr != NULL)
     {
@@ -635,7 +636,8 @@ bool Http_req::delete_Dir(std::string pathh)
 
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
-    std::ofstream outputFile("request.txt", std::ios_base::app);
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+    // std::ofstream outputFile("request.txt", std::ios_base::app);
 
     // std :: cout << bufer << std ::endl;
     (void)bufer;
@@ -690,7 +692,6 @@ bool Is_dir(const char *ptr)
 }
 int is_file_dir(std::string uri)
 {
-
     if (Is_dir(uri.c_str()))
         return 0;
     return 1;
@@ -721,7 +722,8 @@ std ::string getMessage(int code)
 void Http_req ::CheckLoc(int *is_file)
 {
     
-
+    
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     if (this->_loca.getIndex().size() != 0 )
     {
     
@@ -816,6 +818,7 @@ void Http_req::loadCGIMap()
 {
     if (!cgiMap.empty())
         return;
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 
     std::ifstream configFile("./src/Cgi/pathExecutableFile.txt");
     if (configFile.is_open())
@@ -851,8 +854,9 @@ std::string fileExtension(std::string filename)
 }
 void Http_req::LetGet()
 {
-   std ::cout << _loca << std ::endl;
+    // std ::cout << _loca << std ::endl;
 
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
   
     loadCGIMap();
 
@@ -861,6 +865,7 @@ void Http_req::LetGet()
 
     std ::string URI = _target;
    
+    // debugFileAmine << "int is_file_dir(std::string uri)" << std::endl ;
     int check_type = is_file_dir(URI);
 
   
@@ -888,8 +893,9 @@ void Http_req::LetGet()
         {
 
             // cehck extions
+            // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
             std ::string extension = fileExtension(URI);
-            std ::cout << extension << std ::endl;
+            // std ::cout << extension << std ::endl;
             if (extension == "php" || extension == "python")
             {
                 std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
@@ -942,7 +948,8 @@ void Http_req::LetGet()
 /*=============== 14 PART (begin)==================*/
 void Http_req::mimeParse()
 {
-    std::ifstream file("mime.types");
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+        std::ifstream file("mime.types");
     std::string line;
     std::string key;
     std::string value;
@@ -971,11 +978,13 @@ void Http_req::mimeParse()
 
 void Http_req::contentLenght()
 {
-}
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+    }
 
 std::string Http_req::randNameGen()
 {
-    srand(time(NULL));
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+        srand(time(NULL));
     std::string c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string name;
     for (int i = 0; i < 5; i++)
@@ -985,7 +994,6 @@ std::string Http_req::randNameGen()
 
 void getSize(std::string body)
 {
-
     std::string size = body.substr(0, body.find("\r\n"));
 }
 
@@ -1021,8 +1029,9 @@ bool checkSize(std::string name, std::string size)
 
 void Http_req::LetPost()
 {
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     /*location not found*/
-    if (_loca.getUploadPath() == "Not Found")
+        if (_loca.getUploadPath() == "Not Found")
     {
         /*Status 404*/
         in_out = true;
@@ -1031,8 +1040,7 @@ void Http_req::LetPost()
     else if (_loca.getUpload() == true)
     {
 
-        in_out = true;
-        mimeParse();
+        // in_out = true;
         if (header["content-length"] == " 0")
         {
             /*Status 204*/
@@ -1050,7 +1058,7 @@ void Http_req::LetPost()
                 make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
             else if (make_name == "")
                 make_name = "Upload/" + randNameGen() + ".txt";
-
+                
             std::ofstream file(make_name.c_str(), std::ios::app);
 
             if (!file.is_open())
@@ -1068,6 +1076,7 @@ void Http_req::LetPost()
                 {
                     classChunksizeString = body.substr(0, body.find("\r\n") + 2);
                     body = body.substr(body.find("\r\n") + 2);
+                    // debugFileAmine << "int hexStringToInt(const std::string &hexString)" << std::endl ;
                     chunksize = hexStringToInt(classChunksizeString);
                 }
                 to_file += body;
@@ -1083,6 +1092,7 @@ void Http_req::LetPost()
                             if (to_file.size())
                             {
                                 classChunksizeString = to_file.substr(0, to_file.find("\r\n") + 2);
+                                // debugFileAmine << "int hexStringToInt(const std::string &hexString)" << std::endl ;
                                 chunksize = hexStringToInt(classChunksizeString);
                                 to_file.erase(0, classChunksizeString.size());
                             }
@@ -1104,13 +1114,17 @@ void Http_req::LetPost()
             }
             else
             {
+                uploadedFileSize += body.size() ;
                 file << body;
                 // if(checkSize(make_name.c_str(),header["content-length"].substr(1)) == true)
-                in_out = true;
+                size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10) ;
+                if (uploadedFileSize == fullSize)
+                {
+                    in_out = true;
+                    _status["201"] = "Created";
+                    header["content-type"] = "text/html";
+                }
                 file.close();
-                _status["201"] = "Created";
-                header["content-type"] = "text/html";
-
                 i++;
             }
         }
@@ -1127,4 +1141,6 @@ void Http_req::LetPost()
 
 Http_req::~Http_req()
 {
+    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+    // debugFileAmine.close() ;
 }

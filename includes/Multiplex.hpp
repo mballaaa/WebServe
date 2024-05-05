@@ -35,7 +35,7 @@
 #define FORECYN  "\x1B[36m" // Cyan
 #define FOREWHT  "\x1B[37m" // White
 
-#define R_SIZE 1024 // Read Buffer Size
+#define R_SIZE 4096 * 1024 // Read Buffer Size
 
 class Multiplex
 {
@@ -44,7 +44,7 @@ public:
 	typedef std::map<SOCKET, Server> listeners_t ;
 	typedef std::map<std::string, SOCKET> host_port_map_t ;
 	typedef struct epoll_event epoll_event_t ;
-    typedef std::map<SOCKET, Http_req> requests_t ;
+    typedef std::map<SOCKET, Http_req*> requests_t ;
     typedef std::map<SOCKET, Response*> response_t ; // For "JaQen" Response
     // typedef std::map<SOCKET, Cgi> cgi_t ; // For "JaQen" Response
 	

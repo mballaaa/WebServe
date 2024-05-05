@@ -125,8 +125,7 @@ void Multiplex::start(void)
 
                 SocketManager::makeSocketNonBlocking(infd);
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
-                requests.insert(std::make_pair(infd, Http_req(listeners[events[i].data.fd])));
-                requests[events[i].data.fd].i = 0;
+                requests.insert(std::make_pair(infd, new Http_req(listeners[events[i].data.fd])));
                 response.insert(std::make_pair(infd, new Response()));
                 // response[events[i].data.fd]->cgi._waitstatus = 0;
                 // response[events[i].data.fd]->cgi._waitreturn = 1;
@@ -134,7 +133,6 @@ void Multiplex::start(void)
             }
             else if (events[i].events & EPOLLIN )   // check if we have EPOLLIN (connection socket ready to read)
             {
-                std::cout << "hhhhh" << std::endl ;
                 ssize_t bytesReceived;
                 char buf[R_SIZE] = {0};
 
@@ -143,39 +141,26 @@ void Multiplex::start(void)
                 {
                     std::cout << "client closed " << std::endl ;
                     close(events[i].data.fd);
-                    requests.erase(events[i].data.fd);
+                    delete requests[events[i].data.fd] ;
+                    requests.erase(events[i].data.fd) ;
                     delete response[events[i].data.fd] ;
                     response.erase(events[i].data.fd) ;
                     continue;
                 }
-                 // std::ofstream outputFile("reqq.txt", std::ios_base::app);
-
-    // if (outputFile.is_open())
-    // {
-    //     // Output body to the file
-    //     outputFile << buf;
-
-    //     // Close the file
-        
-    // }
-    // outputFile.close();
                 std::string toSTing(buf,bytesReceived);
-
-
-               requests[events[i].data.fd].parse_re(toSTing, bytesReceived);
-
+                requests[events[i].data.fd]->parse_re(toSTing, bytesReceived);
             }
-            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd].getFlag() == true)
+            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd]->getFlag() == true)
             {
-               
-                    // std::cout << "=?>>>>> STOPP3"<< std::endl;
-                if(requests[events[i].data.fd]._loca.getCgi() == true && requests[events[i].data.fd].CGI_FLAG){
 
-                    response[events[i].data.fd]->cgi._setupEnv(requests[events[i].data.fd]);
+                    // std::cout << "=?>>>>> STOPP3"<< std::endl;
+                if(requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->CGI_FLAG){
+
+                    response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);
                     std::cout << response[events[i].data.fd]->cgi._waitreturn << std::endl;
 
                     if(response[events[i].data.fd]->cgi._waitreturn  ){
-                        response[events[i].data.fd]->fillResponseBody(requests[events[i].data.fd]);
+                        response[events[i].data.fd]->fillResponseBody(*requests[events[i].data.fd]);
                         s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
                         // std::cout << "=?>>>>> STOPP"<< std::endl;
                     }
@@ -184,17 +169,17 @@ void Multiplex::start(void)
             
                     if (!response[events[i].data.fd]->headerSent)
                     {
-                        response[events[i].data.fd]->fillResponseHeadre(requests[events[i].data.fd]);
+                        response[events[i].data.fd]->fillResponseHeadre(*requests[events[i].data.fd]);
                         s = write (events[i].data.fd, response[events[i].data.fd]->_resheaders.c_str(), response[events[i].data.fd]->_resheaders.size());
                         response[events[i].data.fd]->headerSent = true ;
                     }
-                    response[events[i].data.fd]->fillResponseBody(requests[events[i].data.fd]);
+                    response[events[i].data.fd]->fillResponseBody(*requests[events[i].data.fd]);
                     write (events[i].data.fd, response[events[i].data.fd]->chunkHeader.c_str(), response[events[i].data.fd]->chunkHeader.size());
                     write (events[i].data.fd, &response[events[i].data.fd]->buffer[0], response[events[i].data.fd]->readSize);
                     write (events[i].data.fd, "\r\n", 2);
                     if (response[events[i].data.fd]->buffer.size() == 0)
                     {
-                     
+                        delete requests[events[i].data.fd] ;
                         requests.erase(events[i].data.fd) ;
                         delete response[events[i].data.fd] ;
                         response.erase(events[i].data.fd) ;

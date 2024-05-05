@@ -83,7 +83,7 @@ void Response::fillResponseBody(Http_req &request)
         if (request._status.find("201") != request._status.end())
         {
 
-            std::cout << "ALOOO" << std::endl;
+            // std::cout << "ALOOO" << std::endl;
 
             created();
         }
