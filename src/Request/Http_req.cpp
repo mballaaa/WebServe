@@ -723,9 +723,10 @@ std ::string getMessage(int code)
 void Http_req ::CheckLoc(int *is_file)
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+    std ::cout << _loca << std ::endl;
     if (this->_loca.getIndex().size() != 0 )
     {
-    
+        
      
         std ::vector<std ::string> index = this->_loca.getIndex();
         // check if index file are exit
@@ -737,8 +738,14 @@ void Http_req ::CheckLoc(int *is_file)
         // std ::cout << "==>" << this->_loca.getRoot() << std ::endl;
 
         // std ::cerr << "index  name==>" << main_index << std ::endl;
+        if(_target[_target.length()-1] != '/' )
+        {
+            
+           _target+="/";
+        }
         //  std ::cout << "==> index" << main_index << std ::endl;
         _target += main_index;
+        
 
         in_out = true;
         _status["200"] = "OK";
@@ -755,7 +762,7 @@ void Http_req ::CheckLoc(int *is_file)
       
         if (this->_loca.getAutoIndex() && this->_loca.getIndex().size()==0)
         {
-            std ::cout << "yesssss\n";
+          
             
             /// Here We shloud Send DirectoryListe
             // std ::cout << _target << std ::endl;
@@ -801,6 +808,8 @@ void Http_req ::CheckLoc(int *is_file)
         }
         else
         {
+           
+
             // SendErrorClient(403);
            
             in_out = true;
@@ -871,6 +880,7 @@ void Http_req::LetGet()
        
         
         CheckLoc(&is_file);
+        URI=_target;
     }
    
    
@@ -881,15 +891,16 @@ void Http_req::LetGet()
 
     if (stat(URI.c_str(), &sb) == 0)
     {
-
+      
       
         if (this->_loca.getCgi())
         {
 
+         
             // cehck extions
             // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
             std ::string extension = fileExtension(URI);
-            std ::cout << "extension: " << extension << std ::endl;
+           // std ::cout << "extension: " << extension << std ::endl;
             if (extension == "php" || extension == "python")
             {
                 std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
@@ -918,9 +929,10 @@ void Http_req::LetGet()
 
         if ((sb.st_mode & S_IFREG) || is_file)
         {
+          
 
-            header["content-type"] = "text/html";
-            GetFIle = URI;
+        
+          _status.clear();
             _status["200"] = "ok";
             in_out = true;
 

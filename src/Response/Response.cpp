@@ -246,10 +246,12 @@ void Response::send_get(Http_req &request)
     }
     else
     {
+      
         readSize = 0 ;
         if (!fileOpened)
         {
-            file.open(request._target.c_str(), std::ios::binary); // Open the file again
+            std::cout << request._target << std::endl;
+            file.open(request._target.c_str(), std::ios::binary); 
             fileOpened = true ;
         }
         if (file.is_open())
