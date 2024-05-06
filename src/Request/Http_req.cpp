@@ -28,7 +28,7 @@ Http_req::Http_req(Server &server)
     moreValidationDone = false ;
     uploadedFileSize = 0 ;
     configFile.open("./src/Cgi/pathExecutableFile.txt");
-    mimeParse();
+        mimeParse();
 }
 
 Http_req::Http_req(const Http_req &obj)
@@ -60,7 +60,7 @@ Http_req::Http_req(const Http_req &obj)
     GetFIle = obj.GetFIle;
     uploadedFileSize = obj.uploadedFileSize ;
     moreValidationDone = obj.moreValidationDone ;
-}
+    }
 
 // copyy
 Http_req &Http_req::operator=(const Http_req &obj)
@@ -185,18 +185,50 @@ std::string to_stringmetohd(int value)
 std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)
 {
     std ::string result;
+
+    // std::cout << "SetRootLoc" << std::endl ;
+    // std::cout << "path: " << path << std::endl ;
+    // std::cout << "loac_value: " << loac_value << std::endl ;
+    // std::cout << "root: " << root << std::endl ;
    
+    if (path == loac_value)
+        return path ;
     size_t it = path.find(loac_value);
 
     if (it != std ::string::npos)
     {
-
         path.replace(0, loac_value.length(), root+loac_value);
         return path;
     }
     return path;
 
 }
+
+// replace douplicate '/' in path with one
+std::string replaceDuplicateSlash(const std::string &path)
+{
+    std::string result = path;
+    size_t pos = 0;
+    while ((pos = result.find("//", pos)) != std::string::npos)
+    {
+        result.erase(pos, 1);
+    }
+    return result;
+}
+
+// split string by delimiter
+std::vector<std::string> split(const std::string &s, char delim)
+{
+    std::vector<std::string> result;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim))
+    {
+        result.push_back(item);
+    }
+    return result;
+}
+
 int Http_req::MoreValidation()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
@@ -263,29 +295,40 @@ int Http_req::MoreValidation()
     int flag = 0;
     std::string key = "";
     size_t foundSize = 0 ;
-    for (it = location.begin(); it != location.end(); ++it)
-    {
 
+    std::vector<std::string> splittedTarget = split(_target, '/');
+    for (it = location.begin(); it != location.end(); it++)
+    {
+        _target = replaceDuplicateSlash(_target) ;
+        // std::cout << "_target: " << _target << std::endl ;
+        // std::cout << "it->first: " << it->first << std::endl ;
+
+        // split it->first and _target by '/'
+        std::vector<std::string> splittedLocationPath = split(it->first, '/');
+
+        // count the number of matched elements in splittedLocationPath and splittedTarget
         size_t count = 0;
-        size_t shorterLength = std::min(it->first.length(), _target.length());
-        for (size_t i = 0; i < shorterLength; ++i) {
-            if (it->first[i] == _target[i]) {
+        size_t shorterLength = std::min(splittedLocationPath.size(), splittedTarget.size());
+        for (size_t i = 0; i < shorterLength; ++i)
+        {
+            if (splittedLocationPath[i] == splittedTarget[i])
+            {
                 count++;
             } else {
                 break;
             }
+            if (count > foundSize)
+            {
+                foundSize = count ;
+                this->_loca = it->second;
+                key = it->first ;
+                flag = 1;
+            }
         }
-        if (foundSize < count)
-        {
-            foundSize = count ;
-            this->_loca = it->second;
-            key = it->first ;
-            flag = 1;
-        }
-    }
 
-    // std::cout << "key: " << key << std::endl ;
-    // std::cout << _loca << std::endl ;
+    }
+    std::cout << "key: " << key << std::endl ;
+    std::cout << _loca << std::endl ;
     
 
     if (flag == 0)
@@ -1073,12 +1116,10 @@ void Http_req::LetPost()
                 std::cout << "File Upload Error" << std::endl;
                 return;
             }
-            std::istringstream body_forstream(body);
-            std::string chunk_sizeString;
-
+            
             if (header["transfer-encoding"] == " chunked")
             {
-
+                
                 if (!i)
                 {
                     classChunksizeString = body.substr(0, body.find("\r\n") + 2);
@@ -1092,7 +1133,7 @@ void Http_req::LetPost()
                     if (chunksize <= to_file.size())
                     {
                         if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
-                        {
+                    {
                             std::string correct = to_file.substr(0, chunksize);
                             uploadFile << correct;
                             to_file.erase(0, chunksize + 2);
@@ -1108,12 +1149,12 @@ void Http_req::LetPost()
                             break;
                         if (!chunksize)
                         {
-                            _status["201"] = "Created";
-                            header["content-type"] = "text/html";
-                            uploadFile.close();
-                            break;
-                        }
-                    }
+                    _status["201"] = "Created";
+                    header["content-type"] = "text/html";
+                    uploadFile.close();
+                    break;
+                }
+}
                     else
                         break;
                 }
