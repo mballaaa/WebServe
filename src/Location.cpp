@@ -19,6 +19,10 @@ Location::Location( const Location& rhs )
     this->_cgi = rhs._cgi ;
     this->_upload = rhs._upload ;
     this->_upload_path = rhs._upload_path ;
+
+    CgiPath_t::const_iterator itCgi = rhs._cgiMap.begin() ;
+    while (rhs._cgiMap.size() &&  itCgi != rhs._cgiMap.end())
+        this->_cgiMap.insert(*itCgi++) ;
 }
 
 Location& Location::operator=( const Location& rhs )
@@ -31,6 +35,10 @@ Location& Location::operator=( const Location& rhs )
     this->_cgi = rhs._cgi ;
     this->_upload = rhs._upload ;
     this->_upload_path = rhs._upload_path ;
+    
+    CgiPath_t::const_iterator itCgi = rhs._cgiMap.begin() ;
+    while (rhs._cgiMap.size() &&  itCgi != rhs._cgiMap.end())
+        this->_cgiMap.insert(*itCgi++) ;
 
     return (*this) ;
 }
@@ -69,6 +77,11 @@ const std::string&				Location::getRoot( void ) const
 const bool&                   Location::getCgi( void ) const
 {
     return (_cgi ) ;
+}
+
+const Location::CgiPath_t&			    Location::getCgiPaths( void ) const
+{
+    return (_cgiMap) ;
 }
 
 const bool&                    Location::getUpload( void ) const
@@ -134,6 +147,11 @@ void 						Location::setCgi( const std::string& state )
         throw std::runtime_error("Unexpected value for cgi: " + state) ;
 }
 
+void 						Location::setCgiPath( const std::string& extension, const std::string& path )
+{
+    this->_cgiMap[extension] = path ;
+}
+
 void 						Location::setUpload( const std::string& state )
 {
     if (state == "on")
@@ -197,6 +215,15 @@ std::ostream& operator<<( std::ostream& os, const Location& location )
 
     os << "\t\tUpload: " << (location.getUpload() ? "on" : "off") << std::endl ;
     os << "\t\tUpload Path: " << location.getUploadPath() << std::endl ;
+
+    os << "\t\tcgi: " << std::endl ;
+    Location::CgiPath_t _cgiMap = location.getCgiPaths() ;
+    Location::CgiPath_t::iterator itCgi = _cgiMap.begin() ;
+    while (itCgi != _cgiMap.end())
+    {
+        os << "\t\t\t\t" << itCgi->first << " " << itCgi->second << std::endl ;
+        itCgi++ ;
+    }
 
     return (os) ;
 }

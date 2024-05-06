@@ -155,6 +155,16 @@ void Parser::_cgi( Location& l )
     expect(";") ;
 }
 
+void Parser::_cgiPath( Location& l )
+{
+    expect("cgi_path") ;
+    std::string extension = *curr ;
+    next() ;
+    l.setCgiPath(extension, *curr) ;
+    next() ;
+    expect(";") ;
+}
+
 void Parser::_upload_path( Location& l )
 {
     expect("upload_path") ;
@@ -249,6 +259,8 @@ Location Parser::createLocation( const Server& server )
             _index(l) ;
         else if ( *curr == "cgi")
             _cgi(l) ;
+        else if ( *curr == "cgi_path")
+            _cgiPath(l) ;
         else if ( *curr == "return")
             _return(l) ;
         else if ( *curr == "upload")

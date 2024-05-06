@@ -55,6 +55,7 @@ private:
     static void _return( Location& s ) ;
     static void _root( Location& s ) ;
     static void _cgi( Location& s ) ;
+    static void _cgiPath( Location& s ) ;
     static void _upload_path( Location& s ) ;
     static void _upload( Location& s ) ;
 };

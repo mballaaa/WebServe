@@ -18,6 +18,7 @@ static void fillMaps( void )
 	Lexer::symNames[Lexer::RETURN] = "RETURN" ;
 	Lexer::symNames[Lexer::ALLOW_METHODS] = "ALLOW_METHODS" ;
 	Lexer::symNames[Lexer::CGI] = "CGI" ;
+	Lexer::symNames[Lexer::CGI_PATH] = "CGI_PATH" ;
 	Lexer::symNames[Lexer::MULTIPLE_P] = "MULTIPLE_P" ;
 	Lexer::symNames[Lexer::SINGLE_P] = "SINGLE_P" ;
 
@@ -38,6 +39,7 @@ static void fillMaps( void )
 	Lexer::nameSyms["allow_methods"] = Lexer::ALLOW_METHODS ;
 	Lexer::nameSyms["return"] = Lexer::RETURN ;
 	Lexer::nameSyms["cgi"] = Lexer::CGI ;
+	Lexer::nameSyms["cgi_path"] = Lexer::CGI_PATH ;
 	Lexer::nameSyms["}"] = Lexer::CCB ;
 }
 
@@ -153,7 +155,7 @@ void Lexer::location( void )
 	std::string path(*it) ;
 	expect(SINGLE_P) ;
 	expect(OCB) ;
-	while (sym == SINGLE_P || sym == ERR_PAGE || sym == ALLOW_METHODS || sym == CGI || sym == MULTIPLE_P || sym == RETURN )
+	while (sym == SINGLE_P || sym == ERR_PAGE || sym == ALLOW_METHODS || sym == CGI || sym == MULTIPLE_P || sym == RETURN || sym == CGI_PATH )
 	{
 		if (sym == SINGLE_P)
 			signleParam() ;
@@ -165,6 +167,8 @@ void Lexer::location( void )
 			_return() ;
 		else if (sym == ALLOW_METHODS)
 			allowMethods() ;
+		else if (sym == CGI_PATH)
+			cgiPath() ;
 		else if (sym == CGI)
 			cgi() ;
 	}
@@ -197,6 +201,14 @@ void Lexer::allowMethods( void )
 void Lexer::cgi( void )
 {
 	expect(CGI) ;
+	expect(SINGLE_P) ;
+	expect(SEMICOLON) ;
+}
+
+void Lexer::cgiPath( void )
+{
+	expect(CGI_PATH) ;
+	expect(SINGLE_P) ;
 	expect(SINGLE_P) ;
 	expect(SEMICOLON) ;
 }

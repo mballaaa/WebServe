@@ -14,6 +14,7 @@ public:
 	typedef enum { GET, HEAD, POST, PUT, DELETE } Method_t;
 	typedef std::vector<Method_t> Methods_t ;
 	typedef std::pair<int, std::string> redirection_t ;
+	typedef std::map<std::string, std::string> CgiPath_t ;
 	
 private:
 	bool						_autoIndex ;
@@ -24,6 +25,8 @@ private:
 	bool						_cgi ;
 	bool						_upload ;
 	std::string					_upload_path ;
+	CgiPath_t					_cgiMap ;
+
 public:
 	Location( void ) ;
 	Location( const Server& server ) ;
@@ -40,6 +43,7 @@ public:
 	const bool&					getCgi( void ) const ;
 	const bool&					getUpload( void ) const ;
 	const std::string&			getUploadPath( void ) const ;
+	const CgiPath_t&			getCgiPaths( void ) const ;
 
 	// Setters
 	void 						setAutoIndex( const std::string& _autoIndex ) ;
@@ -48,6 +52,7 @@ public:
 	void 						setReturn( const std::string& statusCode, const std::string& _return ) ;
 	void 						setRoot( const std::string& _root ) ;
 	void 						setCgi( const std::string& state ) ;
+	void 						setCgiPath( const std::string& extension, const std::string& path ) ;
 	void 						setUpload( const std::string& state ) ;
 	void 						setUploadPath( const std::string& path ) ;
 

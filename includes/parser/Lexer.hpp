@@ -13,7 +13,7 @@
 class Lexer
 {
 public:
-    typedef enum { SINGLE_P, SERVER, OCB, CCB, MULTIPLE_P, LOCATION, ERR_PAGE, RETURN, ALLOW_METHODS, CGI, SEMICOLON, ERROR } sym_t ;
+    typedef enum { SINGLE_P, SERVER, OCB, CCB, MULTIPLE_P, LOCATION, ERR_PAGE, RETURN, ALLOW_METHODS, CGI, CGI_PATH, SEMICOLON, ERROR } sym_t ;
     typedef std::string token_t ;
     typedef std::list<std::string> tokens_t ;
     typedef tokens_t::const_iterator iterator_t ;
@@ -44,6 +44,8 @@ private:
     static void _return( void ) ;
     static void allowMethods( void ) ;
     static void cgi( void ) ;
+    static void cgiPath( void ) ;
+
 
     Lexer( void );
     Lexer( const Lexer& rhs );
