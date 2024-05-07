@@ -53,11 +53,19 @@ void Response::fillResponseHeadre(Http_req &request)
         contentType = "text/html; charset=utf-8";
     } else if (fileExtension == "mp4") {
         contentType = "video/mp4";
-    } else {
+    }
+    else if (fileExtension=="png" )
+    {
+        contentType = "image/png";
+    }
+     
+    else {
         contentType = "application/octet-stream";
         contentType = "text/html";
     }
     h["content-type"] = contentType;
+    //std ::cout << fileExtension << std ::endl;
+    
 
     std::map<std::string, std::string>::iterator it2 = h.begin();
     for (; it2 != h.end(); it2++)
@@ -68,16 +76,18 @@ void Response::fillResponseHeadre(Http_req &request)
 
 /*Fill  Resposne Body*/
 void Response::fillResponseBody(Http_req &request)
-{
-
+{ 
    
+
     if (request._status.find("200") != request._status.end())
     {
+      
         send_get(request);
         ///std ::cout << "ddfdfsdfsfd\n";
     }
-    else if (request.CGI_FLAG == false)
+ if (request.CGI_FLAG == false)
     {
+       
    
 
         if (request._status.find("201") != request._status.end())
@@ -95,7 +105,11 @@ void Response::fillResponseBody(Http_req &request)
             forrbiden();
         }
         else if (request._status.find("404") != request._status.end())
-            notFound();
+        {
+            
+            notFound(); 
+        }
+           
         else if (request._status.find("204") != request._status.end())
             noContent();
         else if (request._status.find("302") != request._status.end())
@@ -164,6 +178,7 @@ void Response::forrbiden()
 
 void Response::notFound()
 {
+    
     readSize = 0 ;
     if (!fileOpened)
     {
@@ -250,12 +265,15 @@ void Response::send_get(Http_req &request)
         readSize = 0 ;
         if (!fileOpened)
         {
-            std::cout << request._target << std::endl;
+           
+        std ::cout << "jakldjkljmsdfl\n";
             file.open(request._target.c_str(), std::ios::binary); 
+          
             fileOpened = true ;
         }
         if (file.is_open())
         {
+            std ::cout << "is opeeeeenenenn\n";
             buffer = std::vector<char>(R_BUFFER_SIZE, 0) ;
             readSize = file.readsome(&buffer[0], buffer.size()) ;
             if (!readSize)

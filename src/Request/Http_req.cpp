@@ -191,13 +191,12 @@ std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string
     // std::cout << "loac_value: " << loac_value << std::endl ;
     // std::cout << "root: " << root << std::endl ;
    
-    if (path == loac_value)
-        return path ;
     size_t it = path.find(loac_value);
 
     if (it != std ::string::npos)
     {
         path.replace(0, loac_value.length(), root+loac_value);
+        std ::cout << path << std::endl;
         return path;
     }
     return path;
@@ -290,56 +289,51 @@ int Http_req::MoreValidation()
     // }
 
     // now let check if match or not
-    std::map<std::string, Location> location = this->server.getLocations();
-    std::map<std::string, Location>::iterator it;
-    int flag = 0;
-    std::string key = "";
-    size_t foundSize = 0 ;
+  std::map<std::string, Location> location = this->server.getLocations();
+std::map<std::string, Location>::iterator it;
+int flag = 0;
+std::string key = "";
+size_t foundSize = 0;
 
-    std::vector<std::string> splittedTarget = split(_target, '/');
-    for (it = location.begin(); it != location.end(); it++)
+std::vector<std::string> splittedTarget = split(_target, '/');
+for (it = location.begin(); it != location.end(); it++)
+{
+    _target = replaceDuplicateSlash(_target);
+
+   
+
+    std::vector<std::string> splittedLocationPath = split(it->first, '/');
+
+    size_t count = 0;
+    size_t shorterLength = std::min(splittedLocationPath.size(), splittedTarget.size());
+    for (size_t i = 0; i < shorterLength; ++i)
     {
-        _target = replaceDuplicateSlash(_target) ;
-        // std::cout << "_target: " << _target << std::endl ;
-        // std::cout << "it->first: " << it->first << std::endl ;
-
-        // split it->first and _target by '/'
-        std::vector<std::string> splittedLocationPath = split(it->first, '/');
-
-        // count the number of matched elements in splittedLocationPath and splittedTarget
-        size_t count = 0;
-        size_t shorterLength = std::min(splittedLocationPath.size(), splittedTarget.size());
-        for (size_t i = 0; i < shorterLength; ++i)
+        if (splittedLocationPath[i] == splittedTarget[i])
         {
-            if (splittedLocationPath[i] == splittedTarget[i])
-            {
-                count++;
-            } else {
-                break;
-            }
-            if (count > foundSize)
-            {
-                foundSize = count ;
-                this->_loca = it->second;
-                key = it->first ;
-                flag = 1;
-            }
+            count++;
         }
-
+        else
+        {
+           
+            break;
+        }
+        if (count > foundSize)
+        {
+            foundSize = count;
+            this->_loca = it->second;
+            key = it->first;
+            flag = 1;
+        }
     }
-    std::cout << "key: " << key << std::endl ;
-    std::cout << _loca << std::endl ;
-    
+}
 
-    if (flag == 0)
-    {
-      
-        _status["404"] = "Page Not Found";
-        std ::cout << "Not match \n";
 
-        return 0;
-    }
-    
+if (flag == 0)
+{
+    _status["404"] = "Page Not Found";
+    std::cout << "Not match \n";
+    return 0;
+}
 
     /// std :: cerr << "weech\n";
     Location::redirection_t red = this->_loca.getReturn();
@@ -381,8 +375,9 @@ int Http_req::MoreValidation()
 
     // debugFileAmine << "std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)" << std::endl ;
     _target = SetRootLoc(_target, key, this->_loca.getRoot());
+    //std :: cout << _target << std ::endl;
 
-    ///std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
+    std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
     moreValidationDone = 1 ;
     return (1);
 }
@@ -490,28 +485,7 @@ int Http_req::StautRe(std::string request)
         this->body = my_req.substr(body_start);
         //    std ::cout << body ;
 
-        // if (header.find("transfer-encoding") != header.end())
-        // {
-        //     //
-        //     //std :: cout << "sss\n";
-        //     std ::string sizeChunk;
-        //     size_t startchu = body.find("\r\n");
-
-        //     if (startchu != std ::string::npos)
-        //     {
-        //       //  std :: cout << startchu << std ::endl;
-
-        //          sizeChunk = body.substr(0, startchu);
-        //         size_t sizeHex=hex_to_decimal(sizeChunk);
-        //         (void) sizeHex;
-        //         if(header.find("transfer-encoding")->second ==" chunked")
-        //         {
-        //             body=my_req.substr(body_start+sizeChunk.length()+2);
-
-        //         }
-
-        //     }
-        // }
+   
 
         is_finsh = true;
     }
@@ -769,13 +743,10 @@ void Http_req ::CheckLoc(int *is_file)
     std ::cout << _loca << std ::endl;
     if (this->_loca.getIndex().size() != 0 )
     {
-        
+    
      
         std ::vector<std ::string> index = this->_loca.getIndex();
-        // check if index file are exit
-        /// ==> get first index string
-        // std :: cout <<
-        //  std ::cout << this->_loca.getRoot() << std ::endl;
+        
 
         std ::string main_index = index.at(0);
         // std ::cout << "==>" << this->_loca.getRoot() << std ::endl;
@@ -788,10 +759,13 @@ void Http_req ::CheckLoc(int *is_file)
         }
         //  std ::cout << "==> index" << main_index << std ::endl;
         _target += main_index;
-        
-
-        in_out = true;
-        _status["200"] = "OK";
+        // check if that index is floder shloud trhow error forbiden
+        if(is_file_dir(_target)==0)
+        {
+            _status["403"]="Forbbiden";
+         in_out=true;
+         return ;
+        }
 
         *is_file = 1;
     }
@@ -806,6 +780,7 @@ void Http_req ::CheckLoc(int *is_file)
         if (this->_loca.getAutoIndex() && this->_loca.getIndex().size()==0)
         {
           
+          std :: cout << "jkladjlasdklsf\n";
             
             /// Here We shloud Send DirectoryListe
             // std ::cout << _target << std ::endl;
@@ -908,8 +883,9 @@ void Http_req::LetGet()
 
     int is_file = 0;
    // int permisson=0;
-
+  
     std ::string URI = _target;
+    std ::cout << URI << std ::endl;
    
     // debugFileAmine << "int is_file_dir(std::string uri)" << std::endl ;
     int check_type = is_file_dir(URI);
@@ -931,10 +907,11 @@ void Http_req::LetGet()
 
     struct stat sb;
  
-
+ std ::cout << URI << std ::endl;
     if (stat(URI.c_str(), &sb) == 0)
     {
-      
+     
+    
       
         if (this->_loca.getCgi())
         {
@@ -985,9 +962,11 @@ void Http_req::LetGet()
 
     else
     {
-
+        
+        _status.clear();
         _status["404"] = "Not FOund";
         in_out = true;
+       
         return;
     }
 }
