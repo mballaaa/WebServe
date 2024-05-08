@@ -93,6 +93,7 @@ void Cgi::_setupEnv(Http_req &request){
         /*=====Must be in a separate func=====*/
         request._status.clear();
         request._status["404"] = "Not found";
+        exit(0);
         request.fd = open("www/html/Page not found · GitHub Pages.html",O_RDWR);
         _waitreturn = 1;
         return ;

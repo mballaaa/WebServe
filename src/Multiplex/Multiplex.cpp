@@ -149,7 +149,7 @@ void Multiplex::start(void)
                 std::string toSTing(buf,bytesReceived);
                 requests[events[i].data.fd]->parse_re(toSTing, bytesReceived);
             }
-            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd]->getFlag() == true)
+            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd] && requests[events[i].data.fd]->getFlag() == true)
             {
                 std::map<std::string,std::string>::iterator test = requests[events[i].data.fd]->_status.begin();
                 if(requests[events[i].data.fd]->_loca.getCgi() == true && test->first != "400" ){
@@ -177,16 +177,19 @@ void Multiplex::start(void)
                     s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
                     if(response[events[i].data.fd]->getResBody() == "\r\n0\r\n\r\n"){
                         requests[events[i].data.fd]->sendHeaders = true;
-                         delete requests[events[i].data.fd] ;
-                            requests.erase(events[i].data.fd) ;
-                            delete response[events[i].data.fd] ;
-                            response.erase(events[i].data.fd) ;
+                        // requests[events[i].data.fd]->in_out = false;
+                        close(requests[events[i].data.fd]->fd);
+                        std::cout << "->>>>> " << requests[events[i].data.fd]->fd << std::endl;
+                        delete requests[events[i].data.fd] ;
+                        requests.erase(events[i].data.fd) ;
+                        delete response[events[i].data.fd] ;
+                        response.erase(events[i].data.fd) ;
                         close (events[i].data.fd);
+                        // exit(0);
                     }
                     else
                         requests[events[i].data.fd]->sendHeaders = false;
                 }
-                // std::cerr << "Response Sent" << std::endl;
             }
         }
     }

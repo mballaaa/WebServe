@@ -657,6 +657,7 @@ bool Http_req::delete_Dir(std::string pathh)
         closedir(ptr);
         return false;
     }
+    closedir(ptr);
 }
 
 void Http_req::parse_re(std ::string bufer, int bytee)
@@ -709,13 +710,17 @@ bool Is_dir(const char *ptr)
         DIR *dir = opendir(ptr);
         if (dir != NULL)
         {
+            closedir(dir);
+
             //  std ::cerr << "Is directory\n";
             return true;
         }
+        closedir(dir);
         return false;
     }
     else
     {
+        
    
         return false;
     }
@@ -804,6 +809,7 @@ void Http_req ::CheckLoc(int *is_file)
             if (!dir)
             {
                 perror("auto index issue");
+              closedir(dir);
                 return;
             }
             else
@@ -835,6 +841,7 @@ void Http_req ::CheckLoc(int *is_file)
                 _status["200"] = "OK";
                 return;
             }
+             closedir(dir);
         }
         else
         {
@@ -849,10 +856,10 @@ void Http_req ::CheckLoc(int *is_file)
     }
 }
 
-void Http_req::loadCGIMap()
+bool Http_req::loadCGIMap()
 {
     if (!cgiMap.empty())
-        return;
+        return true;
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 
     if (configFile.is_open())
@@ -871,10 +878,12 @@ void Http_req::loadCGIMap()
     else
     {
         perror("Error: Unable to open configuration file");
+        _status.clear();
         _status["403"] = "Forbidden";
         in_out = true;
-        return;
+        return false;
     }
+    return true ;
 }
 
 std::string fileExtension(std::string filename)
@@ -890,8 +899,10 @@ void Http_req::LetGet()
     // std ::cout << _loca << std ::endl;
 
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-  
+    _status.clear();
     loadCGIMap();
+        // exit(0);
+   
 
     int is_file = 0;
    // int permisson=0;
@@ -922,12 +933,8 @@ void Http_req::LetGet()
  std ::cout << URI << std ::endl;
     if (stat(URI.c_str(), &sb) == 0)
     {
-     
-    
-      
         if (this->_loca.getCgi())
         {
-
          
             // cehck extions
             // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
@@ -952,7 +959,9 @@ void Http_req::LetGet()
 
                     else
                     {
-                        _status["403"] = "Not found";
+                        _status.clear();
+                        _status["403"] = "permission denied";
+                        fd = open(_target.c_str(),std::ios::binary,O_RDONLY );
                         return;
                     }
                 }
@@ -965,6 +974,9 @@ void Http_req::LetGet()
 
         
           _status.clear();
+            fd = open(_target.c_str(),std::ios::binary,O_RDONLY );
+            std::cout << "->> " << fd << std::endl;
+            // exit(0);
             _status["200"] = "ok";
             in_out = true;
 
@@ -976,9 +988,12 @@ void Http_req::LetGet()
     {
         
         _status.clear();
-        _status["404"] = "Not FOund";
+        _status["404"] = "Not found";
+        std::cout << "here \n";
+        fd = open("www/html/Page not found · GitHub Pages.html",std::ios::binary,O_RDONLY);
+        std::cout << "fd test =>> " << fd << std::endl;
         in_out = true;
-       
+        // exit(0);
         return;
     }
 }
@@ -1048,11 +1063,10 @@ void Http_req::LetPost()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     /*location not found*/
-    
     if (_loca.getUpload() == true)
     {
         
-        if (header["content-length"] == " 0")
+        if (header["content-length"] == " 0" || header["content-type"] == "")
         {
             /*Status 204*/
             _status["204"] = "No Content";

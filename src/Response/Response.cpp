@@ -41,11 +41,14 @@ void Response::fillResponseHeadre(Http_req &request){
     if (request._status.find("302") != request._status.end())
         h["Location"] = " " + request.path + "/" ;
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
+    std::cout <<  "=>>>" <<request._target.substr(request._target.find_last_of('.') + 1)<< std::endl;
+    // exit(0);
     std::string contentType;
     if (fileExtension == "html") {
         contentType = "text/html; charset=utf-8";
     } else if (fileExtension == "mp4") {
         contentType = "video/mp4";
+        // exit(0);
     }
     else if (fileExtension=="png" )
     {
@@ -53,7 +56,7 @@ void Response::fillResponseHeadre(Http_req &request){
     }
      
     else {
-        contentType = "application/octet-stream";
+        // contentType = "application/octet-stream";
         contentType = "text/html";
     }
     h["content-type"] = contentType;
@@ -61,6 +64,9 @@ void Response::fillResponseHeadre(Http_req &request){
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)
         _resheaders += it2->first+": "+it2->second+"\r\n";
+    std::cout << _resheaders << std::endl;
+    // exit(0);
+
 }
 
 /*Fill  Resposne Body*/
@@ -72,7 +78,7 @@ void Response::fillResponseBody(Http_req &request){
         _resheaders = "";
     }
     _response = _resheaders + _resbody;
-    std::cerr << "ALOOO222" << _response << std::endl;
+    // std::cerr << "ALOOO222" << _response << std::endl;
     
 }
 
@@ -90,9 +96,11 @@ void Response::fillBodyChunked(Http_req &request){
 
     if(request.fd<0){
         std::cout << "request.fd 4FD ERROR" << std::endl;
+        std::cout << "fd fd err: " << request.fd << std::endl ;
+        // exit(0);
         return;
     }
-
+    // exit(0);
     std::cout << "fd fillbody: " << request.fd << std::endl ;
 
     bytesReceived = read(request.fd, buff, R_SIZE-1);
@@ -104,8 +112,11 @@ void Response::fillBodyChunked(Http_req &request){
     if(bytesReceived == 0)
     {
         _resbody = "\r\n0\r\n\r\n";
+        std::cout << "->> " << request.fd << std::endl;
+        // exit(0);
+
         // close(request.fd);
-        std::cout << "TEEEEEEEEEST" << _resbody << std::endl;
+        // std::cout << "TEEEEEEEEEST" << _resbody << std::endl;
         close(request.fd);
         return;
     }

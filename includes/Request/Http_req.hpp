@@ -99,7 +99,7 @@ public:
     void LetGet();
     void LetDelete();
    void CheckLoc(int *);
-   void loadCGIMap() ;
+   bool loadCGIMap() ;
     bool delete_Dir(std::string);
     ~Http_req();
 
