@@ -32,6 +32,7 @@ Http_req::Http_req(Server &server)
         mimeParse();
     sendHeaders = true;
     i  = 0;
+    lastActive = time(NULL) ;
     
 }
 
@@ -583,7 +584,7 @@ void Http_req::LetDelete()
 bool Http_req::delete_Dir(std::string pathh)
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-        DIR *ptr = opendir(pathh.c_str());
+    DIR *ptr = opendir(pathh.c_str());
 
     if (ptr != NULL)
     {
@@ -657,7 +658,8 @@ bool Http_req::delete_Dir(std::string pathh)
         closedir(ptr);
         return false;
     }
-    closedir(ptr);
+
+    closedir(ptr) ;
 }
 
 void Http_req::parse_re(std ::string bufer, int bytee)
@@ -710,12 +712,9 @@ bool Is_dir(const char *ptr)
         DIR *dir = opendir(ptr);
         if (dir != NULL)
         {
-            closedir(dir);
-
             //  std ::cerr << "Is directory\n";
             return true;
         }
-        closedir(dir);
         return false;
     }
     else
@@ -809,7 +808,7 @@ void Http_req ::CheckLoc(int *is_file)
             if (!dir)
             {
                 perror("auto index issue");
-              closedir(dir);
+                closedir(dir);
                 return;
             }
             else
@@ -972,7 +971,7 @@ void Http_req::LetGet()
         {
           
 
-        
+            fd = open(_target.c_str(), O_RDONLY);
           _status.clear();
             fd = open(_target.c_str(),std::ios::binary,O_RDONLY );
             std::cout << "->> " << fd << std::endl;

@@ -59,12 +59,11 @@ void Multiplex::start(void)
 
     while (1)
     {
-        int eventCount;
-
+        int eventCount = 0;
         eventCount = epoll_wait(epollFD, events, SOMAXCONN, -1); // Waiting for new event to occur
-        // std::cerr << eventCount << " events ready" << std::endl;
         for (int i = 0; i < eventCount; i++)
         {
+            // std::cout << "fd: " << events[i].data.fd << std::endl ;
             // std::cerr << "descriptor " << events[i].data.fd << " ";
             // if (events[i].events & EPOLLOUT)
             //     std::cerr << eventName[EPOLLOUT];
@@ -88,6 +87,16 @@ void Multiplex::start(void)
             //     continue;
             // }
             // else 
+            if (events[i].events & EPOLLOUT)
+            {
+                if (difftime(time(NULL), requests[events[i].data.fd]->lastActive) > TIMEOUT)
+                {
+                    requests[events[i].data.fd]->fd = open("www/html/508.html", O_RDWR) ;
+                    requests[events[i].data.fd]->in_out = true ;
+                    requests[events[i].data.fd]->_status["200"] = "Timeout" ;
+                    std::cout << "fd: " << events[i].data.fd << " time diff: " << difftime(time(NULL), requests[events[i].data.fd]->lastActive) << std::endl ;
+                }
+            }
             if (listeners.find(events[i].data.fd) != listeners.end()) // Check if socket belong to a server
             {
                 struct sockaddr in_addr;
@@ -127,11 +136,11 @@ void Multiplex::start(void)
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
                 requests.insert(std::make_pair(infd, new Http_req(listeners[events[i].data.fd])));
                 response.insert(std::make_pair(infd, new Response()));
-    
                 continue;
             }
             else if (events[i].events & EPOLLIN )   // check if we have EPOLLIN (connection socket ready to read)
             {
+                requests[events[i].data.fd]->lastActive = time(0) ;
                 ssize_t bytesReceived;
                 char buf[R_SIZE] = {0};
 
@@ -151,8 +160,9 @@ void Multiplex::start(void)
             }
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd] && requests[events[i].data.fd]->getFlag() == true)
             {
-                std::map<std::string,std::string>::iterator test = requests[events[i].data.fd]->_status.begin();
-                if(requests[events[i].data.fd]->_loca.getCgi() == true && test->first != "400" ){
+                requests[events[i].data.fd]->lastActive = time(0) ;
+                // std::map<std::string,std::string>::iterator test = requests[events[i].data.fd]->_status.begin();
+                if(requests[events[i].data.fd]->_loca.getCgi() == true ){
                     if(requests[events[i].data.fd]->sendHeaders == true)
                         response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);
                     if(response[events[i].data.fd]->cgi._waitreturn){
@@ -160,7 +170,6 @@ void Multiplex::start(void)
 
                         s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
                         if(response[events[i].data.fd]->getResBody() == "\r\n0\r\n\r\n"){
-                            requests[events[i].data.fd]->sendHeaders = true;
                             unlink(response[events[i].data.fd]->cgi.cgifile.c_str());
                             delete requests[events[i].data.fd] ;
                             requests.erase(events[i].data.fd) ;
@@ -176,16 +185,12 @@ void Multiplex::start(void)
                     response[events[i].data.fd]->fillResponseBody(*requests[events[i].data.fd]);
                     s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
                     if(response[events[i].data.fd]->getResBody() == "\r\n0\r\n\r\n"){
-                        requests[events[i].data.fd]->sendHeaders = true;
-                        // requests[events[i].data.fd]->in_out = false;
                         close(requests[events[i].data.fd]->fd);
-                        std::cout << "->>>>> " << requests[events[i].data.fd]->fd << std::endl;
                         delete requests[events[i].data.fd] ;
                         requests.erase(events[i].data.fd) ;
                         delete response[events[i].data.fd] ;
                         response.erase(events[i].data.fd) ;
                         close (events[i].data.fd);
-                        // exit(0);
                     }
                     else
                         requests[events[i].data.fd]->sendHeaders = false;

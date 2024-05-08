@@ -27,6 +27,7 @@ public:
 
 public: // amine: i made this public for now
         /// this the start line
+    time_t lastActive ;
     std::ifstream configFile ;
     size_t uploadedFileSize ;
     // std::ofstream debugFileAmine ;
