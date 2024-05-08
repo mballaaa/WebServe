@@ -57,7 +57,7 @@ void Response::fillResponseHeadre(Http_req &request){
         contentType = "text/html";
     }
     h["content-type"] = contentType;
-
+    
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)
         _resheaders += it2->first+": "+it2->second+"\r\n";
@@ -72,6 +72,7 @@ void Response::fillResponseBody(Http_req &request){
         _resheaders = "";
     }
     _response = _resheaders + _resbody;
+    std::cerr << "ALOOO222" << _response << std::endl;
     
 }
 
@@ -84,18 +85,26 @@ std::string ssizeToHexToStr(ssize_t chunksize){
 }
 /*To send response with chunked*/
 void Response::fillBodyChunked(Http_req &request){
-    char buff [50];
+    char buff [R_SIZE];
     ssize_t bytesReceived;
 
     if(request.fd<0){
-        std::cout << "request.fdFD ERROR" << std::endl;
+        std::cout << "request.fd 4FD ERROR" << std::endl;
         return;
     }
 
-    bytesReceived = read(request.fd, buff, 49);
-    if(bytesReceived == 0){
-        _resbody = "\r\n0\r\n\r\n";
+    std::cout << "fd fillbody: " << request.fd << std::endl ;
 
+    bytesReceived = read(request.fd, buff, R_SIZE-1);
+    if (bytesReceived == -1) 
+    {
+        std::cout << "read error fill body" << std::endl ;
+        exit(1);
+    }
+    if(bytesReceived == 0)
+    {
+        _resbody = "\r\n0\r\n\r\n";
+        // close(request.fd);
         std::cout << "TEEEEEEEEEST" << _resbody << std::endl;
         close(request.fd);
         return;

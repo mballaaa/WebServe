@@ -157,6 +157,7 @@ void Multiplex::start(void)
                         response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);
                     if(response[events[i].data.fd]->cgi._waitreturn){
                         response[events[i].data.fd]->fillResponseBody(*requests[events[i].data.fd]);
+
                         s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
                         if(response[events[i].data.fd]->getResBody() == "\r\n0\r\n\r\n"){
                             requests[events[i].data.fd]->sendHeaders = true;
@@ -176,10 +177,10 @@ void Multiplex::start(void)
                     s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
                     if(response[events[i].data.fd]->getResBody() == "\r\n0\r\n\r\n"){
                         requests[events[i].data.fd]->sendHeaders = true;
-                        delete requests[events[i].data.fd] ;
-                        requests.erase(events[i].data.fd) ;
-                        delete response[events[i].data.fd] ;
-                        response.erase(events[i].data.fd) ;
+                         delete requests[events[i].data.fd] ;
+                            requests.erase(events[i].data.fd) ;
+                            delete response[events[i].data.fd] ;
+                            response.erase(events[i].data.fd) ;
                         close (events[i].data.fd);
                     }
                     else

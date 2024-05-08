@@ -7,6 +7,7 @@
 Cgi::Cgi(){
     _waitreturn = 1;
     _waitstatus = 0;
+    outputfilename = "";
 }
 
 std::string Cgi::size_t_to_string(size_t nbr){
@@ -59,12 +60,12 @@ void Cgi::_setupEnv(Http_req &request){
     Server server = request.getServer();
     _env["CONTENT_LENGTH"] = size_t_to_string(request.getBody().size());
     std::cout << headers["content-type"] << std::endl;
-    if(headers["content-type"] != "")
-        _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
-    else{
+    // if(headers["content-type"] != "")
+    //     _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
+    // else{
 
-        _env["CONTENT_TYPE"] = "";
-    }
+    //     _env["CONTENT_TYPE"] = "";
+    // }
 	_env["REDIRECT_STATUS"] = "CGI"; //know more about REDIRECTE_STATUS
     _env["PATH_INFO"] = request.getPath().substr(1);
     _env["PATH_TRANSLATED"] = request.getPath().substr(1);
@@ -196,6 +197,7 @@ void Cgi::executeCgi(Http_req &request){
         dup2(output, STDOUT_FILENO);
         
         execve(argv[0], argv,env);
+        exit(1);
 
         // kill(getpid(),2);
         // std::cerr << << execve(argv[0], argv,env) << std::endl;
@@ -221,13 +223,13 @@ void Cgi::executeCgi(Http_req &request){
             cgiErrorResponse(request,_cgibody);
             unlink(outputfilename.c_str());//remove output file
             kill(pid,SIGKILL);
-            waitpid(pid,&status,0);
+            waitpid(pid,&status,WNOHANG);
             return ;
         }
     }
     close(output);
-    close(input);
-    std::cerr << "WAit=>>>> "<< _waitreturn << std::endl;
+    if (input)
+        close(input);
     if(_waitreturn){
         cgiResponse(request);
         unlink(outputfilename.c_str());//remove output file
@@ -236,16 +238,19 @@ void Cgi::executeCgi(Http_req &request){
     endTime = clock();
     double elapsedTime = static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC;
     if(elapsedTime>=2){
+
         kill(pid,SIGKILL);
-        waitpid(pid,&status,0);
+        waitpid(pid,&status,WNOHANG);
         request._status.clear();
         request._status["508"] = "Gateway timeout";
 
-        request.fd = open("www/html/508.html",O_RDWR);
-        
         request.header["content-type"] = "text/html";
+        request.fd = open("www/html/508.html",O_RDONLY);
+        std::cout << "fd cgi: " << request.fd << std::endl ;
         unlink(outputfilename.c_str());//remove output file
         _waitreturn = 1;
+        std::cerr << "ERROR" << std::endl;
+        return ;
     }
     return ;
 }

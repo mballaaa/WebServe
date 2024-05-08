@@ -37,7 +37,7 @@ Http_req::Http_req(Server &server)
 
 Http_req::Http_req(const Http_req &obj)
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
+    std::cout << __PRETTY_FUNCTION__ << std::endl ;
     query_string = obj.query_string;
     req = obj.req;
     _target = obj._target;
