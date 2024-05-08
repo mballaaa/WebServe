@@ -60,23 +60,7 @@ void Multiplex::start(void)
     while (1)
     {
         int eventCount = 0;
-
-        if (eventCount == 0) // check for timeout
-        {
-            Multiplex::requests_t::iterator it = requests.begin() ;
-            while (it != requests.end())
-            {
-                if (difftime(time(NULL), it->second->lastActive) > TIMEOUT)
-                {
-                    it->second->fd = open("www/html/508.html", O_RDWR) ;
-                    it->second->in_out = true ;
-                    it->second->_status["200"] = "Timeout" ;
-                std::cout << "fd: " << it->first << " time diff: " << difftime(time(NULL), it->second->lastActive) << std::endl ;
-                }
-                it++;
-            }
-        }
-        eventCount = epoll_wait(epollFD, events, SOMAXCONN, 5); // Waiting for new event to occur
+        eventCount = epoll_wait(epollFD, events, SOMAXCONN, -1); // Waiting for new event to occur
         for (int i = 0; i < eventCount; i++)
         {
             // std::cout << "fd: " << events[i].data.fd << std::endl ;
@@ -103,6 +87,16 @@ void Multiplex::start(void)
             //     continue;
             // }
             // else 
+            if (events[i].events & EPOLLOUT)
+            {
+                if (difftime(time(NULL), requests[events[i].data.fd]->lastActive) > TIMEOUT)
+                {
+                    requests[events[i].data.fd]->fd = open("www/html/508.html", O_RDWR) ;
+                    requests[events[i].data.fd]->in_out = true ;
+                    requests[events[i].data.fd]->_status["200"] = "Timeout" ;
+                    std::cout << "fd: " << events[i].data.fd << " time diff: " << difftime(time(NULL), requests[events[i].data.fd]->lastActive) << std::endl ;
+                }
+            }
             if (listeners.find(events[i].data.fd) != listeners.end()) // Check if socket belong to a server
             {
                 struct sockaddr in_addr;
