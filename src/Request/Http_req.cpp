@@ -1,5 +1,6 @@
 #include "../../includes/Request/Http_req.hpp"
 #include <unistd.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <cerrno>
 #include <cstring>
@@ -29,6 +30,9 @@ Http_req::Http_req(Server &server)
     uploadedFileSize = 0 ;
     configFile.open("./src/Cgi/pathExecutableFile.txt");
         mimeParse();
+    sendHeaders = true;
+    i  = 0;
+    
 }
 
 Http_req::Http_req(const Http_req &obj)
@@ -47,10 +51,11 @@ Http_req::Http_req(const Http_req &obj)
     toHtml = obj.toHtml;
     i = obj.i;
     body = obj.body;
-
+    sendHeaders = obj.sendHeaders;
     /*=============== 14 PART (begin)==================*/
     _status = obj._status;
-    _mime = obj._mime;
+    _mime=obj._mime;
+    fd = obj.fd;
     /*=============== 14 PART (end)==================*/
     in_out = obj.in_out;
     is_close = obj.is_close;
@@ -81,11 +86,13 @@ Http_req &Http_req::operator=(const Http_req &obj)
         make_name = obj.make_name;
         body = obj.body;
         i = obj.i;
+        fd = obj.fd;
         // byterec = obj.byterec;
         toHtml = obj.toHtml;
         /*=============== 14 PART (begin)==================*/
         _status = obj._status;
         _mime = obj._mime;
+        sendHeaders = obj.sendHeaders;
         /*=============== 14 PART (end)==================*/
         in_out = obj.in_out;
         is_close = obj.is_close;
@@ -478,7 +485,7 @@ int Http_req::StautRe(std::string request)
 
                 /// debug function
             }
-            // debugFunction();
+            debugFunction();
         }
 
         size_t body_start = len_req + 4;
@@ -666,6 +673,11 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 
         in_out = true;
         std ::cout << "Baaaad Request\n";
+        _status.clear();
+        _status["400"] = "Bad request";
+        // _status.clear();
+        header["content-lenght"] = "0";
+        // body = "BADD";
         return;
     }
     else
@@ -928,7 +940,7 @@ void Http_req::LetGet()
                 {
                     std::string executable = it->second;
 
-                    if (executable == "/usr/bin/php" || executable == "/usr/bin/python")
+                    if (executable == "/usr/bin/php" || executable == "/usr/bin/python3")
                     {
                         std ::cout << "yesss\n";
                         _status["200"] = "OK";
@@ -974,7 +986,7 @@ void Http_req::LetGet()
 
 // std ::cout << "sssdffd\n";
 /*=============== 14 PART (begin)==================*/
-void Http_req::mimeParse()
+int Http_req::mimeParse()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
         std::ifstream file("mime.types");
@@ -985,7 +997,10 @@ void Http_req::mimeParse()
     if (!file.is_open())
     {
         std::cout << "Error : mimes.types could not be open" << std::endl;
-        return;
+        _status.clear();
+        _status["415"] = "Unsupported Media Type";
+        fd = open("www/html/415.html",O_RDWR);
+        return 1;
     }
 
     while (getline(file, line))
@@ -1002,31 +1017,26 @@ void Http_req::mimeParse()
             _mime[key] = value;
         }
     }
+    return 0;
 }
 
-void Http_req::contentLenght()
-{
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-    }
+
 
 std::string Http_req::randNameGen()
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-        srand(time(NULL));
-    std::string c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    std::string name;
-    for (int i = 0; i < 5; i++)
-        name += c[rand() % (sizeof(c) - 1)];
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    size_t milliseconds = (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000LL);
+
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(13) << milliseconds;
+    std::string name =ss.str(); 
+
     return name;
 }
 
-void getSize(std::string body)
-{
-    std::string size = body.substr(0, body.find("\r\n"));
-}
-
-int hexStringToInt(const std::string &hexString)
-{
+int hexStringToInt(const std::string& hexString) {
     std::stringstream ss;
     ss << std::hex << hexString; // Set the stringstream to interpret input as hexadecimal
     int intValue;
@@ -1034,46 +1044,20 @@ int hexStringToInt(const std::string &hexString)
     return intValue;
 }
 
-bool checkSize(std::string name, std::string size)
-{
-
-    std::ifstream file(name.c_str(), std::ios::binary);
-
-    // Check if the file is open
-    if (!file.is_open())
-    {
-        std::cerr << "Failed to open file!" << std::endl;
-        return 1;
-    }
-
-    file.seekg(0, std::ios::end);                    // Move the file pointer to the end
-    std::ifstream::pos_type fileSize = file.tellg(); // Get the position, which is the file size
-    file.seekg(0, std::ios::beg);                    // Move the fil
-    file.close();
-    if (atoi(size.c_str()) == fileSize)
-        return true;
-    return false;
-}
-
 void Http_req::LetPost()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     /*location not found*/
-        if (_loca.getUploadPath() == "Not Found")
+    
+    if (_loca.getUpload() == true)
     {
-        /*Status 404*/
-        in_out = true;
-        _status["404"] = "Not Found";
-    }
-    else if (_loca.getUpload() == true)
-    {
-
-        // in_out = true;
+        
         if (header["content-length"] == " 0")
         {
             /*Status 204*/
             _status["204"] = "No Content";
             in_out = true;
+            fd = open("www/html/204.html",O_RDWR);
             return;
         }
         int dirCheck = mkdir("Upload", 0777);
@@ -1082,78 +1066,70 @@ void Http_req::LetPost()
         {
             /*First check if the extension exist */
             std::string str;
-            if (make_name == "")
+            if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == "")
+                make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+            else if(make_name == "")
             {
-                if (_mime.find(header["content-type"].substr(1)) != _mime.end())
-                    make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
-                else
-                    make_name = "Upload/" + randNameGen() + ".txt";
-                uploadFile.open(make_name.c_str());
-            }
-            if (!uploadFile.is_open())
-            {
-                std::cout << "File Upload Error" << std::endl;
+                _status.clear();
+                _status["415"] = "Unsupported Media Type";
+                in_out = true;
+                fd = open("www/html/415.html",O_RDWR);
                 return;
             }
+
+            std::ofstream file(make_name.c_str(), std::ios::app);
             
-            if (header["transfer-encoding"] == " chunked")
-            {
-                
-                if (!i)
-                {
-                    classChunksizeString = body.substr(0, body.find("\r\n") + 2);
-                    body = body.substr(body.find("\r\n") + 2);
-                    // debugFileAmine << "int hexStringToInt(const std::string &hexString)" << std::endl ;
+            if(!file.is_open()){
+                std::cout << "File Upload Error" << std::endl;
+                return ;
+            }
+            if(header["transfer-encoding"] == " chunked"){
+                if(!i){
+                    classChunksizeString = body.substr(0,body.find("\r\n")+2);
+                    body = body.substr(body.find("\r\n")+2);
                     chunksize = hexStringToInt(classChunksizeString);
                 }
                 to_file += body;
-                while (1)
-                {
-                    if (chunksize <= to_file.size())
-                    {
-                        if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
-                    {
-                            std::string correct = to_file.substr(0, chunksize);
-                            uploadFile << correct;
-                            to_file.erase(0, chunksize + 2);
-                            if (to_file.size())
-                            {
-                                classChunksizeString = to_file.substr(0, to_file.find("\r\n") + 2);
-                                // debugFileAmine << "int hexStringToInt(const std::string &hexString)" << std::endl ;
-                                chunksize = hexStringToInt(classChunksizeString);
-                                to_file.erase(0, classChunksizeString.size());
-                            }
+                while(chunksize<=to_file.size()){
+                    if(to_file.find("\r\n",chunksize+2) != std::string::npos){
+                        std::string correct = to_file.substr(0,chunksize);
+                        file << correct;
+                        to_file.erase(0,chunksize+2);
+                        if(to_file.size()){
+                            classChunksizeString = to_file.substr(0,to_file.find("\r\n")+2);
+                            chunksize = hexStringToInt(classChunksizeString);
+                            to_file.erase(0,classChunksizeString.size());
                         }
-                        else
-                            break;
-                        if (!chunksize)
-                        {
-                    _status["201"] = "Created";
-                    header["content-type"] = "text/html";
-                    uploadFile.close();
-                    break;
-                }
-}
+                    }
                     else
                         break;
+                    if(!chunksize){
+                        in_out = true;
+                        _status["201"] = "Created";
+                        header["content-type"] = "text/html";
+                        file.close();
+                        if(_loca.getCgi() == false)
+                            fd = open("www/html/201.html",O_RDWR);
+                        break;
+                    }
                 }
-                i++;
+                i=1;
             }
             else
             {
                 uploadedFileSize += body.size() ;
-                uploadFile << body;
-                // if(checkSize(make_name.c_str(),header["content-length"].substr(1)) == true)
+                file << body;
+                file.close();
                 size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10) ;
-                // std::cout << uploadedFileSize << "/" << fullSize << std::endl ;
                 if (uploadedFileSize == fullSize)
                 {
                     in_out = true;
                     _status["201"] = "Created";
                     header["content-type"] = "text/html";
-                    uploadFile.close();
+                    if(_loca.getCgi() == false)
+                            fd = open("www/html/201.html",O_RDWR);
                 }
-                i++;
+                i = 1;
             }
         }
         /*Status 201*/

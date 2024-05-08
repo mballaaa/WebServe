@@ -20,15 +20,14 @@ public:
     Cgi();
     void _setupEnv(Http_req &);
     void executeCgi(Http_req &request);
-    void fill_executablefile();
-    void cgiResponse(Http_req &request,std::string _cgibody);
+    int fill_executablefile();
+    void cgiResponse(Http_req &request);
     void cgiErrorResponse(Http_req &request,std::string _cgibody);
     /*---utils---*/
     std::string size_t_to_string(size_t);
     std::string fileExtension(std::string filename);
     template<typename first,typename second>
     char        **envMap_to_char(std::map<first,second> _env);
-    void        wriToBody(Http_req &,std::string);
 
     int status;
     std::string outputfilename;
@@ -37,7 +36,7 @@ public:
     pid_t pid         ;
     char **env;
     char **argv;
-    
+    std::string cgifile;
     clock_t     startTime;
     clock_t     endTime;
     

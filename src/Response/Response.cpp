@@ -29,24 +29,17 @@ std::string sizeToHex(size_t size)
 }
 
 /*Fill Response Header*/
-void Response::fillResponseHeadre(Http_req &request)
-{
- std::map<std::string, std::string>::iterator it1 = request._status.begin();
-    std::map<std::string, std::string> h;
-    // std::stringstream ss;
-    //         ss << _resbody.size();
-    
-    _resheaders = request.getHttpVersion() + " " + it1->first + " " + it1->second + "\r\n";
+void Response::fillResponseHeadre(Http_req &request){
+
+    std::map<std::string,std::string>::iterator it1 = request._status.begin();
+    std::map<std::string,std::string> h;
+    _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
+
+    h["Transfer-Encoding"] = "chunked";
+    h["Connection"] = "Closed";
+    h["host"] = "127.0.0.1:9090";
     if (request._status.find("302") != request._status.end())
         h["Location"] = " " + request.path + "/" ;
-    
-    // h["content-length"] = ss.str();
-    h["Transfer-Encoding"] = "chunked";
-    h["Connection"] = "Keep-Alive";
-    // h["connection"] = "closed";
-    // h["host"] = "127.0.0.1:9090";
-
-    // Determine Content-Type based on file extension
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
     std::string contentType;
     if (fileExtension == "html") {
@@ -64,146 +57,53 @@ void Response::fillResponseHeadre(Http_req &request)
         contentType = "text/html";
     }
     h["content-type"] = contentType;
-    //std ::cout << fileExtension << std ::endl;
-    
 
-    std::map<std::string, std::string>::iterator it2 = h.begin();
-    for (; it2 != h.end(); it2++)
-        _resheaders += it2->first + ": " + it2->second + "\r\n";
-
-    _resheaders += "\r\n";
+    std::map<std::string,std::string>::iterator it2 = h.begin();
+    for(;it2 != h.end();it2++)
+        _resheaders += it2->first+": "+it2->second+"\r\n";
 }
 
 /*Fill  Resposne Body*/
-void Response::fillResponseBody(Http_req &request)
-{ 
-   
-
-    if (request._status.find("200") != request._status.end())
-    {
-      
-        send_get(request);
-        ///std ::cout << "ddfdfsdfsfd\n";
+void Response::fillResponseBody(Http_req &request){
+    fillBodyChunked(request);
+    fillResponseHeadre(request);
+    if(request.sendHeaders == false){
+        std::cout << "HEADER FALSE" << std::endl;
+        _resheaders = "";
     }
- if (request.CGI_FLAG == false)
-    {
-       
-   
-
-        if (request._status.find("201") != request._status.end())
-        {
-
-            // std::cout << "ALOOO" << std::endl;
-
-            created();
-        }
-        else if (request._status.find("403") != request._status.end())
-        {
-           
-            // exit(0);
-
-            forrbiden();
-        }
-        else if (request._status.find("404") != request._status.end())
-        {
-            
-            notFound(); 
-        }
-           
-        else if (request._status.find("204") != request._status.end())
-            noContent();
-        else if (request._status.find("302") != request._status.end())
-            noContent();
-    }
-    // else
-    //     _resbody = request.getBody();
-    // std :: cout <<"=>> " << request._status["201"] << std::endl;
-    // _response = _resheaders + _resbody;
-}
-
-void Response::created()
-{
-    readSize = 0 ;
-    if (!fileOpened)
-    {
-        file.open("www/html/201.html", std::ios::binary); // Open the file again
-        fileOpened = true ;
-    }
-    if (file.is_open())
-    {
-        buffer = std::vector<char>(R_BUFFER_SIZE, 0) ;
-        readSize = file.readsome(&buffer[0], buffer.size()) ;
-        if (!readSize)
-        {
-            buffer.clear() ;
-            file.close() ;
-        }
-        chunkHeader = sizeToHex(readSize) ;
-        // std::cout << "size hex: " << chunkHeader << std::endl ;
-        // std::cout << "chunk: " << std::string(buffer.begin(), buffer.end()) << std::endl ;
-    }
-    else
-    {
-        std::cout << "not open" << std::endl ;
-        exit(1) ;
-    }
-}
-void Response::forrbiden()
-{
-    readSize = 0 ;
-    if (!fileOpened)
-    {
-        file.open("www/html/403.html", std::ios::binary); // Open the file again
-        fileOpened = true ;
-    }
-    if (file.is_open())
-    {
-        buffer = std::vector<char>(R_BUFFER_SIZE, 0) ;
-        readSize = file.readsome(&buffer[0], buffer.size()) ;
-        if (!readSize)
-        {
-            buffer.clear() ;
-            file.close() ;
-        }
-        chunkHeader = sizeToHex(readSize) ;
-        // std::cout << "size hex: " << chunkHeader << std::endl ;
-        // std::cout << "chunk: " << std::string(buffer.begin(), buffer.end()) << std::endl ;
-    }
-    else
-    {
-        std::cout << "not open" << std::endl ;
-        exit(1) ;
-    }
-}
-
-void Response::notFound()
-{
+    _response = _resheaders + _resbody;
     
-    readSize = 0 ;
-    if (!fileOpened)
-    {
-        file.open("www/html/Page not found · GitHub Pages.html", std::ios::binary); // Open the file again
-        fileOpened = true ;
-    }
-    if (file.is_open())
-    {
-        buffer = std::vector<char>(R_BUFFER_SIZE, 0) ;
-        readSize = file.readsome(&buffer[0], buffer.size()) ;
-        if (!readSize)
-        {
-            buffer.clear() ;
-            file.close() ;
-        }
-        chunkHeader = sizeToHex(readSize) ;
-        // std::cout << "size hex: " << chunkHeader << std::endl ;
-        // std::cout << "chunk: " << std::string(buffer.begin(), buffer.end()) << std::endl ;
-    }
-    else
-    {
-        std::cout << "not open" << std::endl ;
-        exit(1) ;
-    }
 }
+
+std::string ssizeToHexToStr(ssize_t chunksize){
+    std::stringstream ss;
+    ss << std::hex << chunksize;
+    std::string hexString = ss.str();
+
+    return hexString;
+}
+/*To send response with chunked*/
+void Response::fillBodyChunked(Http_req &request){
+    char buff [50];
+    ssize_t bytesReceived;
+
+    if(request.fd<0){
+        std::cout << "request.fdFD ERROR" << std::endl;
+        return;
+    }
+
+    bytesReceived = read(request.fd, buff, 49);
+    if(bytesReceived == 0){
+        _resbody = "\r\n0\r\n\r\n";
+
+        std::cout << "TEEEEEEEEEST" << _resbody << std::endl;
+        close(request.fd);
+        return;
+    }
+    _resbody = "\r\n"+ssizeToHexToStr(bytesReceived)+"\r\n"+std::string(buff,bytesReceived);
+
+}
+
 void Response::listDirectory(std ::string html)
 {
     // std::ifstream file("www/html/listDirectory.html");

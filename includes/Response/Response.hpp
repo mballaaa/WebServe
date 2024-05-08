@@ -5,6 +5,7 @@
 #include"../cgi/Cgi.hpp"
 
 #define R_BUFFER_SIZE 4096
+#define R_SIZE 1024
 
 class Response
 {
@@ -29,11 +30,14 @@ public:
     void fillResponseBody(Http_req&);
     
     Cgi cgi;
+    int i;
+    
     std::string getResponse();
     /*-------------Body TYPE(begin)-------------*/
     void notFound();
     void forrbiden();
-    void created();
+    void fillBodyChunked(Http_req &request); 
+    void created(Http_req &request);
     void noContent();
     /*start mballa*/
     void listDirectory(std::string);
