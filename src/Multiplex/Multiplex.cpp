@@ -59,12 +59,27 @@ void Multiplex::start(void)
 
     while (1)
     {
-        int eventCount;
+        int eventCount = 0;
 
-        eventCount = epoll_wait(epollFD, events, SOMAXCONN, -1); // Waiting for new event to occur
-        // std::cerr << eventCount << " events ready" << std::endl;
+        if (eventCount == 0) // check for timeout
+        {
+            Multiplex::requests_t::iterator it = requests.begin() ;
+            while (it != requests.end())
+            {
+                if (difftime(time(NULL), it->second->lastActive) > TIMEOUT)
+                {
+                    it->second->fd = open("www/html/508.html", O_RDWR) ;
+                    it->second->in_out = true ;
+                    it->second->_status["200"] = "Timeout" ;
+                std::cout << "fd: " << it->first << " time diff: " << difftime(time(NULL), it->second->lastActive) << std::endl ;
+                }
+                it++;
+            }
+        }
+        eventCount = epoll_wait(epollFD, events, SOMAXCONN, 5); // Waiting for new event to occur
         for (int i = 0; i < eventCount; i++)
         {
+            // std::cout << "fd: " << events[i].data.fd << std::endl ;
             // std::cerr << "descriptor " << events[i].data.fd << " ";
             // if (events[i].events & EPOLLOUT)
             //     std::cerr << eventName[EPOLLOUT];
@@ -127,11 +142,11 @@ void Multiplex::start(void)
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
                 requests.insert(std::make_pair(infd, new Http_req(listeners[events[i].data.fd])));
                 response.insert(std::make_pair(infd, new Response()));
-    
                 continue;
             }
             else if (events[i].events & EPOLLIN )   // check if we have EPOLLIN (connection socket ready to read)
             {
+                requests[events[i].data.fd]->lastActive = time(0) ;
                 ssize_t bytesReceived;
                 char buf[R_SIZE] = {0};
 
@@ -149,10 +164,11 @@ void Multiplex::start(void)
                 std::string toSTing(buf,bytesReceived);
                 requests[events[i].data.fd]->parse_re(toSTing, bytesReceived);
             }
-            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd]->getFlag() == true)
+            else if (events[i].events & EPOLLOUT && requests[events[i].data.fd] && requests[events[i].data.fd]->getFlag() == true)
             {
-                std::map<std::string,std::string>::iterator test = requests[events[i].data.fd]->_status.begin();
-                if(requests[events[i].data.fd]->_loca.getCgi() == true && test->first != "400" ){
+                requests[events[i].data.fd]->lastActive = time(0) ;
+                // std::map<std::string,std::string>::iterator test = requests[events[i].data.fd]->_status.begin();
+                if(requests[events[i].data.fd]->_loca.getCgi() == true ){
                     if(requests[events[i].data.fd]->sendHeaders == true)
                         response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);
                     if(response[events[i].data.fd]->cgi._waitreturn){

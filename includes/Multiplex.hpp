@@ -23,7 +23,7 @@
 #include <fstream>
 #include "Response/Response.hpp"// For "JaQen" Response
 #include "cgi/Cgi.hpp"// For "JaQen" Response
-
+#include <ctime>
 
 #define RESETTEXT  "\x1B[0m" // Set all colors back to normal.
 #define FOREBLK  "\x1B[30m" // Black
@@ -36,6 +36,7 @@
 #define FOREWHT  "\x1B[37m" // White
 
 #define R_SIZE 1024 // Read Buffer Size
+#define TIMEOUT 5
 
 class Multiplex
 {
