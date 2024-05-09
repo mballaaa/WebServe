@@ -1114,8 +1114,10 @@ void Http_req::LetPost()
         {
             /*First check if the extension exist */
             std::string str;
-            if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == "")
+            if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == ""){
                 make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+                uploadFile.open(make_name.c_str(), std::ios::app);
+            }
             else if (make_name == "")
             {
                 _status.clear();
@@ -1124,10 +1126,8 @@ void Http_req::LetPost()
                 fd = open("www/html/415.html", O_RDWR);
                 return;
             }
-
-            std::ofstream file(make_name.c_str(), std::ios::app);
-
-            if (!file.is_open())
+            
+            if (!uploadFile.is_open())
             {
                 std::cout << "File Upload Error" << std::endl;
                 return;
@@ -1146,7 +1146,7 @@ void Http_req::LetPost()
                     if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
                     {
                         std::string correct = to_file.substr(0, chunksize);
-                        file << correct;
+                        uploadFile << correct;
                         to_file.erase(0, chunksize + 2);
                         if (to_file.size())
                         {
@@ -1162,7 +1162,6 @@ void Http_req::LetPost()
                         in_out = true;
                         _status["201"] = "Created";
                         header["content-type"] = "text/html";
-                        file.close();
                         fd = open("www/html/201.html", O_RDWR);
                         return;
                     }
@@ -1175,6 +1174,8 @@ void Http_req::LetPost()
                 size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10);
                 if (uploadedFileSize >= fullSize)
                 {
+                    if(uploadedFileSize == fullSize)
+                        uploadFile << body;
                     in_out = true;
                     _status["201"] = "Created";
                     header["content-type"] = "text/html";
@@ -1184,8 +1185,7 @@ void Http_req::LetPost()
                     }
                     return;
                 }
-                file << body;
-                file.close();
+                uploadFile << body;
                 i = 1;
             }
         }
@@ -1206,5 +1206,4 @@ Http_req::~Http_req()
     // debugFileAmine.close() ;
     configFile.close();
     uploadFile.close();
-    file.close();
 }
