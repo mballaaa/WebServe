@@ -204,7 +204,7 @@ std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string
     if (it != std ::string::npos)
     {
         path.replace(0, loac_value.length(), root+loac_value);
-        std ::cout << path << std::endl;
+        
         return path;
     }
     return path;
@@ -235,6 +235,21 @@ std::vector<std::string> split(const std::string &s, char delim)
     }
     return result;
 }
+bool IsPathValid(std::string path)
+{
+
+    std::string allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~";
+
+    size_t found = path.find_first_not_of(allowed_chars);
+
+    if (found == std::string::npos)
+    {
+
+        return false;
+    }
+
+    return true;
+}
 
 int Http_req::MoreValidation()
 {
@@ -244,14 +259,22 @@ int Http_req::MoreValidation()
 
     if (method != "GET" && method != "POST" && method != "DELETE")
     {
+        _status["400"] = "Bad Request";
+        in_out = true;
         return (0);
     }
     if (http_ver != "HTTP/1.1")
     {
-        // std ::cout << "ddddd2\n";
+        _status["400"] = "Bad Request";
+        in_out = true;
         return (0);
     }
-
+    if (!IsPathValid(path))
+    {
+        _status["400"] = "Bad Request";
+        in_out = true;
+        return 0;
+    }
     // get    max body size  in conf
     size_t maxx_size = this->server.getClientMaxBodySize();
     char *endptr;
@@ -271,8 +294,8 @@ int Http_req::MoreValidation()
 
         if (maxx_size < content_len)
         {
-            std ::cout << "3azziii\n";
-            exit(0);
+            _status["400"] = "Bad Request";
+            in_out = true;
             // std :: cout << "ddddd3\n";
             return (0);
         }
@@ -284,64 +307,65 @@ int Http_req::MoreValidation()
     // }
 
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
+    {
+        std ::cout << "sssiodja\n";
         return (0);
+    }
 
     this->_target = this->path;
     // no we have to check for quesry string;
 
-    // size_t stat=path.find('?');
-    // if (stat != std::string ::npos)
-    // {
-    // 	_target=path.substr(0,stat);
-    //     query_string=_target.substr(stat+1,_target.length());
-    // }
+    size_t stat=path.find('?');
+    if (stat != std::string ::npos)
+    {
+    	_target=path.substr(0,stat);
+        query_string=_target.substr(stat+1,_target.length());
+    }
 
     // now let check if match or not
-  std::map<std::string, Location> location = this->server.getLocations();
-std::map<std::string, Location>::iterator it;
-int flag = 0;
-std::string key = "";
-size_t foundSize = 0;
 
-std::vector<std::string> splittedTarget = split(_target, '/');
-for (it = location.begin(); it != location.end(); it++)
-{
-    _target = replaceDuplicateSlash(_target);
+    std::map<std::string, Location> location = this->server.getLocations();
+    std::map<std::string, Location>::iterator it;
+    int flag = 0;
+    std::string key = "";
+    size_t foundSize = 0;
 
-   
-
-    std::vector<std::string> splittedLocationPath = split(it->first, '/');
-
-    size_t count = 0;
-    size_t shorterLength = std::min(splittedLocationPath.size(), splittedTarget.size());
-    for (size_t i = 0; i < shorterLength; ++i)
+    std::vector<std::string> splittedTarget = split(_target, '/');
+    for (it = location.begin(); it != location.end(); it++)
     {
-        if (splittedLocationPath[i] == splittedTarget[i])
+        _target = replaceDuplicateSlash(_target);
+
+        std::vector<std::string> splittedLocationPath = split(it->first, '/');
+
+        size_t count = 0;
+        size_t shorterLength = std::min(splittedLocationPath.size(), splittedTarget.size());
+        for (size_t i = 0; i < shorterLength; ++i)
         {
-            count++;
-        }
-        else
-        {
-           
-            break;
-        }
-        if (count > foundSize)
-        {
-            foundSize = count;
-            this->_loca = it->second;
-            key = it->first;
-            flag = 1;
+            if (splittedLocationPath[i] == splittedTarget[i])
+            {
+                count++;
+            }
+            else
+            {
+
+                break;
+            }
+            if (count > foundSize)
+            {
+                foundSize = count;
+                this->_loca = it->second;
+                key = it->first;
+                flag = 1;
+            }
         }
     }
-}
 
-
-if (flag == 0)
-{
-    _status["404"] = "Page Not Found";
-    std::cout << "Not match \n";
-    return 0;
-}
+    if (flag == 0)
+    {
+        _status["404"] = "Page Not Found";
+        std::cout << "Not match \n";
+        return 0;
+    }
 
     /// std :: cerr << "weech\n";
     Location::redirection_t red = this->_loca.getReturn();
@@ -356,39 +380,44 @@ if (flag == 0)
     // let check allow methode
     Location::Methods_t allowmethod = this->_loca.getAllowedMethods();
     bool is_exit = false;
-    (void)is_exit;
+  
 
     for (size_t i = 0; i < allowmethod.size(); i++)
     {
+        
         // change to stirng
         // debugFileAmine << "std::string to_stringmetohd(int value)" << std::endl ;
         std ::string get_methode = to_stringmetohd(allowmethod[i]);
+       
         //  std :: cerr << "get methode==>\n" << get_methode << std ::endl;
         if (get_methode == this->method)
         {
-
+                
             is_exit = true;
             break;
         }
     }
-    // if(!is_exit)
-    // {
-    //     std ::cout << "sssssss\n";
-    //     exit(0);
-    //     in_out=true;
-    //     _status["403"]="NOt allowed";
-    //     return 0 ;
-    // }
+  
+        if(!is_exit)
+     {
+        
+       
+        in_out=true;
+        _status["405"]="Method Not Allowed";
+        return 0 ;
+    }
     /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
-
+    
     // debugFileAmine << "std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)" << std::endl ;
     _target = SetRootLoc(_target, key, this->_loca.getRoot());
-    //std :: cout << _target << std ::endl;
+   
+    // std :: cout << _target << std ::endl;
 
-    std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
-    moreValidationDone = 1 ;
+    // std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
+    moreValidationDone = 1;
     return (1);
 }
+
 void Http_req::debugFunction()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
@@ -758,31 +787,35 @@ std ::string getMessage(int code)
 void Http_req ::CheckLoc(int *is_file)
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-    std ::cout << _loca << std ::endl;
-    if (this->_loca.getIndex().size() != 0 )
+     if (_target[_target.length() - 1] != '/')
+        {
+            
+                in_out = true;
+                _status["302"] = "Redirect";
+                return;
+        }
+    if (this->_loca.getIndex().size() != 0)
     {
-    
-     
+
         std ::vector<std ::string> index = this->_loca.getIndex();
-        
 
         std ::string main_index = index.at(0);
         // std ::cout << "==>" << this->_loca.getRoot() << std ::endl;
 
         // std ::cerr << "index  name==>" << main_index << std ::endl;
-        if(_target[_target.length()-1] != '/' )
+        if (_target[_target.length() - 1] != '/')
         {
-            
-           _target+="/";
+
+            _target += "/";
         }
         //  std ::cout << "==> index" << main_index << std ::endl;
         _target += main_index;
         // check if that index is floder shloud trhow error forbiden
-        if(is_file_dir(_target)==0)
+        if (is_file_dir(_target) == 0)
         {
-            _status["403"]="Forbbiden";
-         in_out=true;
-         return ;
+            _status["403"] = "Forbbiden";
+            in_out = true;
+            return;
         }
 
         *is_file = 1;
@@ -793,33 +826,49 @@ void Http_req ::CheckLoc(int *is_file)
         // std::cout << this->_loca.getIndex().size();
         // std ::cout <<  this->_loca.getAutoIndex() << std ::endl;
         // exit(0);
-       
-      
-        if (this->_loca.getAutoIndex() && this->_loca.getIndex().size()==0)
+
+        if (this->_loca.getAutoIndex() && this->_loca.getIndex().size() == 0)
         {
-          
-          std :: cout << "jkladjlasdklsf\n";
-            
+
             /// Here We shloud Send DirectoryListe
             // std ::cout << _target << std ::endl;
+
             std ::string dirpath = _target;
-            std ::cout << dirpath << std ::endl;
+            // if (dirpath[dirpath.length() - 1] != '/')
+            // {
+            //     in_out = true;
+            //     _status["302"] = "Redirect";
+            //     return;
+            // }
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
 
             DIR *dir = opendir(dirpath.c_str());
             if (!dir)
             {
-                perror("auto index issue");
                 closedir(dir);
+                perror("auto index issue");
                 return;
             }
             else
             {
+               
                 struct dirent *list;
                 list = readdir(dir);
                 // std :: cout << path << std :: endl;
                 while (list != NULL)
                 {
+                    
+                    if (std ::string(list->d_name) == "index.html")
+                    {
+                      
+                        _target += std ::string(list->d_name);
+                       
+
+                       
+
+                        closedir(dir);
+                        return ;
+                    }
                     if (list->d_type == DT_DIR)
                     {
                         toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
@@ -837,19 +886,18 @@ void Http_req ::CheckLoc(int *is_file)
                 toHtml += "</pre>\n</body>\n</html>";
 
                 closedir(dir);
-             
+
                 in_out = true;
                 _status["200"] = "OK";
                 return;
             }
-             closedir(dir);
+            closedir(dir);
         }
         else
         {
-           
 
             // SendErrorClient(403);
-           
+
             in_out = true;
             _status["403"] = "Forbidden";
             return;
@@ -857,35 +905,9 @@ void Http_req ::CheckLoc(int *is_file)
     }
 }
 
-bool Http_req::loadCGIMap()
-{
-    if (!cgiMap.empty())
-        return true;
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 
-    if (configFile.is_open())
-    {
-        std::string line;
-        while (std::getline(configFile, line))
-        {
-            std::istringstream iss(line);
-            std::string ext, path;
-            if (iss >> ext >> path)
-            {
-                cgiMap[ext] = path;
-            }
-        }
-    }
-    else
-    {
-        perror("Error: Unable to open configuration file");
-        _status.clear();
-        _status["403"] = "Forbidden";
-        in_out = true;
-        return false;
-    }
-    return true ;
-}
+
+
 
 std::string fileExtension(std::string filename)
 {
@@ -901,15 +923,14 @@ void Http_req::LetGet()
 
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     _status.clear();
-    // loadCGIMap();
-        // exit(0);
+  
    
 
     int is_file = 0;
    // int permisson=0;
   
     std ::string URI = _target;
-    std ::cout << URI << std ::endl;
+  
    
     // debugFileAmine << "int is_file_dir(std::string uri)" << std::endl ;
     int check_type = is_file_dir(URI);
@@ -934,50 +955,57 @@ void Http_req::LetGet()
  std ::cout << URI << std ::endl;
     if (stat(URI.c_str(), &sb) == 0)
     {
-        if (this->_loca.getCgi())
-        {
+        // if (this->_loca.getCgi())
+        // {
          
-            // cehck extions
-            // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
-            std ::string extension = fileExtension(URI);
-           // std ::cout << "extension: " << extension << std ::endl;
-            if (extension == "php" || extension == "python")
-            {
-                std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
-                if (it != cgiMap.end())
-                {
-                    std::string executable = it->second;
+        //     // cehck extions
+        //     // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
+        //     std ::string extension = fileExtension(URI);
+        //    // std ::cout << "extension: " << extension << std ::endl;
+        //     if (extension == "php" || extension == "python")
+        //     {
+        //         std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
+        //         if (it != cgiMap.end())
+        //         {
+        //             std::string executable = it->second;
 
-                    if (executable == "/usr/bin/php" || executable == "/usr/bin/python3")
-                    {
-                        std ::cout << "yesss\n";
-                        _status["200"] = "OK";
-                        CGI_FLAG = true;
+        //             if (executable == "/usr/bin/php" || executable == "/usr/bin/python3")
+        //             {
+        //                 std ::cout << "yesss\n";
+        //                 _status["200"] = "OK";
+        //                 CGI_FLAG = true;
 
-                        in_out = true;
-                        return;
-                    }
+        //                 in_out = true;
+        //                 return;
+        //             }
 
-                    else
-                    {
-                        _status.clear();
-                        _status["403"] = "permission denied";
-                        fd = open(_target.c_str(),std::ios::binary,O_RDONLY );
-                        return;
-                    }
-                }
-            }
-        }
+        //             else
+        //             {
+        //                 _status.clear();
+        //                 _status["403"] = "permission denied";
+        //                 fd = open(_target.c_str(),std::ios::binary,O_RDONLY );
+        //                 return;
+        //             }
+        //         }
+        //     }
+        // }
 
         if ((sb.st_mode & S_IFREG) || is_file)
         {
-          
+           if(!toHtml.empty())
+            {
+
+               _status["200"]="OK";
+                toHtml.clear();
+                in_out=true;
+                return ;
+            }
 
             if(fd>0)
                 close(fd);
-            fd = open(_target.c_str(),std::ios::binary,O_RDONLY );
+            fd = open(URI.c_str(),std::ios::binary,O_RDONLY );
             std::cout << "fd get->> " << fd << std::endl;
-            // exit(0);
+            
             _status.clear();
             _status["200"] = "ok";
             in_out = true;

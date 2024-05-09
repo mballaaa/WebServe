@@ -30,7 +30,8 @@ std::string sizeToHex(size_t size)
 
 /*Fill Response Header*/
 void Response::fillResponseHeadre(Http_req &request){
-
+    std ::cout << "yess\n";
+    exit(0);
     std::map<std::string,std::string>::iterator it1 = request._status.begin();
     std::map<std::string,std::string> h;
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
