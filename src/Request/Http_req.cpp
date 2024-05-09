@@ -701,9 +701,9 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         std ::cout << "Baaaad Request\n";
         _status.clear();
         _status["400"] = "Bad request";
-        // _status.clear();
-        header["content-lenght"] = "0";
-        // body = "BADD";
+        if(fd>0)
+            close(fd);
+        fd = open("www/html/400.html",O_RDONLY);
         return;
     }
     else
@@ -713,6 +713,8 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         {
 
             LetGet();
+            std::cout << "in out =>>>> " << in_out << std::endl;
+            // exit(0);
         }
         /*=============== 14 PART (begin)==================*/
         else if (method == "POST")
@@ -887,7 +889,7 @@ void Http_req ::CheckLoc(int *is_file)
                 {
                     outputFile.close();
                     perror("Error file");
-                    exit(1);
+                    // exit(1);
                    
                 }
                  outputFile << toHtml;
@@ -1014,6 +1016,12 @@ void Http_req::LetGet()
 
             return;
         }
+
+        // else
+        //     {
+        //         std::cout << "error mballa" << std::endl;
+        //         exit(0);
+        //     }
         // permisiion condition trhow
     }
 
@@ -1029,11 +1037,34 @@ void Http_req::LetGet()
         // exit(0);
         return;
     }
+    // exit(0);
+    
 }
 // in_out=true;
 
 // std ::cout << "sssdffd\n";
 /*=============== 14 PART (begin)==================*/
+bool Http_req::dirExistWithPermiss(){
+    struct stat info;
+    if (stat(_loca.getUploadPath().c_str(), &info) != 0) {
+        if (errno == ENOENT) {
+            accessError = false;
+            return false;
+        } else if (errno == EACCES) {
+            accessError = true;   
+            return false;
+        } else {
+            accessError = true;   
+            return false;
+        }
+    } else if (info.st_mode & S_IFDIR) {
+        accessError = false;
+        return true; 
+    } else {
+        accessError = false;
+        return false;
+    } 
+}
 int Http_req::mimeParse()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
@@ -1095,10 +1126,28 @@ void Http_req::LetPost()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     /*location not found*/
+    CGI_FLAG = true;
     if (fd > 0)
         close(fd);
     if (_loca.getUpload() == true)
     {
+        if(dirExistWithPermiss() == false){
+            in_out = true;
+            _status.clear();
+            if(accessError)
+            {
+                _status["403"] = "Permission Denied";
+                fd = open("www/html/403.html", O_RDWR);
+                CGI_FLAG = false;
+                return;
+            }
+            else{
+                _status["404"] = "Not found";
+                fd = open("www/html/Page not found · GitHub Pages.html", O_RDWR);
+                CGI_FLAG = false;
+                return;
+            }
+        }
 
         if (header["content-length"] == " 0" || header["content-type"] == "")
         {
@@ -1108,14 +1157,10 @@ void Http_req::LetPost()
             fd = open("www/html/204.html", O_RDWR);
             return;
         }
-        int dirCheck = mkdir("Upload", 0777);
-
-        if (!dirCheck || errno == EEXIST)
-        {
             /*First check if the extension exist */
             std::string str;
             if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == ""){
-                make_name = "Upload/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+                make_name = _loca.getUploadPath() +"/"+ randNameGen() + "." + _mime[header["content-type"].substr(1)];
                 uploadFile.open(make_name.c_str(), std::ios::app);
             }
             else if (make_name == "")
@@ -1126,8 +1171,8 @@ void Http_req::LetPost()
                 fd = open("www/html/415.html", O_RDWR);
                 return;
             }
-            
-            if (!uploadFile.is_open())
+
+            if (!uploadFile.is_open()) 
             {
                 std::cout << "File Upload Error" << std::endl;
                 return;
@@ -1188,7 +1233,6 @@ void Http_req::LetPost()
                 uploadFile << body;
                 i = 1;
             }
-        }
         /*Status 201*/
     }
     else if (_loca.getUpload() == false)

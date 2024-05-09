@@ -162,8 +162,8 @@ void Multiplex::start(void)
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd] && requests[events[i].data.fd]->getFlag() == true)
             {
                 requests[events[i].data.fd]->lastActive = time(0) ;
-                // std::map<std::string,std::string>::iterator test = requests[events[i].data.fd]->_status.begin();
-                if(requests[events[i].data.fd]->_loca.getCgi() == true ){
+
+                if(requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->CGI_FLAG == true) {
                     if(requests[events[i].data.fd]->sendHeaders == true)
                         response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);
                     if(response[events[i].data.fd]->cgi._waitreturn){

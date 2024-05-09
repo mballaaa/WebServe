@@ -64,6 +64,7 @@ public: // amine: i made this public for now
 
     std::map<std::string,std::string> _mime;
     std::map<std::string,std::string> _status;
+    bool accessError;
     std::string to_file;
     size_t chunksize;
     std::string classChunksizeString;
@@ -85,6 +86,7 @@ public: // amine: i made this public for now
     void chunked();
     void contentLenght();
     std::string randNameGen();
+    bool dirExistWithPermiss();
 
     /*=============== 14 PART (end)==================*/
 public:

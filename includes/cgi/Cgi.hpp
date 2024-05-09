@@ -33,6 +33,8 @@ public:
     std::string outputfilename;
     pid_t _waitreturn ;
     pid_t _waitstatus ;
+    int input;
+    int output;
     pid_t pid         ;
     char **env;
     char **argv;

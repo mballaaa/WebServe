@@ -40,14 +40,12 @@ void Response::fillResponseHeadre(Http_req &request){
     if (request._status.find("302") != request._status.end())
         h["Location"] = " " + request.path + "/" ;
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
-    std::cout <<  "=>>>" <<request._target.substr(request._target.find_last_of('.') + 1)<< std::endl;
-    // exit(0);
+  
     std::string contentType;
     if (fileExtension == "html") {
         contentType = "text/html; charset=utf-8";
     } else if (fileExtension == "mp4") {
         contentType = "video/mp4";
-        // exit(0);
     }
     else if (fileExtension=="png" )
     {
@@ -55,7 +53,6 @@ void Response::fillResponseHeadre(Http_req &request){
     }
      
     else {
-        // contentType = "application/octet-stream";
         contentType = "text/html";
     }
     h["content-type"] = contentType;
@@ -63,8 +60,6 @@ void Response::fillResponseHeadre(Http_req &request){
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)
         _resheaders += it2->first+": "+it2->second+"\r\n";
-    std::cout << _resheaders << std::endl;
-    // exit(0);
 
 }
 
@@ -75,11 +70,9 @@ void Response::fillResponseBody(Http_req &request){
         fillBodyChunked(request);
     fillResponseHeadre(request);
     if(request.sendHeaders == false){
-        std::cout << "HEADER FALSE" << std::endl;
         _resheaders = "";
     }
     _response = _resheaders + _resbody;
-    // std::cerr << "ALOOO222" << _response << std::endl;
     
 }
 
@@ -94,10 +87,8 @@ std::string ssizeToHexToStr(ssize_t chunksize){
 void Response::fillBodyChunked(Http_req &request){
     char buff [R_SIZE];
     ssize_t bytesReceived;
-    // if(request.fd ==0)
-    // {
-
-    // }
+    std::cout << "=>>> test " << request.fd << std::endl;
+    // exit(0);
     if(request.fd<0){
         std::cout << "request.fd 4FD ERROR" << std::endl;
         std::cout << "fd fd err: " << request.fd << std::endl ;
@@ -105,7 +96,7 @@ void Response::fillBodyChunked(Http_req &request){
         return;
     }
     // exit(0);
-    std::cout << "fd fillbody: " << request.fd << std::endl ;
+    // std::cout << "fd fillbody: " << request.fd << std::endl ;
 
     bytesReceived = read(request.fd, buff, R_SIZE-1);
     if (bytesReceived == -1) 
