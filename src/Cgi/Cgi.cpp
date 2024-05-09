@@ -243,10 +243,10 @@ void Cgi::executeCgi(Http_req &request){
         kill(pid,SIGKILL);
         waitpid(pid,&status,WNOHANG);
         request._status.clear();
-        request._status["508"] = "Gateway timeout";
+        request._status["504"] = "Gateway timeout";
 
         request.header["content-type"] = "text/html";
-        request.fd = open("www/html/508.html",O_RDONLY);
+        request.fd = open("www/html/504.html",O_RDONLY);
         std::cout << "fd cgi: " << request.fd << std::endl ;
         unlink(outputfilename.c_str());//remove output file
         _waitreturn = 1;

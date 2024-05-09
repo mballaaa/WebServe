@@ -91,9 +91,10 @@ void Multiplex::start(void)
             {
                 if (difftime(time(NULL), requests[events[i].data.fd]->lastActive) > TIMEOUT)
                 {
-                    requests[events[i].data.fd]->fd = open("www/html/508.html", O_RDWR) ;
+                    requests[events[i].data.fd]->fd = open("www/html/408.html", O_RDWR) ;
+                    unlink(requests[events[i].data.fd]->make_name.c_str());
                     requests[events[i].data.fd]->in_out = true ;
-                    requests[events[i].data.fd]->_status["200"] = "Timeout" ;
+                    requests[events[i].data.fd]->_status["408"] = "Request Timeout" ;
                     std::cout << "fd: " << events[i].data.fd << " time diff: " << difftime(time(NULL), requests[events[i].data.fd]->lastActive) << std::endl ;
                 }
             }

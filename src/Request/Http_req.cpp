@@ -1065,6 +1065,8 @@ void Http_req::LetPost()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     /*location not found*/
+    if(fd>0)
+        close(fd);
     if (_loca.getUpload() == true)
     {
         
@@ -1124,9 +1126,8 @@ void Http_req::LetPost()
                         _status["201"] = "Created";
                         header["content-type"] = "text/html";
                         file.close();
-                        if(_loca.getCgi() == false)
                             fd = open("www/html/201.html",O_RDWR);
-                        break;
+                        return;
                     }
                 }
                 i=1;
@@ -1134,17 +1135,19 @@ void Http_req::LetPost()
             else
             {
                 uploadedFileSize += body.size() ;
-                file << body;
-                file.close();
                 size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10) ;
-                if (uploadedFileSize == fullSize)
+                if (uploadedFileSize >= fullSize)
                 {
                     in_out = true;
                     _status["201"] = "Created";
                     header["content-type"] = "text/html";
-                    if(_loca.getCgi() == false)
-                            fd = open("www/html/201.html",O_RDWR);
+                    if(_loca.getCgi() == false){
+                        fd = open("www/html/201.html",O_RDWR);
+                    }
+                    return ;
                 }
+                file << body;
+                file.close();
                 i = 1;
             }
         }
