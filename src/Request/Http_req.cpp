@@ -25,7 +25,7 @@ Http_req::Http_req(Server &server)
     in_out = false;
     CGI_FLAG = false;
     query_string = "";
-    i = 0 ;
+    fd = 0;
     moreValidationDone = false ;
     uploadedFileSize = 0 ;
     configFile.open("./src/Cgi/pathExecutableFile.txt");
@@ -899,7 +899,7 @@ void Http_req::LetGet()
 
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     _status.clear();
-    loadCGIMap();
+    // loadCGIMap();
         // exit(0);
    
 
@@ -971,11 +971,12 @@ void Http_req::LetGet()
         {
           
 
-            fd = open(_target.c_str(), O_RDONLY);
-          _status.clear();
+            if(fd>0)
+                close(fd);
             fd = open(_target.c_str(),std::ios::binary,O_RDONLY );
-            std::cout << "->> " << fd << std::endl;
+            std::cout << "fd get->> " << fd << std::endl;
             // exit(0);
+            _status.clear();
             _status["200"] = "ok";
             in_out = true;
 
