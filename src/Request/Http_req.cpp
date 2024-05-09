@@ -713,8 +713,10 @@ bool Is_dir(const char *ptr)
         if (dir != NULL)
         {
             //  std ::cerr << "Is directory\n";
+            closedir(dir) ;
             return true;
         }
+        closedir(dir) ;
         return false;
     }
     else
