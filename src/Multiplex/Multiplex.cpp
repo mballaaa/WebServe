@@ -186,7 +186,6 @@ void Multiplex::start(void)
                     response[events[i].data.fd]->fillResponseBody(*requests[events[i].data.fd]);
                     s = write (events[i].data.fd, response[events[i].data.fd]->getResponse().c_str(), response[events[i].data.fd]->getResponse().size());
                     if(response[events[i].data.fd]->getResBody() == "\r\n0\r\n\r\n"){
-                        close(requests[events[i].data.fd]->fd);
                         delete requests[events[i].data.fd] ;
                         requests.erase(events[i].data.fd) ;
                         delete response[events[i].data.fd] ;

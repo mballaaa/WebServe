@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Index of /aji/vanns/</title>
+</head>
+<body>
+<h1>Index of /aji/vanns/</h1>
+<pre><a href="../">../</a> 
+<a href="./">./</a> 
+</pre>
+</body>
+</html>

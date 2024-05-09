@@ -30,12 +30,10 @@ std::string sizeToHex(size_t size)
 
 /*Fill Response Header*/
 void Response::fillResponseHeadre(Http_req &request){
-    std ::cout << "yess\n";
-    exit(0);
+    
     std::map<std::string,std::string>::iterator it1 = request._status.begin();
     std::map<std::string,std::string> h;
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
-
     h["Transfer-Encoding"] = "chunked";
     h["Connection"] = "Closed";
     h["host"] = "127.0.0.1:9090";
@@ -72,7 +70,9 @@ void Response::fillResponseHeadre(Http_req &request){
 
 /*Fill  Resposne Body*/
 void Response::fillResponseBody(Http_req &request){
-    fillBodyChunked(request);
+    _resbody = "\r\n0\r\n\r\n";
+    if(request.fd != 0)
+        fillBodyChunked(request);
     fillResponseHeadre(request);
     if(request.sendHeaders == false){
         std::cout << "HEADER FALSE" << std::endl;
@@ -94,7 +94,10 @@ std::string ssizeToHexToStr(ssize_t chunksize){
 void Response::fillBodyChunked(Http_req &request){
     char buff [R_SIZE];
     ssize_t bytesReceived;
+    // if(request.fd ==0)
+    // {
 
+    // }
     if(request.fd<0){
         std::cout << "request.fd 4FD ERROR" << std::endl;
         std::cout << "fd fd err: " << request.fd << std::endl ;
