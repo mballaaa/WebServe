@@ -85,8 +85,8 @@ void Cgi::_setupEnv(Http_req &request){
     if(extension != "" && _executablefile.find(extension) != _executablefile.end()){
         _argv[0] = _executablefile[extension];
         _argv[1] = request.getTarget().substr(2);
-        std::cout << "=>> " << _argv[0] << std::endl;
-        std::cout << "=>> " << _argv[1] << std::endl;
+        //std::cout << "=>> " << _argv[0] << std::endl;
+        //std::cout << "=>> " << _argv[1] << std::endl;
 
     }
     else    
@@ -120,7 +120,7 @@ void Cgi::cgiResponse(Http_req &request){
     std::ofstream file(cgifile.c_str(),std::ios_base::app);
     if(!file.is_open())
     {
-        std::cout << "cgi file erro" << std::endl;
+        //std::cout << "cgi file erro" << std::endl;
         return ;
     }
     if(headerflag == false){
@@ -232,7 +232,7 @@ void Cgi::executeCgi(Http_req &request){
         request._status["504"] = "Gateway timeout";
         request.header["content-type"] = "text/html";
         request.fd = open("www/html/504.html",O_RDONLY);
-        std::cout << "fd cgi: " << request.fd << std::endl ;
+        //std::cout << "fd cgi: " << request.fd << std::endl ;
         unlink(outputfilename.c_str());//remove output file
         _waitreturn = 1;
         std::cerr << "ERROR" << std::endl;

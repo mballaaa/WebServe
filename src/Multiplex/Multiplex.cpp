@@ -63,7 +63,7 @@ void Multiplex::start(void)
         eventCount = epoll_wait(epollFD, events, SOMAXCONN, -1); // Waiting for new event to occur
         for (int i = 0; i < eventCount; i++)
         {
-            // std::cout << "fd: " << events[i].data.fd << std::endl ;
+            // //std::cout << "fd: " << events[i].data.fd << std::endl ;
             // std::cerr << "descriptor " << events[i].data.fd << " ";
             // if (events[i].events & EPOLLOUT)
             //     std::cerr << eventName[EPOLLOUT];
@@ -95,7 +95,7 @@ void Multiplex::start(void)
                     unlink(requests[events[i].data.fd]->make_name.c_str());
                     requests[events[i].data.fd]->in_out = true ;
                     requests[events[i].data.fd]->_status["408"] = "Request Timeout" ;
-                    std::cout << "fd: " << events[i].data.fd << " time diff: " << difftime(time(NULL), requests[events[i].data.fd]->lastActive) << std::endl ;
+                    //std::cout << "fd: " << events[i].data.fd << " time diff: " << difftime(time(NULL), requests[events[i].data.fd]->lastActive) << std::endl ;
                 }
             }
             if (listeners.find(events[i].data.fd) != listeners.end()) // Check if socket belong to a server
@@ -146,10 +146,10 @@ void Multiplex::start(void)
                 char buf[R_SIZE] = {0};
 
                 bytesReceived = read(events[i].data.fd, buf,  R_SIZE - 1);
-                std ::cout << bytesReceived << std ::endl;
+                // std ::cout << bytesReceived << std ::endl;
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
-                    std::cout << "client closed " << std::endl ;
+                    //std::cout << "client closed " << std::endl ;
                     std ::cout << "====>" << bytesReceived << std ::endl;
                     close(events[i].data.fd);
                     delete requests[events[i].data.fd] ;

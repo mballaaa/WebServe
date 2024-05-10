@@ -38,7 +38,7 @@ Http_req::Http_req(Server &server)
 
 Http_req::Http_req(const Http_req &obj)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    //std::cout << __PRETTY_FUNCTION__ << std::endl;
     query_string = obj.query_string;
     req = obj.req;
     _target = obj._target;
@@ -196,10 +196,10 @@ std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string
 {
     std ::string result;
 
-    // std::cout << "SetRootLoc" << std::endl ;
-    // std::cout << "path: " << path << std::endl ;
-    // std::cout << "loac_value: " << loac_value << std::endl ;
-    // std::cout << "root: " << root << std::endl ;
+    // //std::cout << "SetRootLoc" << std::endl ;
+    // //std::cout << "path: " << path << std::endl ;
+    // //std::cout << "loac_value: " << loac_value << std::endl ;
+    // //std::cout << "root: " << root << std::endl ;
 
     size_t it = path.find(loac_value);
 
@@ -373,7 +373,7 @@ int Http_req::MoreValidation()
     if (flag == 0)
     {
         _status["404"] = "Page Not Found";
-        std::cout << "Not match \n";
+        //std::cout << "Not match \n";
         return 0;
     }
 
@@ -465,8 +465,6 @@ int Http_req::StautRe(std::string request)
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 
     //////////////////
-    std ::cout << "->> " << request << std ::endl;
-
     std ::string my_req = "";
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
@@ -832,7 +830,7 @@ void Http_req ::CheckLoc(int *is_file)
     {
 
         // std ::cout << "adhjdfjdf\n";
-        // std::cout << this->_loca.getIndex().size();
+        // //std::cout << this->_loca.getIndex().size();
         // std ::cout <<  this->_loca.getAutoIndex() << std ::endl;
         // exit(0);
 
@@ -907,11 +905,11 @@ void Http_req ::CheckLoc(int *is_file)
                 outputFile.close();
                 if (fd > 0)
                 {
-                    std::cout << "case in get fd >0\n";
+                    //std::cout << "case in get fd >0\n";
                     close(fd);
                 }
                 fd = open("output.txt", std::ios::binary, O_RDONLY);
-                std::cout << "fd list->> " << fd << std::endl;
+                //std::cout << "fd list->> " << fd << std::endl;
 
                 return;
             }
@@ -1031,7 +1029,7 @@ void Http_req::LetGet()
             if (fd > 0)
                 close(fd);
             fd = open(URI.c_str(), std::ios::binary, O_RDONLY);
-            std::cout << "fd get->> " << fd << std::endl;
+            //std::cout << "fd get->> " << fd << std::endl;
 
             _status.clear();
             _status["200"] = "ok";
@@ -1048,9 +1046,9 @@ void Http_req::LetGet()
 
         _status.clear();
         _status["404"] = "Not found";
-        std::cout << "here \n";
+        //std::cout << "here \n";
         fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
-        std::cout << "fd test =>> " << fd << std::endl;
+        //std::cout << "fd test =>> " << fd << std::endl;
         in_out = true;
         // exit(0);
         return;
@@ -1079,7 +1077,7 @@ int Http_req::mimeParse()
 
     if (!file.is_open())
     {
-        std::cout << "Error : mimes.types could not be open" << std::endl;
+        //std::cout << "Error : mimes.types could not be open" << std::endl;
         _status.clear();
         _status["415"] = "Unsupported Media Type";
         fd = open("www/html/415.html", O_RDWR);
@@ -1169,7 +1167,7 @@ void Http_req::LetPost()
 
         if (!uploadFile.is_open())
         {
-            std::cout << "File Upload Error" << std::endl;
+            //std::cout << "File Upload Error" << std::endl;
             return;
         }
         if (header["transfer-encoding"] == " chunked")
@@ -1180,7 +1178,7 @@ void Http_req::LetPost()
                 _status["403"] = "Permission Denied";
                 fd = open("www/html/403.html", O_RDWR);
                 error = true;
-                std::cout << "File Upload Error" << std::endl;
+                //std::cout << "File Upload Error" << std::endl;
                 return;
             }
             to_file += body;
@@ -1202,15 +1200,6 @@ void Http_req::LetPost()
                             chunksize = hexStringToInt(classChunksizeString);
                             to_file.erase(0, classChunksizeString.size());
                         }
-                    }
-                    else
-                        break;
-                    if (!chunksize)
-                    {
-                        in_out = true;
-                        _status["201"] = "Created";
-                        fd = open("www/html/201.html", O_RDWR);
-                        return;
                     }
                 }
                 else
