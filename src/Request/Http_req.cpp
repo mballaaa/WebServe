@@ -464,7 +464,7 @@ int Http_req::StautRe(std::string request)
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 
     //////////////////
-    // std ::cout << request << std ::endl;
+    std ::cout << "->> " << request << std ::endl;
 
     std ::string my_req = "";
     // Set flag that can tell us is request are finshied
@@ -478,7 +478,7 @@ int Http_req::StautRe(std::string request)
     res = 0;
 
     a++;
-
+    
     if (!is_finsh && len_req != std ::string ::npos)
     {
 
@@ -704,7 +704,6 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     // std :: cout << bufer << std ::endl;
     (void)bufer;
     (void)bytee;
-
     if (!StautRe(bufer) || bytee < 0)
     {
 

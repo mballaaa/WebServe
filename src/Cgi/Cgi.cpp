@@ -62,20 +62,13 @@ void Cgi::_setupEnv(Http_req &request){
     std::map<std::string,std::string> headers = request.getHeader();
     Server server = request.getServer();
     _env["CONTENT_LENGTH"] = size_t_to_string(request.getBody().size());
-    std::cout << headers["content-type"] << std::endl;
-    // if(headers["content-type"] != "")
-    //     _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
-    // else{
-
-    //     _env["CONTENT_TYPE"] = "";
-    // }
+    _env["CONTENT_TYPE"] = headers["content-type"];
 	_env["REDIRECT_STATUS"] = "CGI"; //know more about REDIRECTE_STATUS
     _env["PATH_INFO"] = request.getPath().substr(1);
     _env["PATH_TRANSLATED"] = request.getPath().substr(1);
     _env["QUERY_STRING"] = request.query_string; // get the query with getMethod
     _env["REMOTE_ADDR"] =   server.getHost();
     _env["REQUEST_METHOD"] = request.getMethod();
-	// _env["REQUEST_URI"] = request.getPath() + request.getQuery();
 	_env["REQUEST_URI"] = request.getPath() + _env["QUERY_STRING"];
     _env["SERVER_PORT"] = server.getPort();
     _env["HTTP_COOKIE"] = request.header["cookie"];
