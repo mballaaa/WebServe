@@ -165,8 +165,6 @@ void Multiplex::start(void)
             {
                 
                 requests[events[i].data.fd]->lastActive = time(0) ;
-                std::cout << "method->>" <<requests[events[i].data.fd]->getMethod()<< "--" << std::endl;
-                // exit(0);
                 if((requests[events[i].data.fd]->CGI_FLAG || requests[events[i].data.fd]->getMethod() != "GET") && requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->error != true) {
                     if(requests[events[i].data.fd]->sendHeaders == true)
                         response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);

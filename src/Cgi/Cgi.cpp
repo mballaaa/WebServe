@@ -59,6 +59,8 @@ std::string Cgi::fileExtension(std::string filename){
 }
 
 void Cgi::_setupEnv(Http_req &request){
+    // if(request.fd > 0)
+    //     close(request.fd);
     std::map<std::string,std::string> headers = request.getHeader();
     Server server = request.getServer();
     _env["CONTENT_LENGTH"] = size_t_to_string(request.getBody().size());
@@ -77,8 +79,7 @@ void Cgi::_setupEnv(Http_req &request){
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     
     std::string extension = fileExtension(request.getTarget().substr(2));
-    std::cerr << "Heloo "+extension << std::endl;
-
+    
     _executablefile = request._loca.getCgiPaths();
    
     if(extension != "" && _executablefile.find(extension) != _executablefile.end()){
@@ -90,7 +91,7 @@ void Cgi::_setupEnv(Http_req &request){
     {
         /*=====Must be in a separate func=====*/
         request._status.clear();
-        request._status["404"] = "Not foundddd";
+        request._status["404"] = "Not found";
         request.fd = open("www/html/Page not found · GitHub Pages.html",O_RDWR);
         _waitreturn = 1;
         return ;
@@ -141,8 +142,9 @@ void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
    
     std::string::size_type index2= _cgibody.find("\r",12);
     request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
-    if(request.fd == 0)
-        request.fd = open("www/html/500.html",O_RDWR);
+    if(request.fd > 0)
+        close(request.fd);
+    request.fd = open("www/html/500.html",O_RDWR);
 }
 
 void freeptr(char **env,char **argv){
