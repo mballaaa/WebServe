@@ -165,7 +165,7 @@ void Multiplex::start(void)
             {
                 // exit(0);
                 requests[events[i].data.fd]->lastActive = time(0) ;
-                if(requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->error != true) {
+                if(requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->error != true && requests[events[i].data.fd]->CGI_FLAG) {
                     if(requests[events[i].data.fd]->sendHeaders == true)
                         response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);
                     if(response[events[i].data.fd]->cgi._waitreturn){
