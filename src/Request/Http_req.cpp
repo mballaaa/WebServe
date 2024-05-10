@@ -260,13 +260,15 @@ int Http_req::MoreValidation()
     // /// check method
 
     if (method != "GET" && method != "POST" && method != "DELETE")
-    {
+    {std ::cout << "ydes\n";
+
         _status["400"] = "Bad Request";
         in_out = true;
         return (0);
     }
     if (http_ver != "HTTP/1.1")
     {
+        std ::cout << "yes\n";
         _status["400"] = "Bad Request";
         in_out = true;
         return (0);
@@ -303,18 +305,20 @@ int Http_req::MoreValidation()
             return (0);
         }
     }
-    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != " chunked")
+   
+    if(header.find("host") == header.end())
     {
           _status["400"]="Bad Request";
+     
         return (0);
     }
-
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
     {
        _status["400"]="Bad Request";
      
         return (0);
     }
+
 
     this->_target = this->path;
    
@@ -346,6 +350,8 @@ int Http_req::MoreValidation()
     for (it = location.begin(); it != location.end(); it++)
     {
         _target = replaceDuplicateSlash(_target);
+        if (it->first.length() > _target.length())
+            continue ;
 
         std::vector<std::string> splittedLocationPath = split(it->first, '/');
 
@@ -372,11 +378,13 @@ int Http_req::MoreValidation()
             }
         }
     }
-
+   
     if (flag == 0)
     {
-        _status["404"] = "Page Not Found";
-        //std::cout << "Not match \n";
+        std ::cout << "yes1\n";
+        _status["404"] = "Forbbiden";
+       
+        in_out=true;
         return 0;
     }
 
@@ -427,6 +435,7 @@ int Http_req::MoreValidation()
    // std ::cout << this->_loca.getRoot() << std ::endl;
 
     _target = SetRootLoc(_target, key, this->_loca.getRoot());
+ 
      
 
     // std :: cout << _target << std ::endl;
@@ -715,6 +724,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     // std :: cout << bufer << std ::endl;
     (void)bufer;
     (void)bytee;
+    
     if (!StautRe(bufer) || bytee < 0)
     {
 
@@ -726,9 +736,11 @@ void Http_req::parse_re(std ::string bufer, int bytee)
             close(fd);
         if( it->first=="404")
         {
-             fd = open("www/html/404.html", O_RDONLY);
+           
+             fd = open("www/html/Page not found · GitHub Pages.html", O_RDONLY);
              return ;
         }
+       
         fd = open("www/html/400.html", O_RDONLY);
         return;
     }
@@ -786,6 +798,8 @@ int is_file_dir(std::string uri)
 void Http_req ::CheckLoc(int *is_file)
 {
     std ::cout << "debug\n";
+    std ::cout << _target << std ::endl;
+   
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     if (_target[_target.length() - 1] != '/')
     {
@@ -828,12 +842,12 @@ void Http_req ::CheckLoc(int *is_file)
         // //std::cout << this->_loca.getIndex().size();
         // std ::cout <<  this->_loca.getAutoIndex() << std ::endl;
         // exit(0);
-
+        
         if (this->_loca.getAutoIndex() && this->_loca.getIndex().size() == 0)
         {
 
             /// Here We shloud Send DirectoryListe
-            // std ::cout << _target << std ::endl;
+           
 
             std ::string dirpath = _target;
             if (dirpath[dirpath.length() - 1] != '/')
@@ -1056,7 +1070,9 @@ void Http_req::LetGet()
         _status.clear();
         _status["404"] = "Not found";
         //std::cout << "here \n";
+        
         fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
+      
         //std::cout << "fd test =>> " << fd << std::endl;
         in_out = true;
         // exit(0);
