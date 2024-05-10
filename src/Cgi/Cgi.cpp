@@ -8,8 +8,8 @@ Cgi::Cgi(){
     _waitreturn = 1;
     _waitstatus = 0;
     outputfilename = "";
-    input = 0;
-    output = 0;
+    input = -1;
+    output = -1;
     
 }
 
@@ -242,7 +242,8 @@ void Cgi::executeCgi(Http_req &request){
 
 Cgi::~Cgi()
 {
-    close(output);
+    if(output)
+        close(output);
     if (input)
         close(input);
 }   

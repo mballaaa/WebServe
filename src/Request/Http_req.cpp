@@ -25,7 +25,7 @@ Http_req::Http_req(Server &server)
     in_out = false;
     CGI_FLAG = false;
     query_string = "";
-    fd = 0;
+    fd = -1;
     moreValidationDone = false;
     uploadedFileSize = 0;
     configFile.open("./src/Cgi/pathExecutableFile.txt");
