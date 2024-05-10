@@ -10,6 +10,11 @@ mballa :==> in part allow methode ( change enum for be handle only GET DELETE PO
 ===> check if the path was existe
 ===DIrectory check permission
 
+{
+    test cgi  on 
+    index.html
+}
+
 
 
 

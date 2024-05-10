@@ -314,23 +314,22 @@ int Http_req::MoreValidation()
     }
 
     this->_target = this->path;
+   
     // no we have to check for quesry string;
 
-    // size_t stat = _target.find('?');
-    // if (stat != std::string ::npos)
-    // {
+ size_t stat = _target.find('?');
+ (void ) stat;
+    if (stat != std::string ::npos)
+     {
        
-    //     _target = _target.substr(0, stat); 
-    //     std ::cout << _target << std ::endl;
-      
-    //     query_string = path.substr(stat + 1, _target.length()); 
-    //     std ::cout << query_string << std ::endl;
-       
-    // }
-    // std ::cout << _target << std ::endl;
-    // std ::cout << query_string << std ::endl;
-    // exit(0);
+        _target = _target.substr(0, stat); 
     
+         query_string = path.substr(stat + 1, path.length()); 
+
+       
+     }
+
+
 
     // now let check if match or not
 
