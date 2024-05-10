@@ -139,16 +139,18 @@ void Multiplex::start(void)
                 response.insert(std::make_pair(infd, new Response()));
                 continue;
             }
-            else if (events[i].events & EPOLLIN && requests[events[i].data.fd]->getFlag() == false)   // check if we have EPOLLIN (connection socket ready to read)
+            else if (events[i].events & EPOLLIN  && requests[events[i].data.fd]->getFlag() == false)   // check if we have EPOLLIN (connection socket ready to read)
             {
                 requests[events[i].data.fd]->lastActive = time(0) ;
                 ssize_t bytesReceived;
                 char buf[R_SIZE] = {0};
 
                 bytesReceived = read(events[i].data.fd, buf,  R_SIZE - 1);
+                std ::cout << bytesReceived << std ::endl;
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
                     std::cout << "client closed " << std::endl ;
+                    std ::cout << "====>" << bytesReceived << std ::endl;
                     close(events[i].data.fd);
                     delete requests[events[i].data.fd] ;
                     requests.erase(events[i].data.fd) ;
