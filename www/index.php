@@ -11,6 +11,5 @@ $requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] 
 echo "QUERY_STRING: " . $queryString . "<br>";
 echo "REMOTE_ADDR: " . $remoteAddr . "<br>";
 echo "REQUEST_METHOD: " . $requestMethod . "<br>";
-    exit;
 ?>
 

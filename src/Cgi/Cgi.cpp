@@ -8,8 +8,8 @@ Cgi::Cgi(){
     _waitreturn = 1;
     _waitstatus = 0;
     outputfilename = "";
-    input = 0;
-    output = 0;
+    input = -1;
+    output = -1;
     
 }
 
@@ -59,6 +59,8 @@ std::string Cgi::fileExtension(std::string filename){
 }
 
 void Cgi::_setupEnv(Http_req &request){
+    // if(request.fd > 0)
+    //     close(request.fd);
     std::map<std::string,std::string> headers = request.getHeader();
     Server server = request.getServer();
     _env["CONTENT_LENGTH"] = size_t_to_string(request.getBody().size());
@@ -76,17 +78,13 @@ void Cgi::_setupEnv(Http_req &request){
     _env["SERVER_SOFTWARE"] = "Weebserv/1.0";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     
+    std::string extension = fileExtension(request.getTarget().substr(2));
     
-    std::string extension = fileExtension(request.getPath());
-    std::cerr << "Heloo "+extension << std::endl;
-
     _executablefile = request._loca.getCgiPaths();
-    // exit(0);
+   
     if(extension != "" && _executablefile.find(extension) != _executablefile.end()){
         _argv[0] = _executablefile[extension];
         _argv[1] = request.getTarget().substr(2);
-        std::cout << "=>> " << _argv[0] << std::endl;
-        std::cout << "=>> " << _argv[1] << std::endl;
 
     }
     else    
@@ -120,7 +118,7 @@ void Cgi::cgiResponse(Http_req &request){
     std::ofstream file(cgifile.c_str(),std::ios_base::app);
     if(!file.is_open())
     {
-        std::cout << "cgi file erro" << std::endl;
+        //std::cout << "cgi file erro" << std::endl;
         return ;
     }
     if(headerflag == false){
@@ -144,8 +142,9 @@ void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
    
     std::string::size_type index2= _cgibody.find("\r",12);
     request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
-    if(request.fd == 0)
-        request.fd = open("www/html/500.html",O_RDWR);
+    if(request.fd > 0)
+        close(request.fd);
+    request.fd = open("www/html/500.html",O_RDWR);
 }
 
 void freeptr(char **env,char **argv){
@@ -197,7 +196,7 @@ void Cgi::executeCgi(Http_req &request){
             dup2(input,STDIN_FILENO);
         dup2(output, STDOUT_FILENO);
         
-        execve(argv[0], argv,NULL);
+        execve(argv[0], argv,env);
         exit(1);
     }
     else{
@@ -232,7 +231,7 @@ void Cgi::executeCgi(Http_req &request){
         request._status["504"] = "Gateway timeout";
         request.header["content-type"] = "text/html";
         request.fd = open("www/html/504.html",O_RDONLY);
-        std::cout << "fd cgi: " << request.fd << std::endl ;
+        //std::cout << "fd cgi: " << request.fd << std::endl ;
         unlink(outputfilename.c_str());//remove output file
         _waitreturn = 1;
         std::cerr << "ERROR" << std::endl;
@@ -243,7 +242,8 @@ void Cgi::executeCgi(Http_req &request){
 
 Cgi::~Cgi()
 {
-    close(output);
+    if(output)
+        close(output);
     if (input)
         close(input);
 }   

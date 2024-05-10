@@ -21,6 +21,7 @@ Location::Location( const Location& rhs )
     this->_upload_path = rhs._upload_path ;
 
     CgiPath_t::const_iterator itCgi = rhs._cgiMap.begin() ;
+    _cgiMap.clear() ;
     while (rhs._cgiMap.size() &&  itCgi != rhs._cgiMap.end())
         this->_cgiMap.insert(*itCgi++) ;
 }
@@ -37,6 +38,7 @@ Location& Location::operator=( const Location& rhs )
     this->_upload_path = rhs._upload_path ;
     
     CgiPath_t::const_iterator itCgi = rhs._cgiMap.begin() ;
+    _cgiMap.clear() ;
     while (rhs._cgiMap.size() &&  itCgi != rhs._cgiMap.end())
         this->_cgiMap.insert(*itCgi++) ;
 
