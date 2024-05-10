@@ -40,7 +40,9 @@ void Response::fillResponseHeadre(Http_req &request){
     if (request._status.find("302") != request._status.end())
         h["Location"] = " " + request.path + "/" ;
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
-  
+    std::cout << "target ="<< request._target << std::endl;
+    std::cout << "fileextension ="<< fileExtension << std::endl;
+    // exit(0);
     std::string contentType;
     if (fileExtension == "html") {
         contentType = "text/html; charset=utf-8";
