@@ -313,12 +313,21 @@ int Http_req::MoreValidation()
     this->_target = this->path;
     // no we have to check for quesry string;
 
-    size_t stat = path.find('?');
-    if (stat != std::string ::npos)
-    {
-        _target = path.substr(0, stat);
-        query_string = _target.substr(stat + 1, _target.length());
-    }
+    // size_t stat = _target.find('?');
+    // if (stat != std::string ::npos)
+    // {
+       
+    //     _target = _target.substr(0, stat); 
+    //     std ::cout << _target << std ::endl;
+      
+    //     query_string = path.substr(stat + 1, _target.length()); 
+    //     std ::cout << query_string << std ::endl;
+       
+    // }
+    // std ::cout << _target << std ::endl;
+    // std ::cout << query_string << std ::endl;
+    // exit(0);
+    
 
     // now let check if match or not
 
@@ -566,7 +575,7 @@ void Http_req::LetDelete()
             }
             else
             {
-                _status["403"] = "Forbbiden";
+                _status["403"] = "Forbidden";
                 in_out = true;
                 return;
             }
@@ -590,7 +599,7 @@ void Http_req::LetDelete()
             }
             else
             {
-                _status["403"] = "Forbbiden";
+                _status["403"] = "Forbidden";
                 in_out = true;
                 return;
             }
@@ -677,7 +686,7 @@ bool Http_req::delete_Dir(std::string pathh)
     else
     {
         perror("Error : can not open directory");
-        _status["403"] = "Not Found";
+        _status["403"] = "FOrbideen";
         closedir(ptr);
         return false;
     }
@@ -701,9 +710,9 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         std ::cout << "Baaaad Request\n";
         _status.clear();
         _status["400"] = "Bad request";
-        if(fd>0)
+        if (fd > 0)
             close(fd);
-        fd = open("www/html/400.html",O_RDONLY);
+        fd = open("www/html/400.html", O_RDONLY);
         return;
     }
     else
@@ -713,7 +722,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         {
 
             LetGet();
-            std::cout << "in out =>>>> " << in_out << std::endl;
+
             // exit(0);
         }
         /*=============== 14 PART (begin)==================*/
@@ -810,6 +819,7 @@ void Http_req ::CheckLoc(int *is_file)
         if (is_file_dir(_target) == 0)
         {
             _status["403"] = "Forbbiden";
+            fd = open("403.html", std::ios::binary, O_RDONLY);
             in_out = true;
             return;
         }
@@ -884,22 +894,21 @@ void Http_req ::CheckLoc(int *is_file)
                 in_out = true;
                 _status["200"] = "OK";
                 std::ofstream outputFile("output.txt");
-                
+
                 if (!outputFile.is_open())
                 {
                     outputFile.close();
                     perror("Error file");
-                    // exit(1);
-                   
+                    exit(1);
                 }
-                 outputFile << toHtml;
-                    outputFile.close();
+                outputFile << toHtml;
+                outputFile.close();
                 if (fd > 0)
                 {
                     std::cout << "case in get fd >0\n";
                     close(fd);
                 }
-                fd= open("output.txt", std::ios::binary, O_RDONLY);
+                fd = open("output.txt", std::ios::binary, O_RDONLY);
                 std::cout << "fd list->> " << fd << std::endl;
 
                 return;
@@ -908,11 +917,11 @@ void Http_req ::CheckLoc(int *is_file)
         }
         else
         {
-
-            // SendErrorClient(403);
-
             in_out = true;
             _status["403"] = "Forbidden";
+            if (fd > 0)
+                close(fd);
+            fd = open("www/html/403.html", std::ios::binary, O_RDONLY);
             return;
         }
     }
@@ -936,8 +945,6 @@ void Http_req::LetGet()
     // int permisson=0;
 
     std ::string URI = _target;
-    std ::cout << "=====>\n"
-               << URI << std ::endl;
 
     // debugFileAmine << "int is_file_dir(std::string uri)" << std::endl ;
     int check_type = is_file_dir(URI);
@@ -946,7 +953,6 @@ void Http_req::LetGet()
 
     if (check_type == IS_DIR)
     {
-        std ::cout << "+++>" << check_type << std ::endl;
 
         CheckLoc(&is_file);
         URI = _target;
@@ -955,46 +961,61 @@ void Http_req::LetGet()
     struct stat sb;
 
     std ::cout << URI << std ::endl;
+
     if (stat(URI.c_str(), &sb) == 0)
     {
-        std ::cout << "3annnn\n";
-        // if (this->_loca.getCgi())
-        // {
 
-        //     // cehck extions
-        //     // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
-        //     std ::string extension = fileExtension(URI);
-        //    // std ::cout << "extension: " << extension << std ::endl;
-        //     if (extension == "php" || extension == "python")
-        //     {
-        //         std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
-        //         if (it != cgiMap.end())
-        //         {
-        //             std::string executable = it->second;
+        if (this->_loca.getCgi())
+        {
+         
 
-        //             if (executable == "/usr/bin/php" || executable == "/usr/bin/python3")
-        //             {
-        //                 std ::cout << "yesss\n";
-        //                 _status["200"] = "OK";
-        //                 CGI_FLAG = true;
+            //     // cehck extions
+            //     // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
+            std ::string extension = fileExtension(URI);
+            std ::cout << "extension: " << extension << std ::endl;
+            std ::map<std::string, std ::string> cgiMap = this->_loca.getCgiPaths();
+            std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
 
-        //                 in_out = true;
-        //                 return;
-        //             }
+            if (it != cgiMap.end())
+            {
+                std ::cout << "djklfds\n";
+                if (!it->second.empty())
+                {
+                    _status["200"] = "OK";
+                    CGI_FLAG = true;
+                    in_out = true;
+                    return;
+                }
+                else
+                {
+                    _status["500"] = "Internal Server Error";
+                    in_out = true;
+                    fd = open("www/html/500.html", O_RDONLY);
+                    return;
+                }
+            }
+            // else
+            // {
 
-        //             else
-        //             {
-        //                 _status.clear();
-        //                 _status["403"] = "permission denied";
-        //                 fd = open(_target.c_str(),std::ios::binary,O_RDONLY );
-        //                 return;
-        //             }
-        //         }
-        //     }
-        // }
+                
+
+            //     _status["404"] = "Forbiden";
+            //     in_out = true;
+            //      fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
+            //     return;
+            // }
+
+        }
 
         if ((sb.st_mode & S_IFREG) || is_file)
         {
+              if (!(sb.st_mode & S_IRUSR)) {
+           
+            _status["403"] = "Forbidden";
+            in_out = true;
+           fd =open("www/html/403.html", O_RDONLY);
+            return;
+        }
             /// wa7d case dyal found index in list directory shloud redirect the index as inginx do
             if (!toHtml.empty())
             {
@@ -1016,12 +1037,7 @@ void Http_req::LetGet()
 
             return;
         }
-
-        // else
-        //     {
-        //         std::cout << "error mballa" << std::endl;
-        //         exit(0);
-        //     }
+    
         // permisiion condition trhow
     }
 
@@ -1037,33 +1053,42 @@ void Http_req::LetGet()
         // exit(0);
         return;
     }
-    // exit(0);
-    
 }
 // in_out=true;
 
 // std ::cout << "sssdffd\n";
 /*=============== 14 PART (begin)==================*/
-bool Http_req::dirExistWithPermiss(){
+bool Http_req::dirExistWithPermiss()
+{
     struct stat info;
-    if (stat(_loca.getUploadPath().c_str(), &info) != 0) {
-        if (errno == ENOENT) {
+    if (stat(_loca.getUploadPath().c_str(), &info) != 0)
+    {
+        if (errno == ENOENT)
+        {
             accessError = false;
             return false;
-        } else if (errno == EACCES) {
-            accessError = true;   
-            return false;
-        } else {
-            accessError = true;   
+        }
+        else if (errno == EACCES)
+        {
+            accessError = true;
             return false;
         }
-    } else if (info.st_mode & S_IFDIR) {
+        else
+        {
+            accessError = true;
+            return false;
+        }
+    }
+    else if (info.st_mode & S_IFDIR)
+    {
         accessError = false;
-        return true; 
-    } else {
+        return true;
+    }
+    else
+    {
         accessError = false;
         return false;
-    } 
+    }
 }
 int Http_req::mimeParse()
 {
@@ -1131,17 +1156,19 @@ void Http_req::LetPost()
         close(fd);
     if (_loca.getUpload() == true)
     {
-        if(dirExistWithPermiss() == false){
+        if (dirExistWithPermiss() == false)
+        {
             in_out = true;
             _status.clear();
-            if(accessError)
+            if (accessError)
             {
                 _status["403"] = "Permission Denied";
                 fd = open("www/html/403.html", O_RDWR);
                 CGI_FLAG = false;
                 return;
             }
-            else{
+            else
+            {
                 _status["404"] = "Not found";
                 fd = open("www/html/Page not found · GitHub Pages.html", O_RDWR);
                 CGI_FLAG = false;
@@ -1157,82 +1184,83 @@ void Http_req::LetPost()
             fd = open("www/html/204.html", O_RDWR);
             return;
         }
-            /*First check if the extension exist */
-            std::string str;
-            if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == ""){
-                make_name = _loca.getUploadPath() +"/"+ randNameGen() + "." + _mime[header["content-type"].substr(1)];
-                uploadFile.open(make_name.c_str(), std::ios::app);
-            }
-            else if (make_name == "")
-            {
-                _status.clear();
-                _status["415"] = "Unsupported Media Type";
-                in_out = true;
-                fd = open("www/html/415.html", O_RDWR);
-                return;
-            }
+        /*First check if the extension exist */
+        std::string str;
+        if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == "")
+        {
+            make_name = _loca.getUploadPath() + "/" + randNameGen() + "." + _mime[header["content-type"].substr(1)];
+            uploadFile.open(make_name.c_str(), std::ios::app);
+        }
+        else if (make_name == "")
+        {
+            _status.clear();
+            _status["415"] = "Unsupported Media Type";
+            in_out = true;
+            fd = open("www/html/415.html", O_RDWR);
+            return;
+        }
 
-            if (!uploadFile.is_open()) 
+        if (!uploadFile.is_open())
+        {
+            std::cout << "File Upload Error" << std::endl;
+            return;
+        }
+        if (header["transfer-encoding"] == " chunked")
+        {
+            if (!i)
             {
-                std::cout << "File Upload Error" << std::endl;
-                return;
+                classChunksizeString = body.substr(0, body.find("\r\n") + 2);
+                body = body.substr(body.find("\r\n") + 2);
+                chunksize = hexStringToInt(classChunksizeString);
             }
-            if (header["transfer-encoding"] == " chunked")
+            to_file += body;
+            while (chunksize <= to_file.size())
             {
-                if (!i)
+                if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
                 {
-                    classChunksizeString = body.substr(0, body.find("\r\n") + 2);
-                    body = body.substr(body.find("\r\n") + 2);
-                    chunksize = hexStringToInt(classChunksizeString);
-                }
-                to_file += body;
-                while (chunksize <= to_file.size())
-                {
-                    if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
+                    std::string correct = to_file.substr(0, chunksize);
+                    uploadFile << correct;
+                    to_file.erase(0, chunksize + 2);
+                    if (to_file.size())
                     {
-                        std::string correct = to_file.substr(0, chunksize);
-                        uploadFile << correct;
-                        to_file.erase(0, chunksize + 2);
-                        if (to_file.size())
-                        {
-                            classChunksizeString = to_file.substr(0, to_file.find("\r\n") + 2);
-                            chunksize = hexStringToInt(classChunksizeString);
-                            to_file.erase(0, classChunksizeString.size());
-                        }
-                    }
-                    else
-                        break;
-                    if (!chunksize)
-                    {
-                        in_out = true;
-                        _status["201"] = "Created";
-                        header["content-type"] = "text/html";
-                        fd = open("www/html/201.html", O_RDWR);
-                        return;
+                        classChunksizeString = to_file.substr(0, to_file.find("\r\n") + 2);
+                        chunksize = hexStringToInt(classChunksizeString);
+                        to_file.erase(0, classChunksizeString.size());
                     }
                 }
-                i = 1;
-            }
-            else
-            {
-                uploadedFileSize += body.size();
-                size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10);
-                if (uploadedFileSize >= fullSize)
+                else
+                    break;
+                if (!chunksize)
                 {
-                    if(uploadedFileSize == fullSize)
-                        uploadFile << body;
                     in_out = true;
                     _status["201"] = "Created";
                     header["content-type"] = "text/html";
-                    if (_loca.getCgi() == false)
-                    {
-                        fd = open("www/html/201.html", O_RDWR);
-                    }
+                    fd = open("www/html/201.html", O_RDWR);
                     return;
                 }
-                uploadFile << body;
-                i = 1;
             }
+            i = 1;
+        }
+        else
+        {
+            uploadedFileSize += body.size();
+            size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10);
+            if (uploadedFileSize >= fullSize)
+            {
+                if (uploadedFileSize == fullSize)
+                    uploadFile << body;
+                in_out = true;
+                _status["201"] = "Created";
+                header["content-type"] = "text/html";
+                if (_loca.getCgi() == false)
+                {
+                    fd = open("www/html/201.html", O_RDWR);
+                }
+                return;
+            }
+            uploadFile << body;
+            i = 1;
+        }
         /*Status 201*/
     }
     else if (_loca.getUpload() == false)

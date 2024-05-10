@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Index of /aji/vanns/</title>
+<title>Index of /aji/</title>
 </head>
 <body>
-<h1>Index of /aji/vanns/</h1>
+<h1>Index of /aji/</h1>
 <pre><a href="../">../</a> 
+<a href="index1.html">index1.html</a> 
 <a href="./">./</a> 
+<a href="dd.html">dd.html</a> 
 </pre>
 </body>
 </html>
