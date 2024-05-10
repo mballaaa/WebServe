@@ -163,9 +163,11 @@ void Multiplex::start(void)
             }
             else if (events[i].events & EPOLLOUT && requests[events[i].data.fd] && requests[events[i].data.fd]->getFlag() == true)
             {
-                // exit(0);
+                
                 requests[events[i].data.fd]->lastActive = time(0) ;
-                if(requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->error != true) {
+                std::cout << "method->>" <<requests[events[i].data.fd]->getMethod()<< "--" << std::endl;
+                // exit(0);
+                if((requests[events[i].data.fd]->CGI_FLAG || requests[events[i].data.fd]->getMethod() != "GET") && requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->error != true) {
                     if(requests[events[i].data.fd]->sendHeaders == true)
                         response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);
                     if(response[events[i].data.fd]->cgi._waitreturn){

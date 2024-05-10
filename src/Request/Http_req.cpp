@@ -1033,6 +1033,7 @@ void Http_req::LetGet()
             _status.clear();
             _status["200"] = "ok";
             in_out = true;
+            // exit(0);
 
             return;
         }
@@ -1227,9 +1228,7 @@ void Http_req::LetPost()
                 _status["201"] = "Created";
                 header["content-type"] = "text/html";
                 if (_loca.getCgi() == false)
-                {
                     fd = open("www/html/201.html", O_RDWR);
-                }
                 return;
             }
             uploadFile << body;

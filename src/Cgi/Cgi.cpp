@@ -76,24 +76,21 @@ void Cgi::_setupEnv(Http_req &request){
     _env["SERVER_SOFTWARE"] = "Weebserv/1.0";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     
-    
-    std::string extension = fileExtension(request.getPath());
+    std::string extension = fileExtension(request.getTarget().substr(2));
     std::cerr << "Heloo "+extension << std::endl;
 
     _executablefile = request._loca.getCgiPaths();
-    // exit(0);
+   
     if(extension != "" && _executablefile.find(extension) != _executablefile.end()){
         _argv[0] = _executablefile[extension];
         _argv[1] = request.getTarget().substr(2);
-        //std::cout << "=>> " << _argv[0] << std::endl;
-        //std::cout << "=>> " << _argv[1] << std::endl;
 
     }
     else    
     {
         /*=====Must be in a separate func=====*/
         request._status.clear();
-        request._status["404"] = "Not found";
+        request._status["404"] = "Not foundddd";
         request.fd = open("www/html/Page not found · GitHub Pages.html",O_RDWR);
         _waitreturn = 1;
         return ;
@@ -197,7 +194,7 @@ void Cgi::executeCgi(Http_req &request){
             dup2(input,STDIN_FILENO);
         dup2(output, STDOUT_FILENO);
         
-        execve(argv[0], argv,NULL);
+        execve(argv[0], argv,env);
         exit(1);
     }
     else{
