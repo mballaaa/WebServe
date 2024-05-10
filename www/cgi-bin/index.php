@@ -1,7 +1,8 @@
 <?php
-// prints e.g. 'Current PHP version: 4.1.1'
-echo 'Current PHP version: ' . phpversion();
-
-// prints e.g. '2.0' or nothing if the extension isn't enabled
-echo phpversion('tidy');
+// Infinite loop
+while (true) {
+    echo "This loop will run indefinitely.\n";
+    // Add sleep to prevent CPU overload
+    sleep(1); // Sleep for 1 second
+}
 ?>

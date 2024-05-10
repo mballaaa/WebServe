@@ -139,7 +139,7 @@ void Multiplex::start(void)
                 response.insert(std::make_pair(infd, new Response()));
                 continue;
             }
-            else if (events[i].events & EPOLLIN )   // check if we have EPOLLIN (connection socket ready to read)
+            else if (events[i].events & EPOLLIN && requests[events[i].data.fd]->getFlag() == false)   // check if we have EPOLLIN (connection socket ready to read)
             {
                 requests[events[i].data.fd]->lastActive = time(0) ;
                 ssize_t bytesReceived;
@@ -163,7 +163,7 @@ void Multiplex::start(void)
             {
                 requests[events[i].data.fd]->lastActive = time(0) ;
 
-                if(requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->CGI_FLAG == true) {
+                if(requests[events[i].data.fd]->_loca.getCgi() == true && requests[events[i].data.fd]->error != true) {
                     if(requests[events[i].data.fd]->sendHeaders == true)
                         response[events[i].data.fd]->cgi._setupEnv(*requests[events[i].data.fd]);
                     if(response[events[i].data.fd]->cgi._waitreturn){

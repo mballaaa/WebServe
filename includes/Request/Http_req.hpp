@@ -52,9 +52,8 @@ public: // amine: i made this public for now
     bool is_finsh;
     int i ;
     bool in_out;
-    bool _headerParsed;
+    bool error;
     size_t lencontent;
-    bool cgi_in;
     std ::string GetFIle;
         
      std::map<std::string, std::string> header;

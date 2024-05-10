@@ -33,6 +33,7 @@ Http_req::Http_req(Server &server)
     sendHeaders = true;
     i = 0;
     lastActive = time(NULL);
+    error = false;
 }
 
 Http_req::Http_req(const Http_req &obj)
@@ -56,6 +57,7 @@ Http_req::Http_req(const Http_req &obj)
     _status = obj._status;
     _mime = obj._mime;
     fd = obj.fd;
+    error = obj.error;
     /*=============== 14 PART (end)==================*/
     in_out = obj.in_out;
     is_close = obj.is_close;
@@ -85,6 +87,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
         _loca = obj._loca;
         make_name = obj.make_name;
         body = obj.body;
+        error = obj.error;
         i = obj.i;
         fd = obj.fd;
         // byterec = obj.byterec;
@@ -1046,24 +1049,11 @@ void Http_req::LetGet()
 /*=============== 14 PART (begin)==================*/
 bool Http_req::dirExistWithPermiss(){
     struct stat info;
-    if (stat(_loca.getUploadPath().c_str(), &info) != 0) {
-        if (errno == ENOENT) {
-            accessError = false;
-            return false;
-        } else if (errno == EACCES) {
-            accessError = true;   
-            return false;
-        } else {
-            accessError = true;   
-            return false;
-        }
-    } else if (info.st_mode & S_IFDIR) {
-        accessError = false;
-        return true; 
-    } else {
-        accessError = false;
+    if (stat(_loca.getUploadPath().c_str(), &info) != 0)
         return false;
-    } 
+    else if (info.st_mode & S_IFDIR)
+        return true; 
+    return false;
 }
 int Http_req::mimeParse()
 {
@@ -1126,27 +1116,17 @@ void Http_req::LetPost()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     /*location not found*/
-    CGI_FLAG = true;
     if (fd > 0)
         close(fd);
+    _status.clear();
     if (_loca.getUpload() == true)
     {
         if(dirExistWithPermiss() == false){
             in_out = true;
-            _status.clear();
-            if(accessError)
-            {
-                _status["403"] = "Permission Denied";
-                fd = open("www/html/403.html", O_RDWR);
-                CGI_FLAG = false;
-                return;
-            }
-            else{
-                _status["404"] = "Not found";
-                fd = open("www/html/Page not found · GitHub Pages.html", O_RDWR);
-                CGI_FLAG = false;
-                return;
-            }
+            error = true;
+            _status["404"] = "Not found";
+            fd = open("www/html/Page not found · GitHub Pages.html", O_RDWR);
+            return;
         }
 
         if (header["content-length"] == " 0" || header["content-type"] == "")
@@ -1165,15 +1145,19 @@ void Http_req::LetPost()
             }
             else if (make_name == "")
             {
-                _status.clear();
                 _status["415"] = "Unsupported Media Type";
                 in_out = true;
+                error = true;
                 fd = open("www/html/415.html", O_RDWR);
                 return;
             }
 
             if (!uploadFile.is_open()) 
             {
+                in_out = true;
+                _status["403"] = "Permission Denied";
+                fd = open("www/html/403.html", O_RDWR);
+                error = true;
                 std::cout << "File Upload Error" << std::endl;
                 return;
             }
@@ -1206,7 +1190,6 @@ void Http_req::LetPost()
                     {
                         in_out = true;
                         _status["201"] = "Created";
-                        header["content-type"] = "text/html";
                         fd = open("www/html/201.html", O_RDWR);
                         return;
                     }
@@ -1225,9 +1208,7 @@ void Http_req::LetPost()
                     _status["201"] = "Created";
                     header["content-type"] = "text/html";
                     if (_loca.getCgi() == false)
-                    {
                         fd = open("www/html/201.html", O_RDWR);
-                    }
                     return;
                 }
                 uploadFile << body;
@@ -1239,6 +1220,10 @@ void Http_req::LetPost()
     {
         /*Status 403*/
         _status["403"] = "Forbidden";
+        in_out = true;
+        fd = open("www/html/403.html", O_RDWR);
+        error = true;
+
     }
 }
 
