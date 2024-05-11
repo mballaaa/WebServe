@@ -38,34 +38,14 @@ void Response::fillResponseHeadre(Http_req &request){
     h["Transfer-Encoding"] = "chunked";
     h["Connection"] = "Closed";
     h["host"] = "127.0.0.1:9090";
-    if (request._status.find("302") != request._status.end())
+    if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
     {
-        if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
-        {
-          h["Location"] = " " + request._loca.getReturn().second ;
-        }
-        else
-          h["Location"] = " " + request.path + "/" ;
-
+        h["Location"] = " " + request._loca.getReturn().second ;
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
-    std::string contentType;
-    if (fileExtension == "html") {
-        contentType = "text/html; charset=utf-8";
-    } else if (fileExtension == "mp4") {
-        contentType = "video/mp4";
-    }
-    else if (fileExtension=="png" )
-    {
-        contentType = "image/png";
-    }
-     
-    else {
-        contentType = "text/html";
-    }
-    if(request._loca.getCgi())
-        h["content-type"] = contentType;
+    if(!request._loca.getCgi())
+        h["content-type"] = request._rmime[fileExtension];
     
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)

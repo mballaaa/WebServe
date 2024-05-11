@@ -62,6 +62,7 @@ public: // amine: i made this public for now
 /*=============== 14 PART (begin)==================*/
 
     std::map<std::string,std::string> _mime;
+    std::map<std::string,std::string> _rmime;
     std::map<std::string,std::string> _status;
     bool accessError;
     std::string to_file;

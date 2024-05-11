@@ -125,12 +125,12 @@ void 						Location::setReturn( const std::string& statusCodeStr, const std::str
 {
     int statusCode = atol(statusCodeStr.c_str()) ;
     // Implement support for common HTTP redirection status codes (301, 302, 303, 307, 308).
-    // if (statusCode != 301
-    //     && statusCode != 302
-    //     && statusCode != 303
-    //     && statusCode != 307
-    //     && statusCode != 308)
-    //     throw std::runtime_error("Support is only for common HTTP redirection status codes (301, 302, 303, 307, 308).") ;
+    if (statusCode != 301
+        && statusCode != 302
+        && statusCode != 303
+        && statusCode != 307
+        && statusCode != 308)
+         throw std::runtime_error("Support is only for common HTTP redirection status codes (301, 302, 303, 307, 308).") ;
     this->_return = std::make_pair(statusCode, _return) ;
 }
 
