@@ -49,21 +49,7 @@ void Response::fillResponseHeadre(Http_req &request){
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
-    std::string contentType;
-    if (fileExtension == "html") {
-        contentType = "text/html; charset=utf-8";
-    } else if (fileExtension == "mp4") {
-        contentType = "video/mp4";
-    }
-    else if (fileExtension=="png" )
-    {
-        contentType = "image/png";
-    }
-     
-    else {
-        contentType = "text/html";
-    }
-    h["content-type"] = contentType;
+    h["content-type"] = request._rmime[fileExtension];
     
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)

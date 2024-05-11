@@ -56,6 +56,7 @@ Http_req::Http_req(const Http_req &obj)
     /*=============== 14 PART (begin)==================*/
     _status = obj._status;
     _mime = obj._mime;
+    _rmime = obj._rmime;
     fd = obj.fd;
     error = obj.error;
     /*=============== 14 PART (end)==================*/
@@ -95,6 +96,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
         /*=============== 14 PART (begin)==================*/
         _status = obj._status;
         _mime = obj._mime;
+        _rmime = obj._rmime;
         sendHeaders = obj.sendHeaders;
         /*=============== 14 PART (end)==================*/
         in_out = obj.in_out;
@@ -192,25 +194,25 @@ std::string to_stringmetohd(int value)
         return "Unknown Method";
     }
 }
-std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)
+std ::string SetRootLoc(std ::string target, std ::string key, std ::string root)
 {
     std ::string result;
 
-    // //std::cout << "SetRootLoc" << std::endl ;
-    // //std::cout << "path: " << path << std::endl ;
-    // //std::cout << "loac_value: " << loac_value << std::endl ;
-    // //std::cout << "root: " << root << std::endl ;
+    // std::cout << "SetRootLoc" << std::endl ;
+    // std::cout << "d11111 target: " << target << std::endl ;
+    // std::cout << "d11111 key: " << key << std::endl ;
+    // std::cout << "d11111 root: " << root << std::endl ;
 
-    size_t it = path.find(loac_value);
+    size_t it = target.find(key);
 
     if (it != std ::string::npos)
     {
         
-        path.replace(0, loac_value.length(), root + loac_value);
+        target.replace(0, key.length(), root + "/");
 
-        return path;
+        return target;
     }
-    return root+path;
+    return root+target;
 }
 
 // replace douplicate '/' in path with one
@@ -797,11 +799,11 @@ int is_file_dir(std::string uri)
 
 void Http_req ::CheckLoc(int *is_file)
 {
-    std ::cout << "debug\n";
-    std ::cout << _target << std ::endl;
+    // std ::cout << "debug\n";
+    // std ::cout << _target << std ::endl;
    
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-    if (_target[_target.length() - 1] != '/')
+    if (path[path.length() - 1] != '/')
     {
         std ::cout << "debug1\n";
         in_out = true;
@@ -947,7 +949,7 @@ std::string fileExtension(std::string filename)
 void Http_req::LetGet()
 {
     // std ::cout << _loca << std ::endl;
-
+   
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     // this condtion here for that stauts come from redirection
     if(!_status.empty())
@@ -1066,10 +1068,10 @@ void Http_req::LetGet()
 
     else
     {
-
+      
         _status.clear();
         _status["404"] = "Not found";
-        //std::cout << "here \n";
+        // std::cout << "here \n";
         
         fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
       
@@ -1121,6 +1123,8 @@ int Http_req::mimeParse()
             if (pos != std::string::npos)
                 value.erase(pos);
             _mime[key] = value;
+            if (_rmime[value] == "")
+                _rmime[value] = key;
         }
     }
     return 0;
