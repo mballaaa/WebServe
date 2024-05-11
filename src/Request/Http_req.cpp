@@ -56,6 +56,7 @@ Http_req::Http_req(const Http_req &obj)
     /*=============== 14 PART (begin)==================*/
     _status = obj._status;
     _mime = obj._mime;
+    _rmime = obj._rmime;
     fd = obj.fd;
     error = obj.error;
     /*=============== 14 PART (end)==================*/
@@ -95,6 +96,7 @@ Http_req &Http_req::operator=(const Http_req &obj)
         /*=============== 14 PART (begin)==================*/
         _status = obj._status;
         _mime = obj._mime;
+        _rmime = obj._rmime;
         sendHeaders = obj.sendHeaders;
         /*=============== 14 PART (end)==================*/
         in_out = obj.in_out;
@@ -192,25 +194,25 @@ std::string to_stringmetohd(int value)
         return "Unknown Method";
     }
 }
-std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)
+std ::string SetRootLoc(std ::string target, std ::string key, std ::string root)
 {
     std ::string result;
 
-    // //std::cout << "SetRootLoc" << std::endl ;
-    // //std::cout << "path: " << path << std::endl ;
-    // //std::cout << "loac_value: " << loac_value << std::endl ;
-    // //std::cout << "root: " << root << std::endl ;
+    // std::cout << "SetRootLoc" << std::endl ;
+    std::cout << "d11111 target: " << target << std::endl ;
+    std::cout << "d11111 key: " << key << std::endl ;
+    std::cout << "d11111 root: " << root << std::endl ;
 
-    size_t it = path.find(loac_value);
+    size_t it = target.find(key);
 
     if (it != std ::string::npos)
     {
         
-        path.replace(0, loac_value.length(), root + loac_value);
+        target.replace(0, key.length(), root + "/");
 
-        return path;
+        return target;
     }
-    return root+path;
+    return root+target;
 }
 
 // replace douplicate '/' in path with one
@@ -251,6 +253,22 @@ bool IsPathValid(std::string path)
     }
 
     return true;
+}
+
+size_t matchLocation(const char *_target, const char *location)
+{
+    size_t matchCount = 0 ;
+    while (*location && *_target && *location == *_target)
+    {
+        location++ ;
+        _target++ ;
+        matchCount++ ;
+    }
+    if (*location != 0)
+        return (0) ;
+    if (*_target != 0 && *_target != '/' && *--_target != '/')
+        return (0) ;
+    return matchCount ;
 }
 
 int Http_req::MoreValidation()
@@ -345,45 +363,21 @@ int Http_req::MoreValidation()
     int flag = 0;
     std::string key = "";
     size_t foundSize = 0;
-
-    std::vector<std::string> splittedTarget = split(_target, '/');
     for (it = location.begin(); it != location.end(); it++)
     {
-        _target = replaceDuplicateSlash(_target);
-        if (it->first.length() > _target.length())
-            continue ;
-
-        std::vector<std::string> splittedLocationPath = split(it->first, '/');
-
-        size_t count = 0;
-        size_t shorterLength = std::min(splittedLocationPath.size(), splittedTarget.size());
-        for (size_t i = 0; i < shorterLength; ++i)
+        size_t count = matchLocation(_target.c_str(), it->first.c_str()) ;  
+        if (count && count >= foundSize )
         {
-            if (splittedLocationPath[i] == splittedTarget[i])
-            {
-                count++;
-            }
-            else
-            {
-
-                break;
-            }
-            if (count > foundSize)
-            {
-                foundSize = count;
-                
-                this->_loca = it->second;
-                key = it->first;
-                flag = 1;
-            }
+            key = it->first ;
+            _loca = it->second ;
+            flag = 1 ;
         }
     }
-   
+
     if (flag == 0)
     {
         std ::cout << "yes1\n";
         _status["404"] = "Forbbiden";
-       
         in_out=true;
         return 0;
     }
@@ -394,9 +388,10 @@ int Http_req::MoreValidation()
     if (red.first != 0 && red.second != "")
     {
         this->_target = red.second;
-        _status["302"]="Redirect";
+        std::stringstream ss ;
+        ss << red.first ;
+        _status[ss.str()]="Redirect1";
         in_out=true;
-         
         return 1;
 
        
@@ -810,11 +805,12 @@ void Http_req ::CheckLoc(int *is_file)
     std ::string tmp=_target;
    
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-    if (_target[_target.length() - 1] != '/')
+    if (path[path.length() - 1] != '/')
     {
         std ::cout << "debug1\n";
         in_out = true;
-        _status["302"] = "Redirect";
+        _status["302"] = "Redirect2";
+        _loca.setReturn("302", path + "/") ;
         return;
     }
     if (this->_loca.getIndex().size() != 0)
@@ -865,13 +861,7 @@ void Http_req ::CheckLoc(int *is_file)
             /// Here We shloud Send DirectoryListe
            
 
-            std ::string dirpath = tmp;
-            if (dirpath[dirpath.length() - 1] != '/')
-            {
-                in_out = true;
-                _status["302"] = "Redirect";
-                return;
-            }
+            std ::string dirpath = _target;
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
             
             DIR *dir = opendir(dirpath.c_str());
@@ -964,7 +954,7 @@ void Http_req::LetGet()
 {
 
     // std ::cout << _loca << std ::endl;
-
+   
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     // this condtion here for that stauts come from redirection
     if(!_status.empty())
@@ -1086,10 +1076,10 @@ void Http_req::LetGet()
 
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
-
+      
         _status.clear();
         _status["404"] = "Not found";
-        //std::cout << "here \n";
+        // std::cout << "here \n";
         
         fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
       
@@ -1141,6 +1131,8 @@ int Http_req::mimeParse()
             if (pos != std::string::npos)
                 value.erase(pos);
             _mime[key] = value;
+            if (_rmime[value] == "")
+                _rmime[value] = key;
         }
     }
     return 0;
