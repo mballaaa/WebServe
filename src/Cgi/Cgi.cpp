@@ -59,25 +59,35 @@ std::string Cgi::fileExtension(std::string filename){
 }
 
 void Cgi::_setupEnv(Http_req &request){
-    // if(request.fd > 0)
-    //     close(request.fd);
+  
     std::map<std::string,std::string> headers = request.getHeader();
     Server server = request.getServer();
+
+    _env.clear();
     _env["CONTENT_LENGTH"] = size_t_to_string(request.getBody().size());
-    _env["CONTENT_TYPE"] = headers["content-type"];
-	_env["REDIRECT_STATUS"] = "CGI"; //know more about REDIRECTE_STATUS
-    _env["PATH_INFO"] = request.getPath().substr(1);
-    _env["PATH_TRANSLATED"] = request.getPath().substr(1);
-    _env["QUERY_STRING"] = request.query_string; // get the query with getMethod
-    _env["REMOTE_ADDR"] =   server.getHost();
+    if (headers["content-type"].length()){
+        // exit(0);
+        _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
+    }
+    _env["GATEWAY_INTERFACE"] = "CGI/1.1";
+    _env["SCRIPT_NAME"] = request.getPath().substr(1); 
+    _env["SCRIPT_FILENAME"] = request.getTarget().substr(2);
+    _env["PATH_INFO"] = _env["SCRIPT_NAME"]; 
+    _env["PATH_TRANSLATED"] = _env["SCRIPT_FILENAME"];
+    _env["REQUEST_URI"] = request.getTarget().substr(2);
+    _env["SERVER_PORT"] = server.getPort(); 
     _env["REQUEST_METHOD"] = request.getMethod();
-	_env["REQUEST_URI"] = request.getPath() + _env["QUERY_STRING"];
-    _env["SERVER_PORT"] = server.getPort();
-    _env["HTTP_COOKIE"] = request.header["cookie"];
     _env["SERVER_PROTOCOL"] = "HTTP/1.1";
+    _env["REDIRECT_STATUS"] = "200";
     _env["SERVER_SOFTWARE"] = "Weebserv/1.0";
-	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-    
+    _env["HTTP_COOKIE"] = request.header["cookie"];
+
+    // std::map<std::string, std::string>::iterator it = _env.begin() ;
+    // while (it != _env.end())
+    // {
+    //     std::cout << it->first << "=" << it->second <<"|" ;
+    //     it++ ;
+    // }
     std::string extension = fileExtension(request.getTarget().substr(2));
     
     _executablefile = request._loca.getCgiPaths();
@@ -114,6 +124,13 @@ void Cgi::cgiResponse(Http_req &request){
             break;
         }
     }
+    if(headerflag){
+        std::string::size_type index2= _cgibody.find("\r",12);
+        request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
+    }
+    else
+    request._status["200"] = "OK";
+
     cgifile = "www/html/cgi"+request.randNameGen()+".html";
     std::ofstream file(cgifile.c_str(),std::ios_base::app);
     if(!file.is_open())
@@ -129,7 +146,7 @@ void Cgi::cgiResponse(Http_req &request){
         file << line+"\n";
     _filename.close();
     request.header["content-type"] = "text/html";
-    request._status["200"] = "OK";
+    
     file.close();
     request.fd = open(cgifile.c_str(),O_RDWR);    
 }
@@ -231,7 +248,6 @@ void Cgi::executeCgi(Http_req &request){
         request._status["504"] = "Gateway timeout";
         request.header["content-type"] = "text/html";
         request.fd = open("www/html/504.html",O_RDONLY);
-        //std::cout << "fd cgi: " << request.fd << std::endl ;
         unlink(outputfilename.c_str());//remove output file
         _waitreturn = 1;
         std::cerr << "ERROR" << std::endl;

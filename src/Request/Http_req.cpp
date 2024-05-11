@@ -25,10 +25,9 @@ Http_req::Http_req(Server &server)
     in_out = false;
     CGI_FLAG = false;
     query_string = "";
-    fd = -1;
+    fd = 0;
     moreValidationDone = false;
     uploadedFileSize = 0;
-    configFile.open("./src/Cgi/pathExecutableFile.txt");
     mimeParse();
     sendHeaders = true;
     i = 0;
@@ -48,6 +47,7 @@ Http_req::Http_req(const Http_req &obj)
     header = obj.header;
     server = obj.server;
     _loca = obj._loca;
+    make_name = obj.make_name;
     byterec = obj.byterec;
     toHtml = obj.toHtml;
     i = obj.i;
@@ -548,6 +548,14 @@ int Http_req::StautRe(std::string request)
     //======> check path
 
     res = 1;
+    // std::map<std::string, std::string>::iterator it = header.begin() ;
+    // while (it != header.end())
+    // {
+    //     std::cout << it->first << "=" << it->second << std::endl ;
+    //     it++ ;
+    // }
+    // exit(0);
+    // exit(0);
     return (res);
 }
 void Http_req::LetDelete()
@@ -1152,8 +1160,9 @@ void Http_req::LetPost()
         }
             /*First check if the extension exist */
             std::string str;
+            // std::cout << "->>" << header["content-type"] << std::endl;
             if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == ""){
-                make_name = _loca.getUploadPath() +"/"+ randNameGen() + "." + _mime[header["content-type"].substr(1)];
+                make_name = _loca.getUploadPath() +"/"+ randNameGen() + "."+ _mime[header["content-type"].substr(1)];
                 uploadFile.open(make_name.c_str(), std::ios::app);
             }
             else if (make_name == "")
@@ -1165,31 +1174,27 @@ void Http_req::LetPost()
                 return;
             }
 
-        if (!uploadFile.is_open())
-        {
-            //std::cout << "File Upload Error" << std::endl;
-            return;
-        }
-        if (header["transfer-encoding"] == " chunked")
-        {
-            if (!i)
+            if (!uploadFile.is_open()) 
             {
                 in_out = true;
                 _status["403"] = "Permission Denied";
                 fd = open("www/html/403.html", O_RDWR);
                 error = true;
-                //std::cout << "File Upload Error" << std::endl;
+                std::cout << "File Upload Error" << std::endl;
                 return;
             }
-            to_file += body;
-            while (chunksize <= to_file.size())
+            if (header["transfer-encoding"] == " chunked")
             {
-                if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
+                if (!i)
                 {
-                    std::string correct = to_file.substr(0, chunksize);
-                    uploadFile << correct;
-                    to_file.erase(0, chunksize + 2);
-                    if (to_file.size())
+                    classChunksizeString = body.substr(0, body.find("\r\n") + 2);
+                    body = body.substr(body.find("\r\n") + 2);
+                    chunksize = hexStringToInt(classChunksizeString);
+                }
+                to_file += body;
+                while (chunksize <= to_file.size())
+                {
+                    if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
                     {
                         std::string correct = to_file.substr(0, chunksize);
                         uploadFile << correct;
@@ -1201,39 +1206,39 @@ void Http_req::LetPost()
                             to_file.erase(0, classChunksizeString.size());
                         }
                     }
+                    else
+                        break;
+                    if (!chunksize)
+                    {
+                        in_out = true;
+                        uploadFile.close();
+                        _status["201"] = "Created";
+                        fd = open("www/html/201.html", O_RDWR);
+                        return;
+                    }
                 }
-                else
-                    break;
-                if (!chunksize)
+                i = 1;
+            }
+            else
+            {
+                uploadedFileSize += body.size();
+                size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10);
+                
+                if (uploadedFileSize >= fullSize)
                 {
+                    if(uploadedFileSize == fullSize)
+                        uploadFile << body;
+                    uploadFile.close();
                     in_out = true;
                     _status["201"] = "Created";
-                    header["content-type"] = "text/html";
+                    // header["content-type"] = "text/html";
                     if (_loca.getCgi() == false)
                         fd = open("www/html/201.html", O_RDWR);
                     return;
                 }
+                uploadFile << body;
+                i = 1;
             }
-            i = 1;
-        }
-        else
-        {
-            uploadedFileSize += body.size();
-            size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10);
-            if (uploadedFileSize >= fullSize)
-            {
-                if (uploadedFileSize == fullSize)
-                    uploadFile << body;
-                in_out = true;
-                _status["201"] = "Created";
-                header["content-type"] = "text/html";
-                if (_loca.getCgi() == false)
-                    fd = open("www/html/201.html", O_RDWR);
-                return;
-            }
-            uploadFile << body;
-            i = 1;
-        }
         /*Status 201*/
     }
     else if (_loca.getUpload() == false)

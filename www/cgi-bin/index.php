@@ -1,5 +1,5 @@
 <?php
-// Get the QUERY_STRING value
+Get the QUERY_STRING value
 $queryString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
 
 // Get the REMOTE_ADDR value
@@ -13,4 +13,6 @@ echo "REMOTE_ADDR: " . $remoteAddr . "<br>";
 echo "REQUEST_METHOD: " . $requestMethod . "<br>";
     exit;
 ?>
+
+
 
