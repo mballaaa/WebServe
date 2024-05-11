@@ -1185,10 +1185,14 @@ void Http_req::LetPost()
         }
             /*First check if the extension exist */
             std::string str;
-            // std::cout << "->>" << header["content-type"] << std::endl;
             if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == ""){
                 make_name = _loca.getUploadPath() +"/"+ randNameGen() + "."+ _mime[header["content-type"].substr(1)];
                 uploadFile.open(make_name.c_str(), std::ios::app);
+            }
+            else if(header["content-type"].substr(0,30) == " multipart/form-data; boundary" && make_name == ""){
+                make_name = _loca.getUploadPath() +"/"+ randNameGen() + ".txt";
+                uploadFile.open(make_name.c_str(), std::ios::app);
+                // exit(0);
             }
             else if (make_name == "")
             {
@@ -1256,9 +1260,10 @@ void Http_req::LetPost()
                     uploadFile.close();
                     in_out = true;
                     _status["201"] = "Created";
-                    // header["content-type"] = "text/html";
-                    if (_loca.getCgi() == false)
+                    if (_loca.getCgi() == false){
+                        header["content-type"] = "text/html";
                         fd = open("www/html/201.html", O_RDWR);
+                    }
                     return;
                 }
                 uploadFile << body;
@@ -1275,6 +1280,7 @@ void Http_req::LetPost()
         error = true;
 
     }
+    // exit(0);
 }
 
 /*=============== 14 PART (end)==================*/

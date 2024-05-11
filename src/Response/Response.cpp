@@ -34,6 +34,7 @@ void Response::fillResponseHeadre(Http_req &request){
     std::map<std::string,std::string>::iterator it1 = request._status.begin();
     std::map<std::string,std::string> h;
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
+    _resheaders += request.to_file;
     h["Transfer-Encoding"] = "chunked";
     h["Connection"] = "Closed";
     h["host"] = "127.0.0.1:9090";
@@ -63,7 +64,8 @@ void Response::fillResponseHeadre(Http_req &request){
     else {
         contentType = "text/html";
     }
-    h["content-type"] = contentType;
+    if(request._loca.getCgi())
+        h["content-type"] = contentType;
     
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)

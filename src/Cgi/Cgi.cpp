@@ -57,16 +57,32 @@ std::string Cgi::fileExtension(std::string filename){
         extension = filename.substr(p+1);
     return extension;
 }
+#include <sys/stat.h>
 
+// Function to get file size
+off_t getFileSize(const char* filename) {
+    struct stat st;
+    if (stat(filename, &st) == 0) {
+        return st.st_size;
+    } else {
+        return -1; // Error occurred
+    }
+}
+std::string off_tToString(off_t value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
 void Cgi::_setupEnv(Http_req &request){
   
     std::map<std::string,std::string> headers = request.getHeader();
     Server server = request.getServer();
 
     _env.clear();
-    _env["CONTENT_LENGTH"] = size_t_to_string(request.getBody().size());
-    if (headers["content-type"].length()){
+
+    if (headers["content-type"].length() && request.getMethod() == "POST"){
         // exit(0);
+        _env["CONTENT_LENGTH"] = off_tToString(getFileSize(request.make_name.c_str()));
         _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
     }
     _env["GATEWAY_INTERFACE"] = "CGI/1.1";
@@ -74,20 +90,22 @@ void Cgi::_setupEnv(Http_req &request){
     _env["SCRIPT_FILENAME"] = request.getTarget().substr(2);
     _env["PATH_INFO"] = _env["SCRIPT_NAME"]; 
     _env["PATH_TRANSLATED"] = _env["SCRIPT_FILENAME"];
+    _env["QUERY_STRING"] = request.query_string;
     _env["REQUEST_URI"] = request.getTarget().substr(2);
     _env["SERVER_PORT"] = server.getPort(); 
     _env["REQUEST_METHOD"] = request.getMethod();
     _env["SERVER_PROTOCOL"] = "HTTP/1.1";
     _env["REDIRECT_STATUS"] = "200";
     _env["SERVER_SOFTWARE"] = "Weebserv/1.0";
+
     _env["HTTP_COOKIE"] = request.header["cookie"];
 
-    // std::map<std::string, std::string>::iterator it = _env.begin() ;
     // while (it != _env.end())
     // {
-    //     std::cout << it->first << "=" << it->second <<"|" ;
+    //     std::cout << it->first << "=" << it->second << std::endl ;
     //     it++ ;
     // }
+  
     std::string extension = fileExtension(request.getTarget().substr(2));
     
     _executablefile = request._loca.getCgiPaths();
@@ -116,7 +134,7 @@ void Cgi::cgiResponse(Http_req &request){
     std::string line;
     bool headerflag = false;
     std::string _cgibody;
-    std::ifstream _filename(outputfilename.c_str());
+    std::ifstream _filename(outputfilename.c_str(),std::ios::binary);
     while(getline(_filename,line)){
         _cgibody += line + "\n";
         if(_cgibody.find("\r\n\r\n") != std::string::npos){
@@ -124,12 +142,30 @@ void Cgi::cgiResponse(Http_req &request){
             break;
         }
     }
-    if(headerflag){
-        std::string::size_type index2= _cgibody.find("\r",12);
-        request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
+  
+    if(headerflag == true){
+        if(_cgibody.find("Status") != std::string::npos){
+            std::cout << "alo" << std::endl;
+            std::string::size_type index2 = _cgibody.find("\r",12);
+            request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
+            // std::map<std::string,std::string>::iterator it = request._status.begin();
+            std::string::size_type index1= _cgibody.find("\r\n");
+            std::string::size_type index3= _cgibody.find("\r\n\r\n");
+            request.to_file = _cgibody.substr(index1,index3-index1+1);  
+
+        }
+        else{
+            request._status["200"] = "OK";
+            request.to_file = _cgibody.substr(0,_cgibody.find("\r\n\r\n"));
+        }
+            
+            // std::cout << "->"<<request.to_file;
+            // if(request.getMethod() == "POST")
+            //     exit(0);
+        // exit(0);
     }
     else
-    request._status["200"] = "OK";
+        request._status["200"] = "OK";
 
     cgifile = "www/html/cgi"+request.randNameGen()+".html";
     std::ofstream file(cgifile.c_str(),std::ios_base::app);
@@ -209,7 +245,7 @@ void Cgi::executeCgi(Http_req &request){
     
         env = envMap_to_char(_env);
         argv = avMap_to_char(_argv);
-        if(input != 0)
+        if(request.getMethod() == "POST")
             dup2(input,STDIN_FILENO);
         dup2(output, STDOUT_FILENO);
         
@@ -235,7 +271,7 @@ void Cgi::executeCgi(Http_req &request){
    
     if(_waitreturn){
         cgiResponse(request);
-        unlink(outputfilename.c_str());//remove output file
+        // unlink(outputfilename.c_str());//remove output file
         return ;
     }
     endTime = clock();
@@ -259,7 +295,7 @@ void Cgi::executeCgi(Http_req &request){
 Cgi::~Cgi()
 {
     if(output)
-        close(output);
-    if (input)
-        close(input);
+            close(output);
+        if (input)
+            close(input);
 }   
