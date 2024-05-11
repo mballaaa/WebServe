@@ -33,7 +33,7 @@ void Response::fillResponseHeadre(Http_req &request){
     
     std::map<std::string,std::string>::iterator it1 = request._status.begin();
     std::map<std::string,std::string> h;
-    _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
+    _resheaders = "HTTP/1.1 "+it1->first+" "+it1->second+"\r\n";
     _resheaders += request.to_file;
     if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
     {
