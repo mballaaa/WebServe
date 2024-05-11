@@ -199,9 +199,9 @@ std ::string SetRootLoc(std ::string target, std ::string key, std ::string root
     std ::string result;
 
     // std::cout << "SetRootLoc" << std::endl ;
-    // std::cout << "d11111 target: " << target << std::endl ;
-    // std::cout << "d11111 key: " << key << std::endl ;
-    // std::cout << "d11111 root: " << root << std::endl ;
+    std::cout << "d11111 target: " << target << std::endl ;
+    std::cout << "d11111 key: " << key << std::endl ;
+    std::cout << "d11111 root: " << root << std::endl ;
 
     size_t it = target.find(key);
 
@@ -388,9 +388,10 @@ int Http_req::MoreValidation()
     if (red.first != 0 && red.second != "")
     {
         this->_target = red.second;
-        _status["302"]="Redirect";
+        std::stringstream ss ;
+        ss << red.first ;
+        _status[ss.str()]="Redirect1";
         in_out=true;
-         
         return 1;
 
        
@@ -807,7 +808,8 @@ void Http_req ::CheckLoc(int *is_file)
     {
         std ::cout << "debug1\n";
         in_out = true;
-        _status["302"] = "Redirect";
+        _status["302"] = "Redirect2";
+        _loca.setReturn("302", path + "/") ;
         return;
     }
     if (this->_loca.getIndex().size() != 0)
@@ -852,12 +854,6 @@ void Http_req ::CheckLoc(int *is_file)
            
 
             std ::string dirpath = _target;
-            if (dirpath[dirpath.length() - 1] != '/')
-            {
-                in_out = true;
-                _status["302"] = "Redirect";
-                return;
-            }
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
 
             DIR *dir = opendir(dirpath.c_str());

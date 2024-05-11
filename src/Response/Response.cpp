@@ -37,15 +37,9 @@ void Response::fillResponseHeadre(Http_req &request){
     h["Transfer-Encoding"] = "chunked";
     h["Connection"] = "Closed";
     h["host"] = "127.0.0.1:9090";
-    if (request._status.find("302") != request._status.end())
+    if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
     {
-        if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
-        {
-          h["Location"] = " " + request._loca.getReturn().second ;
-        }
-        else
-          h["Location"] = " " + request.path + "/" ;
-
+        h["Location"] = " " + request._loca.getReturn().second ;
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
