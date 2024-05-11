@@ -1019,7 +1019,7 @@ void Http_req::LetGet()
                    
                     _status["200"] = "OK";
                 
-                   fd = open(URI.c_str(), std::ios::binary, O_RDONLY); 
+    
                     CGI_FLAG = true;
                     in_out = true;
                     return;

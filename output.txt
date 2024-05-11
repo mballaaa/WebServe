@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Index of /aji/</title>
+<title>Index of /</title>
 </head>
 <body>
-<h1>Index of /aji/</h1>
-<pre><a href="../">../</a> 
+<h1>Index of /</h1>
+<pre><a href="20 SECOND TIMER ⏲️.mp4">20 SECOND TIMER ⏲️.mp4</a> 
+<a href="site1/">site1/</a> 
+<a href="kokab.png">kokab.png</a> 
+<a href="aji/">aji/</a> 
+<a href="../">../</a> 
+<a href="set_cookies.php">set_cookies.php</a> 
 <a href="index.php">index.php</a> 
-<a href="index1.html">index1.html</a> 
-<a href="test.html">test.html</a> 
+<a href="cgi-bin/">cgi-bin/</a> 
 <a href="./">./</a> 
 <a href="index.html">index.html</a> 
-<a href="vv.txt">vv.txt</a> 
+<a href="image.html">image.html</a> 
+<a href="html/">html/</a> 
 </pre>
 </body>
 </html>
