@@ -264,6 +264,8 @@ size_t matchLocation(const char *_target, const char *location)
     }
     if (*location != 0)
         return (0) ;
+    if (*_target != 0 && *_target != '/' && *--_target != '/')
+        return (0) ;
     return matchCount ;
 }
 
