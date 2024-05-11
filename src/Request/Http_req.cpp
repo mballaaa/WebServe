@@ -797,8 +797,9 @@ int is_file_dir(std::string uri)
 
 void Http_req ::CheckLoc(int *is_file)
 {
-    // std ::cout << "debug\n";
-    // std ::cout << _target << std ::endl;
+    //std ::cout << "debug\n";
+    std ::cout << _target << std ::endl;
+    std ::string tmp=_target;
    
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     if (path[path.length() - 1] != '/')
@@ -811,20 +812,29 @@ void Http_req ::CheckLoc(int *is_file)
     }
     if (this->_loca.getIndex().size() != 0)
     {
-
+        //int setdef=0;
+ std ::string main_index;
         std ::vector<std ::string> index = this->_loca.getIndex();
+        
+            // Check if _target ends with a slash, adjust filename concatenation accordingly
+        std::string separator = (_target[_target.length() - 1] == '/') ? "" : "/";
+        
+        for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
+            std::string filename = *it;
 
-        std ::string main_index = index.at(0);
-        // std ::cout << "==>" << this->_loca.getRoot() << std ::endl;
+            std::string tosearch = _target + separator + filename;
+            std::cout << "Searching: " << tosearch << std::endl;
 
-        // std ::cerr << "index  name==>" << main_index << std ::endl;
-        if (_target[_target.length() - 1] != '/')
-        {
-
-            _target += "/";
+            struct stat sb;
+            if (stat(tosearch.c_str(), &sb) == 0) {
+                main_index = tosearch;
+                break;
+            }
         }
-        //  std ::cout << "==> index" << main_index << std ::endl;
-        _target += main_index;
+
+        _target = main_index;
+        std::cout << "the last target=>" << _target << std::endl;
+        //exit(0);
         // check if that index is floder shloud trhow error forbiden
         if (is_file_dir(_target) == 0)
         {
@@ -836,23 +846,21 @@ void Http_req ::CheckLoc(int *is_file)
 
         *is_file = 1;
     }
-    else
-    {
-
+   
         // std ::cout << "adhjdfjdf\n";
         // //std::cout << this->_loca.getIndex().size();
         // std ::cout <<  this->_loca.getAutoIndex() << std ::endl;
         // exit(0);
         
-        if (this->_loca.getAutoIndex() && this->_loca.getIndex().size() == 0)
+        if (this->_loca.getAutoIndex() )
         {
-
+            
             /// Here We shloud Send DirectoryListe
            
 
             std ::string dirpath = _target;
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
-
+            
             DIR *dir = opendir(dirpath.c_str());
             if (!dir)
             {
@@ -869,14 +877,14 @@ void Http_req ::CheckLoc(int *is_file)
                 while (list != NULL)
                 {
 
-                    if (std ::string(list->d_name) == "index.html")
-                    {
+                    // if (std ::string(list->d_name) == "index.html")
+                    // {
 
-                        _target += std ::string(list->d_name);
+                    //     _target += std ::string(list->d_name);
 
-                        closedir(dir);
-                        return;
-                    }
+                    //     closedir(dir);
+                    //     return;
+                    // }
                     if (list->d_type == DT_DIR)
                     {
                         toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
@@ -914,7 +922,7 @@ void Http_req ::CheckLoc(int *is_file)
                 }
                 fd = open("output.txt", std::ios::binary, O_RDONLY);
                 //std::cout << "fd list->> " << fd << std::endl;
-
+              
                 return;
             }
             closedir(dir);
@@ -929,7 +937,7 @@ void Http_req ::CheckLoc(int *is_file)
             return;
         }
     }
-}
+
 
 std::string fileExtension(std::string filename)
 {
@@ -941,6 +949,7 @@ std::string fileExtension(std::string filename)
 }
 void Http_req::LetGet()
 {
+
     // std ::cout << _loca << std ::endl;
    
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
@@ -961,13 +970,16 @@ void Http_req::LetGet()
 
     if (check_type == IS_DIR)
     {
-
+      
         CheckLoc(&is_file);
         URI = _target;
     }
+    
+
 
     struct stat sb;
 
+   std ::cout << URI << std ::endl;
    
 
     if (stat(URI.c_str(), &sb) == 0)
@@ -975,7 +987,8 @@ void Http_req::LetGet()
 
         if (this->_loca.getCgi())
         {
-        
+        // std :: cout << "veveve\n";
+        // exit(0);
 
             //     // cehck extions
             //     // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
@@ -985,16 +998,21 @@ void Http_req::LetGet()
 
             if (it != cgiMap.end())
             {
+                
           
                 if (!it->second.empty() )
                 {
+                   
                     _status["200"] = "OK";
+                
+    
                     CGI_FLAG = true;
                     in_out = true;
                     return;
                 }
                 else
                 {
+                
                     _status["500"] = "Internal Server Error";
                     in_out = true;
                     fd = open("www/html/500.html", O_RDONLY);
@@ -1021,6 +1039,7 @@ void Http_req::LetGet()
 
         if ((sb.st_mode & S_IFREG) || is_file)
         {
+           
             
               if (!(sb.st_mode & S_IWUSR)) {
            
@@ -1030,14 +1049,7 @@ void Http_req::LetGet()
             return;
         }
             /// wa7d case dyal found index in list directory shloud redirect the index as inginx do
-            if (!toHtml.empty())
-            {
-
-                _status["200"] = "OK";
-                toHtml.clear();
-                in_out = true;
-                return;
-            }
+          
 
             if (fd > 0)
                 close(fd);
@@ -1058,7 +1070,7 @@ void Http_req::LetGet()
         // permisiion condition trhow
     }
 
-    else
+    else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
       
         _status.clear();
