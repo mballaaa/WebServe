@@ -199,9 +199,6 @@ std ::string SetRootLoc(std ::string target, std ::string key, std ::string root
     std ::string result;
 
     // std::cout << "SetRootLoc" << std::endl ;
-    std::cout << "d11111 target: " << target << std::endl ;
-    std::cout << "d11111 key: " << key << std::endl ;
-    std::cout << "d11111 root: " << root << std::endl ;
 
     size_t it = target.find(key);
 
@@ -983,7 +980,6 @@ void Http_req::LetGet()
             //     // cehck extions
             //     // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
             std ::string extension = fileExtension(URI);
-            std ::cout << "extension: " << extension << std ::endl;
             std ::map<std::string, std ::string> cgiMap = this->_loca.getCgiPaths();
             std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
 

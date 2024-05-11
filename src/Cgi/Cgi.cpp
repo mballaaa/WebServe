@@ -145,18 +145,19 @@ void Cgi::cgiResponse(Http_req &request){
   
     if(headerflag == true){
         if(_cgibody.find("Status") != std::string::npos){
-            std::cout << "alo" << std::endl;
             std::string::size_type index2 = _cgibody.find("\r",12);
             request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
-            // std::map<std::string,std::string>::iterator it = request._status.begin();
-            std::string::size_type index1= _cgibody.find("\r\n");
+            std::string::size_type index1= _cgibody.find("\r\n") + 2;
             std::string::size_type index3= _cgibody.find("\r\n\r\n");
             request.to_file = _cgibody.substr(index1,index3-index1+1);  
 
         }
         else{
             request._status["200"] = "OK";
-            request.to_file = _cgibody.substr(0,_cgibody.find("\r\n\r\n"));
+            if (_cgibody.find("\r\n\r\n") != std::string::npos)
+                request.to_file = _cgibody.substr(0,_cgibody.find("\r\n\r\n") + 2);
+            else
+                exit(1) ;
         }
             
             // std::cout << "->"<<request.to_file;
@@ -178,13 +179,17 @@ void Cgi::cgiResponse(Http_req &request){
         _filename.close();
         _filename.open(outputfilename.c_str());
     }
-    while(getline(_filename,line))
+    int i = 0;
+    while(getline(_filename,line)){
+        i++;
         file << line+"\n";
+    }
     _filename.close();
     request.header["content-type"] = "text/html";
     
     file.close();
-    request.fd = open(cgifile.c_str(),O_RDWR);    
+    if(i)
+        request.fd = open(cgifile.c_str(),O_RDWR);    
 }
 
 void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
@@ -271,7 +276,7 @@ void Cgi::executeCgi(Http_req &request){
    
     if(_waitreturn){
         cgiResponse(request);
-        // unlink(outputfilename.c_str());//remove output file
+        unlink(outputfilename.c_str());//remove output file
         return ;
     }
     endTime = clock();

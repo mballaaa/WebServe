@@ -35,21 +35,27 @@ void Response::fillResponseHeadre(Http_req &request){
     std::map<std::string,std::string> h;
     _resheaders = request.getHttpVersion()+" "+it1->first+" "+it1->second+"\r\n";
     _resheaders += request.to_file;
-    h["Transfer-Encoding"] = "chunked";
-    h["Connection"] = "Closed";
-    h["host"] = "127.0.0.1:9090";
     if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
     {
         h["Location"] = " " + request._loca.getReturn().second ;
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
-    if(!request._loca.getCgi())
+    if(!request._loca.getCgi()){
         h["content-type"] = request._rmime[fileExtension];
+    }
+    // if(request._loca.getCgi() && request.getMethod() == "POST")
+    //     _resheaders += "\r\n";
+    h["Transfer-Encoding"] = "chunked";
+    h["host"] = "127.0.0.1:9090";
+    h["Connection"] = "close";
     
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)
-        _resheaders += it2->first+": "+it2->second+"\r\n";
+    {
+        if (it2->second != "")
+            _resheaders += it2->first+": "+it2->second+"\r\n";
+    }
 
 }
 
@@ -59,11 +65,11 @@ void Response::fillResponseBody(Http_req &request){
     if(request.fd != 0)
         fillBodyChunked(request);
     fillResponseHeadre(request);
+    // std::cout << 
     if(request.sendHeaders == false){
         _resheaders = "";
     }
     _response = _resheaders + _resbody;
-    
 }
 
 std::string ssizeToHexToStr(ssize_t chunksize){
