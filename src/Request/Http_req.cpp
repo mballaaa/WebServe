@@ -253,6 +253,20 @@ bool IsPathValid(std::string path)
     return true;
 }
 
+size_t matchLocation(const char *_target, const char *location)
+{
+    size_t matchCount = 0 ;
+    while (*location && *_target && *location == *_target)
+    {
+        location++ ;
+        _target++ ;
+        matchCount++ ;
+    }
+    if (*location != 0)
+        return (0) ;
+    return matchCount ;
+}
+
 int Http_req::MoreValidation()
 {
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
@@ -345,45 +359,21 @@ int Http_req::MoreValidation()
     int flag = 0;
     std::string key = "";
     size_t foundSize = 0;
-
-    std::vector<std::string> splittedTarget = split(_target, '/');
     for (it = location.begin(); it != location.end(); it++)
     {
-        _target = replaceDuplicateSlash(_target);
-        if (it->first.length() > _target.length())
-            continue ;
-
-        std::vector<std::string> splittedLocationPath = split(it->first, '/');
-
-        size_t count = 0;
-        size_t shorterLength = std::min(splittedLocationPath.size(), splittedTarget.size());
-        for (size_t i = 0; i < shorterLength; ++i)
+        size_t count = matchLocation(_target.c_str(), it->first.c_str()) ;  
+        if (count && count >= foundSize )
         {
-            if (splittedLocationPath[i] == splittedTarget[i])
-            {
-                count++;
-            }
-            else
-            {
-
-                break;
-            }
-            if (count > foundSize)
-            {
-                foundSize = count;
-                
-                this->_loca = it->second;
-                key = it->first;
-                flag = 1;
-            }
+            key = it->first ;
+            _loca = it->second ;
+            flag = 1 ;
         }
     }
-   
+
     if (flag == 0)
     {
         std ::cout << "yes1\n";
         _status["404"] = "Forbbiden";
-       
         in_out=true;
         return 0;
     }
