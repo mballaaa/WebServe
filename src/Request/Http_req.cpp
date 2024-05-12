@@ -7,7 +7,75 @@
 
 #include <cstring>
 
-//static int a = 0;
+std::map<int, std::string> Http_req::errorTexts ;
+
+void Http_req::initErrorTexts()
+{
+    errorTexts[100] = "Continue" ;
+    errorTexts[101] = "Switching protocols" ;
+    errorTexts[102] = "Processing" ;
+    errorTexts[103] = "Early Hints" ;
+    errorTexts[200] = "OK" ;
+    errorTexts[201] = "Created" ;
+    errorTexts[202] = "Accepted" ;
+    errorTexts[203] = "Non-Authoritative Information" ;
+    errorTexts[204] = "No Content" ;
+    errorTexts[205] = "Reset Content" ;
+    errorTexts[206] = "Partial Content" ;
+    errorTexts[207] = "Multi-Status" ;
+    errorTexts[208] = "Already Reported" ;
+    errorTexts[226] = "IM Used" ;
+    errorTexts[300] = "Multiple Choices" ;
+    errorTexts[301] = "Moved Permanently" ;
+    errorTexts[302] = "Found (Previously \"Moved Temporarily\")" ;
+    errorTexts[303] = "See Other" ;
+    errorTexts[304] = "Not Modified" ;
+    errorTexts[305] = "Use Proxy" ;
+    errorTexts[306] = "Switch Proxy" ;
+    errorTexts[307] = "Temporary Redirect" ;
+    errorTexts[308] = "Permanent Redirect" ;
+    errorTexts[400] = "Bad Request" ;
+    errorTexts[401] = "Unauthorized" ;
+    errorTexts[402] = "Payment Required" ;
+    errorTexts[403] = "Forbidden" ;
+    errorTexts[404] = "Not Found" ;
+    errorTexts[405] = "Method Not Allowed" ;
+    errorTexts[406] = "Not Acceptable" ;
+    errorTexts[407] = "Proxy Authentication Required" ;
+    errorTexts[408] = "Request Timeout" ;
+    errorTexts[409] = "Conflict" ;
+    errorTexts[410] = "Gone" ;
+    errorTexts[411] = "Length Required" ;
+    errorTexts[412] = "Precondition Failed" ;
+    errorTexts[413] = "Payload Too Large" ;
+    errorTexts[414] = "URI Too Long" ;
+    errorTexts[415] = "Unsupported Media Type" ;
+    errorTexts[416] = "Range Not Satisfiable" ;
+    errorTexts[417] = "Expectation Failed" ;
+    errorTexts[418] = "I'm a Teapot" ;
+    errorTexts[421] = "Misdirected Request" ;
+    errorTexts[422] = "Unprocessable Entity" ;
+    errorTexts[423] = "Locked" ;
+    errorTexts[424] = "Failed Dependency" ;
+    errorTexts[425] = "Too Early" ;
+    errorTexts[426] = "Upgrade Required" ;
+    errorTexts[428] = "Precondition Required" ;
+    errorTexts[429] = "Too Many Requests" ;
+    errorTexts[431] = "Request Header Fields Too Large" ;
+    errorTexts[451] = "Unavailable For Legal Reasons" ;
+    errorTexts[500] = "Internal Server Error" ;
+    errorTexts[501] = "Not Implemented" ;
+    errorTexts[502] = "Bad Gateway" ;
+    errorTexts[503] = "Service Unavailable" ;
+    errorTexts[504] = "Gateway Timeout" ;
+    errorTexts[505] = "HTTP Version Not Supported" ;
+    errorTexts[506] = "Variant Also Negotiates" ;
+    errorTexts[507] = "Insufficient Storage" ;
+    errorTexts[508] = "Loop Detected" ;
+    errorTexts[510] = "Not Extended" ;
+    errorTexts[511] = "Network Authentication Required" ;
+}
+
 /*=============== 14 PART (begin)==================*/
 Http_req::Http_req()
 {
@@ -25,7 +93,7 @@ Http_req::Http_req(Server &server)
     in_out = false;
     CGI_FLAG = false;
     query_string = "";
-    fd = 0;
+    fd = -2;
     moreValidationDone = false;
     uploadedFileSize = 0;
     mimeParse();
@@ -33,6 +101,7 @@ Http_req::Http_req(Server &server)
     i = 0;
     lastActive = time(NULL);
     error = false;
+    _status = 0 ;
 }
 
 Http_req::Http_req(const Http_req &obj)
@@ -151,7 +220,7 @@ const Location &Http_req::getLocation() const
 }
 /*=============== 14 PART (begin)==================*/
 
-const std::map<std::string, std::string> &Http_req::getStatus() const
+const int &Http_req::getStatus() const
 {
     return _status;
 }
@@ -217,10 +286,33 @@ std::string replaceDuplicateSlash(const std::string &path)
 {
     std::string result = path;
     size_t pos = 0;
-    while ((pos = result.find("//", pos)) != std::string::npos)
+    while ((pos = result.find("/", pos)) != std::string::npos)
     {
-        result.erase(pos, 1);
+        if (result[pos+1] == '/') // "//"
+        {
+            result.erase(pos, 1);
+        }
+        else if (result[pos+1] == '.')
+        {
+            if (result[pos+2] == '.' && (result[pos+3] == '/' || result[pos+3] == 0)) // ".."
+            {
+                size_t erase_start = 0 ;
+                if (pos)
+                    erase_start = result.rfind("/", pos - 1) ;
+                result.erase(erase_start, result.find("/..") - erase_start + 3) ;
+            }
+            else if (result[pos+2] == '/' || result[pos+2] == 0)  // "."
+            {
+                result.erase(pos, 2) ;
+            }
+            else
+                pos++ ;
+        }
+        else
+            pos++ ;
     }
+    if (result == "")
+        return "/" ;
     return result;
 }
 
@@ -277,20 +369,20 @@ int Http_req::MoreValidation()
     if (method != "GET" && method != "POST" && method != "DELETE")
     {std ::cout << "ydes\n";
 
-        _status["400"] = "Bad Request";
+        _status = 400;
         in_out = true;
         return (0);
     }
     if (http_ver != "HTTP/1.1")
     {
         std ::cout << "yes\n";
-        _status["400"] = "Bad Request";
+        _status = 400;
         in_out = true;
         return (0);
     }
     if (!IsPathValid(path))
     {
-        _status["400"] = "Bad Request";
+        _status = 400;
         in_out = true;
         return 0;
     }
@@ -306,15 +398,15 @@ int Http_req::MoreValidation()
         if (endptr == header["content-length"].c_str())
         {
             // std :: cout << "ddddd\n";
-            std::cerr << "Error: Invalid content-length in request." << std::endl;
-            _status["400"] = "Bad Request";
+            std::cerr << "Error: Invalid content-length in " << std::endl;
+            _status = 400;
             return 0;
         }
         (void)content_len;
 
         if (maxx_size < content_len)
         {
-            _status["400"] = "Bad Request";
+            _status = 400;
             in_out = true;
            
             return (0);
@@ -323,13 +415,13 @@ int Http_req::MoreValidation()
    
     if(header.find("host") == header.end())
     {
-          _status["400"]="Bad Request";
+          _status = 400;
      
         return (0);
     }
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
     {
-       _status["400"]="Bad Request";
+       _status = 400;
      
         return (0);
     }
@@ -373,9 +465,7 @@ int Http_req::MoreValidation()
 
     if (flag == 0)
     {
-
-      
-        _status["404"] = "Forbbiden";
+        _status = 403;
         in_out=true;
         return 0;
     }
@@ -385,15 +475,9 @@ int Http_req::MoreValidation()
     
     if (red.first != 0 && red.second != "")
     {
-        this->_target = red.second;
-        std::stringstream ss ;
-        ss << red.first ;
-        _status[ss.str()]="Redirect1";
+        _status = red.first;
         in_out=true;
         return 1;
-
-       
-    
     }
     // let check allow methode
     Location::Methods_t allowmethod = this->_loca.getAllowedMethods();
@@ -419,7 +503,7 @@ int Http_req::MoreValidation()
     {
 
         in_out = true;
-        _status["405"] = "Method Not Allowed";
+        _status = 504;
         return 0;
     }
     /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
@@ -496,6 +580,7 @@ int Http_req::StautRe(std::string request)
         std::istringstream input(my_req);
         input >> this->method >> this->path >> this->http_ver;
         /*amine do this*/
+        path = replaceDuplicateSlash(path) ;
         while (path.find("%") != std::string::npos)
         {
             unsigned int x;
@@ -581,14 +666,14 @@ void Http_req::LetDelete()
                 if (unlink(URI.c_str()) == 0)
                 {
 
-                    _status["204"] = "No Content";
+                    _status = 204 ;
                     in_out = true;
                     return;
                 }
             }
             else
             {
-                _status["403"] = "Forbidden";
+                _status = 403 ;
                 in_out = true;
                 return;
             }
@@ -607,12 +692,12 @@ void Http_req::LetDelete()
                     return;
                 }
                 in_out = true;
-                _status["204"] = "No Content";
+                _status = 204;
                 return;
             }
             else
             {
-                _status["403"] = "Forbidden";
+                _status = 403;
                 in_out = true;
                 return;
             }
@@ -620,7 +705,7 @@ void Http_req::LetDelete()
     }
     else
     {
-        _status["404"] = "Not found";
+        _status = 404;
         in_out = true;
         return;
     }
@@ -659,11 +744,11 @@ bool Http_req::delete_Dir(std::string pathh)
                     {
 
                         perror("Error: Cannot delete file");
-                        _status["500"] = "Internal Server Error";
+                        _status = 500;
                         closedir(ptr);
                         return false;
                     }
-                    _status["204"] = "No Content";
+                    _status = 204;
                 }
                 else if (S_ISDIR(fileStat.st_mode))
                 {
@@ -673,7 +758,7 @@ bool Http_req::delete_Dir(std::string pathh)
                 {
 
                     perror("Error: Cannot get file or directory information");
-                    _status["500"] = "Internal Server Error";
+                    _status = 500;
                     closedir(ptr);
                     return false;
                 }
@@ -681,7 +766,7 @@ bool Http_req::delete_Dir(std::string pathh)
             else
             {
                 closedir(ptr);
-                _status["500"] = "Internal Server Error";
+                _status = 500;
                 return false;
             }
         }
@@ -699,7 +784,7 @@ bool Http_req::delete_Dir(std::string pathh)
     else
     {
         perror("Error : can not open directory");
-        _status["403"] = "FOrbideen";
+        _status = 403;
         closedir(ptr);
         return false;
     }
@@ -721,11 +806,10 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 
         in_out = true;
         std ::cout << "Baaaad Request\n";
-         std::map<std::string, std::string>::iterator it=_status.begin();
            
         if (fd > 0)
             close(fd);
-        if( it->first=="404")
+        if(_status == 404)
         {
            
              fd = open("www/html/Page not found · GitHub Pages.html", O_RDONLY);
@@ -798,14 +882,14 @@ void Http_req ::CheckLoc(int *is_file)
     {
         std ::cout << "debug1\n";
         in_out = true;
-        _status["301"] = "Moved Permanently";
+        _status = 301;
         _loca.setReturn("301", path + "/") ;
         return;
     }
     if (this->_loca.getIndex().size() != 0)
     {
         //int setdef=0;
- std ::string main_index;
+        std ::string main_index;
         std ::vector<std ::string> index = this->_loca.getIndex();
         
             // Check if _target ends with a slash, adjust filename concatenation accordingly
@@ -830,7 +914,7 @@ void Http_req ::CheckLoc(int *is_file)
         // check if that index is floder shloud trhow error forbiden
         if (is_file_dir(_target) == 0)
         {
-            _status["403"] = "Forbbiden";
+            _status = 403;
             fd = open("403.html", std::ios::binary, O_RDONLY);
             in_out = true;
             return;
@@ -897,7 +981,7 @@ void Http_req ::CheckLoc(int *is_file)
                 closedir(dir);
 
                 in_out = true;
-                _status["200"] = "OK";
+                _status = 200;
                 std::ofstream outputFile("output.txt");
 
                 if (!outputFile.is_open())
@@ -923,7 +1007,7 @@ void Http_req ::CheckLoc(int *is_file)
         else
         {
             in_out = true;
-            _status["403"] = "Forbidden";
+            _status = 403;
             if (fd > 0)
                 close(fd);
             fd = open("www/html/403.html", std::ios::binary, O_RDONLY);
@@ -947,7 +1031,7 @@ void Http_req::LetGet()
    
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     // this condtion here for that stauts come from redirection
-    if(!_status.empty())
+    if(_status)
     {
         return ;
     }
@@ -996,7 +1080,7 @@ void Http_req::LetGet()
                 if (!it->second.empty() )
                 {
                    
-                    _status["200"] = "OK";
+                    _status = 200;
                 
     
                     CGI_FLAG = true;
@@ -1006,7 +1090,7 @@ void Http_req::LetGet()
                 else
                 {
                 
-                    _status["500"] = "Internal Server Error";
+                    _status = 500;
                     in_out = true;
                     fd = open("www/html/500.html", O_RDONLY);
                     return;
@@ -1022,7 +1106,7 @@ void Http_req::LetGet()
 
                 
 
-            //     _status["404"] = "Forbiden";
+            //     _status = 404;
             //     in_out = true;
             //      fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
             //     return;
@@ -1036,7 +1120,7 @@ void Http_req::LetGet()
             
               if (!(sb.st_mode & S_IWUSR)) {
            
-            _status["403"] = "Forbidden";
+            _status = 403;
             in_out = true;
            fd =open("www/html/403.html", O_RDONLY);
             return;
@@ -1050,8 +1134,7 @@ void Http_req::LetGet()
             fd = open(_target.c_str(), std::ios::binary, O_RDONLY);
             std::cout << "fd get->> " << fd << std::endl;
 
-            _status.clear();
-            _status["200"] = "ok";
+            _status = 200;
             std :: cout << "i am here\n";
         
             in_out = true;
@@ -1066,8 +1149,7 @@ void Http_req::LetGet()
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
       
-        _status.clear();
-        _status["404"] = "Not found";
+        _status = 404;
         // std::cout << "here \n";
         
         fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
@@ -1102,8 +1184,7 @@ int Http_req::mimeParse()
     if (!file.is_open())
     {
         //std::cout << "Error : mimes.types could not be open" << std::endl;
-        _status.clear();
-        _status["415"] = "Unsupported Media Type";
+        _status = 415;
         fd = open("www/html/415.html", O_RDWR);
         return 1;
     }
@@ -1156,14 +1237,13 @@ void Http_req::LetPost()
     /*location not found*/
     if (fd > 0)
         close(fd);
-    _status.clear();
     if (_loca.getUpload() == true)
     {
         if (dirExistWithPermiss() == false)
         {
             in_out = true;
             error = true;
-            _status["404"] = "Not found";
+            _status = 404;
             fd = open("www/html/Page not found · GitHub Pages.html", O_RDWR);
             return;
         }
@@ -1171,7 +1251,7 @@ void Http_req::LetPost()
         if (header["content-length"] == " 0" || header["content-type"] == "")
         {
             /*Status 204*/
-            _status["204"] = "No Content";
+            _status = 204;
             in_out = true;
             fd = open("www/html/204.html", O_RDWR);
             return;
@@ -1189,7 +1269,7 @@ void Http_req::LetPost()
             }
             else if (make_name == "")
             {
-                _status["415"] = "Unsupported Media Type";
+                _status = 415;
                 in_out = true;
                 error = true;
                 fd = open("www/html/415.html", O_RDWR);
@@ -1199,7 +1279,7 @@ void Http_req::LetPost()
             if (!uploadFile.is_open()) 
             {
                 in_out = true;
-                _status["403"] = "Permission Denied";
+                _status = 403;
                 fd = open("www/html/403.html", O_RDWR);
                 error = true;
                 std::cout << "File Upload Error" << std::endl;
@@ -1234,7 +1314,7 @@ void Http_req::LetPost()
                     {
                         in_out = true;
                         uploadFile.close();
-                        _status["201"] = "Created";
+                        _status = 201;
                         fd = open("www/html/201.html", O_RDWR);
                         return;
                     }
@@ -1252,7 +1332,7 @@ void Http_req::LetPost()
                         uploadFile << body;
                     uploadFile.close();
                     in_out = true;
-                    _status["201"] = "Created";
+                    _status = 201;
                     if (_loca.getCgi() == false){
                         header["content-type"] = "text/html";
                         fd = open("www/html/201.html", O_RDWR);
@@ -1267,7 +1347,7 @@ void Http_req::LetPost()
     else if (_loca.getUpload() == false)
     {
         /*Status 403*/
-        _status["403"] = "Forbidden";
+        _status = 403;
         in_out = true;
         fd = open("www/html/403.html", O_RDWR);
         error = true;

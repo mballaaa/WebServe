@@ -27,6 +27,7 @@ public:
 
 public: // amine: i made this public for now
         /// this the start line
+    static std::map<int, std::string> errorTexts;
     time_t lastActive ;
     std::ifstream configFile ;
     size_t uploadedFileSize ;
@@ -63,7 +64,7 @@ public: // amine: i made this public for now
 
     std::map<std::string,std::string> _mime;
     std::map<std::string,std::string> _rmime;
-    std::map<std::string,std::string> _status;
+    int _status;
     bool accessError;
     std::string to_file;
     size_t chunksize;
@@ -72,11 +73,11 @@ public: // amine: i made this public for now
     int fd;
     bool sendHeaders;
     
-
+    static void initErrorTexts();
     /*=============== 14 PART (end)==================*/
     int byterec;
     /*=============== 14 PART (begin)==================*/
-    const std::map<std::string, std::string> &getStatus() const;
+    const int &getStatus() const;
     /*=============== 14 PART (end)==================*/
 
     /*=============== 14 PART (begin)==================*/

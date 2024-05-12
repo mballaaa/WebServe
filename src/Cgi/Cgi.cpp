@@ -118,8 +118,7 @@ void Cgi::_setupEnv(Http_req &request){
     else    
     {
         /*=====Must be in a separate func=====*/
-        request._status.clear();
-        request._status["404"] = "Not found";
+        request._status = 404;
         request.fd = open("www/html/Page not found · GitHub Pages.html",O_RDWR);
         _waitreturn = 1;
         return ;
@@ -145,15 +144,16 @@ void Cgi::cgiResponse(Http_req &request){
   
     if(headerflag == true){
         if(_cgibody.find("Status") != std::string::npos){
-            std::string::size_type index2 = _cgibody.find("\r",12);
-            request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
+            // std::string::size_type index2 = _cgibody.find("\r",12);
+            // request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
+            request._status = std::atoi(_cgibody.substr(8,3).c_str());
             std::string::size_type index1= _cgibody.find("\r\n") + 2;
             std::string::size_type index3= _cgibody.find("\r\n\r\n");
             request.to_file = _cgibody.substr(index1,index3-index1+1);  
 
         }
         else{
-            request._status["200"] = "OK";
+            request._status = 200;
             if (_cgibody.find("\r\n\r\n") != std::string::npos)
                 request.to_file = _cgibody.substr(0,_cgibody.find("\r\n\r\n") + 2);
             else
@@ -166,7 +166,7 @@ void Cgi::cgiResponse(Http_req &request){
         // exit(0);
     }
     else
-        request._status["200"] = "OK";
+        request._status = 200;
 
     cgifile = "www/html/cgi"+request.randNameGen()+".html";
     std::ofstream file(cgifile.c_str(),std::ios_base::app);
@@ -198,8 +198,9 @@ void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
         _cgibody = "Status: 500 Internal Server Error\r\nContent-type: text/html; charset=UTF-8\r\n\r\n";
     request.header["content-type"] = "text/html";
    
-    std::string::size_type index2= _cgibody.find("\r",12);
-    request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
+    // std::string::size_type index2= _cgibody.find("\r",12);
+    // request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
+    request._status = std::atoi(_cgibody.substr(8,3).c_str()) ;
     if(request.fd > 0)
         close(request.fd);
     request.fd = open("www/html/500.html",O_RDWR);
@@ -215,13 +216,12 @@ void freeptr(char **env,char **argv){
 
 void Cgi::executeCgi(Http_req &request){
    
-    if(request._status.find("404") != request._status.end()){
+    if(request._status == 404){
         
         unlink(outputfilename.c_str());//remove output file
         return ;
     }
 
-    request._status.clear(); //clear status;
 
     if(!_waitstatus){
 
@@ -285,8 +285,7 @@ void Cgi::executeCgi(Http_req &request){
 
         kill(pid,SIGKILL);
         waitpid(pid,&status,WNOHANG);
-        request._status.clear();
-        request._status["504"] = "Gateway timeout";
+        request._status = 504;
         request.header["content-type"] = "text/html";
         request.fd = open("www/html/504.html",O_RDONLY);
         unlink(outputfilename.c_str());//remove output file

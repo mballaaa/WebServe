@@ -56,7 +56,7 @@ void Multiplex::start(void)
     eventName[EPOLLOUT] = "EPOLLOUT";
     eventName[EPOLLERR] = "EPOLLERR";
     eventName[EPOLLHUP] = "EPOLLHUP";
-
+    Http_req::initErrorTexts() ;
     while (1)
     {
         int eventCount = 0;
@@ -94,7 +94,7 @@ void Multiplex::start(void)
                     requests[events[i].data.fd]->fd = open("www/html/408.html", O_RDWR) ;
                     unlink(requests[events[i].data.fd]->make_name.c_str());
                     requests[events[i].data.fd]->in_out = true ;
-                    requests[events[i].data.fd]->_status["408"] = "Request Timeout" ;
+                    requests[events[i].data.fd]->_status = 408 ;
                     //std::cout << "fd: " << events[i].data.fd << " time diff: " << difftime(time(NULL), requests[events[i].data.fd]->lastActive) << std::endl ;
                 }
             }

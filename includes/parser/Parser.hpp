@@ -11,7 +11,6 @@
 
 #include "../Server.hpp"
 #include "./Lexer.hpp"
-
 class Parser
 {
 public:

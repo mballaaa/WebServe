@@ -31,9 +31,10 @@ std::string sizeToHex(size_t size)
 /*Fill Response Header*/
 void Response::fillResponseHeadre(Http_req &request){
     
-    std::map<std::string,std::string>::iterator it1 = request._status.begin();
     std::map<std::string,std::string> h;
-    _resheaders = "HTTP/1.1 "+it1->first+" "+it1->second+"\r\n";
+    std::stringstream ss;
+    ss << request._status;
+    _resheaders = "HTTP/1.1 "+ ss.str() +" "+ Http_req::errorTexts[request._status] +"\r\n";
     _resheaders += request.to_file;
     if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
     {
@@ -58,20 +59,6 @@ void Response::fillResponseHeadre(Http_req &request){
     }
 
 }
-
-/*Fill  Resposne Body*/
-void Response::fillResponseBody(Http_req &request){
-    _resbody = "\r\n0\r\n\r\n";
-    if(request.fd != 0)
-        fillBodyChunked(request);
-    fillResponseHeadre(request);
-    // std::cout << 
-    if(request.sendHeaders == false){
-        _resheaders = "";
-    }
-    _response = _resheaders + _resbody;
-}
-
 std::string ssizeToHexToStr(ssize_t chunksize){
     std::stringstream ss;
     ss << std::hex << chunksize;
@@ -79,6 +66,32 @@ std::string ssizeToHexToStr(ssize_t chunksize){
 
     return hexString;
 }
+
+/*Fill  Resposne Body*/
+void Response::fillResponseBody(Http_req &request){
+    _resbody = "\r\n0\r\n\r\n";
+    if(request.fd > 0)
+        fillBodyChunked(request);
+    else if(request.fd == -1)
+    {
+        if (request._status)
+        {
+            std::stringstream ss;
+            ss << request._status;
+            std::string msg = "<body><center><h1>" + ss.str() + " " + Http_req::errorTexts[request._status] + "</h1></center><hr><center>webserv</center></body>" ;
+            _resbody = "\r\n"+ssizeToHexToStr(msg.size())+"\r\n"+msg;
+        }
+        else 
+            _resbody = "\r\n0\r\n\r\n";
+        request._status = 0 ;
+    }
+    fillResponseHeadre(request);
+    if(request.sendHeaders == false){
+        _resheaders = "";
+    }
+    _response = _resheaders + _resbody;
+}
+
 /*To send response with chunked*/
 void Response::fillBodyChunked(Http_req &request){
     char buff [R_SIZE];
