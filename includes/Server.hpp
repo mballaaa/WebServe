@@ -38,6 +38,7 @@ public:
 	const std::string&				getHost ( void ) const ;
 	const size_t&					getClientMaxBodySize ( void ) const ;
 	const errorPages_t&				getErrorPages ( void ) const ;
+	const std::string				getErrorPage ( int status ) ;
 	const Locations_t&				getLocations ( void ) const ;
 
 	// Setters

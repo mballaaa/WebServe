@@ -82,7 +82,7 @@ void Multiplex::start(void)
                 if (difftime(time(NULL), requests[eFD]->lastActive) > TIMEOUT)
                 {
                     requests[eFD]->_status = 408 ;
-                    requests[eFD]->fd = open("www/html/408.html", O_RDWR) ;
+                    requests[eFD]->fd = open(requests[eFD]->getErrorPage().c_str(), O_RDWR) ;
                     unlink(requests[eFD]->make_name.c_str());
                     requests[eFD]->in_out = true ;
                     //std::cout << "fd: " << eFD << " time diff: " << difftime(time(NULL), requests[eFD]->lastActive) << std::endl ;

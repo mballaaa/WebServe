@@ -11,6 +11,7 @@ std::map<int, std::string> Http_req::errorTexts ;
 
 void Http_req::initErrorTexts()
 {
+    errorTexts[0] = "Internal" ;
     errorTexts[100] = "Continue" ;
     errorTexts[101] = "Switching protocols" ;
     errorTexts[102] = "Processing" ;
@@ -79,14 +80,10 @@ void Http_req::initErrorTexts()
 /*=============== 14 PART (begin)==================*/
 Http_req::Http_req()
 {
-    // debugFileAmine.open("debug.log") ;
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
 }
 /*=============== 14 PART (end)==================*/
 Http_req::Http_req(Server &server)
 {
-    // debugFileAmine.open("debug.log") ;
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     toHtml = "";
     is_finsh = false;
     this->server = server;
@@ -142,7 +139,6 @@ Http_req::Http_req(const Http_req &obj)
 // copyy
 Http_req &Http_req::operator=(const Http_req &obj)
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     if (this != &obj)
     {
         query_string = obj.query_string;
@@ -229,6 +225,12 @@ const bool &Http_req::getFlag() const
 {
     return in_out;
 }
+
+const std::string Http_req::getErrorPage( void )
+{
+    return server.getErrorPage(_status) ;
+} 
+
 /*=============== 14 PART (end)==================*/
 /*
     structure of request
@@ -362,10 +364,7 @@ size_t matchLocation(const char *_target, const char *location)
 
 int Http_req::MoreValidation()
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-
     // /// check method
-
     if (method != "GET" && method != "POST" && method != "DELETE")
     {std ::cout << "ydes\n";
 
@@ -487,7 +486,6 @@ int Http_req::MoreValidation()
     {
 
         // change to stirng
-        // debugFileAmine << "std::string to_stringmetohd(int value)" << std::endl ;
         std ::string get_methode = to_stringmetohd(allowmethod[i]);
 
         //  std :: cerr << "get methode==>\n" << get_methode << std ::endl;
@@ -508,8 +506,6 @@ int Http_req::MoreValidation()
     }
     /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
 
-    // debugFileAmine << "std ::string SetRootLoc(std ::string path, std ::string loac_value, std ::string root)" << std::endl ;
-   // std ::cout << this->_loca.getRoot() << std ::endl;
 
     _target = SetRootLoc(_target, key, this->_loca.getRoot());
  
@@ -524,7 +520,6 @@ int Http_req::MoreValidation()
 
 void Http_req::debugFunction()
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     // std ::cout << "Yesss\n";
     // std ::cout << "our infoo\n";
     // std ::cout << "type mthode=>" << this->method << std ::endl;
@@ -558,10 +553,6 @@ long hex_to_decimal(const std::string &hexString)
 }
 int Http_req::StautRe(std::string request)
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-
- 
-
     std ::string my_req = "";
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
@@ -651,7 +642,6 @@ int Http_req::StautRe(std::string request)
 void Http_req::LetDelete()
 {
 
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     struct stat infoo;
     std::string URI = _target;
     if (stat(_target.c_str(), &infoo) == 0)
@@ -713,7 +703,6 @@ void Http_req::LetDelete()
 
 bool Http_req::delete_Dir(std::string pathh)
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     DIR *ptr = opendir(pathh.c_str());
 
     if (ptr != NULL)
@@ -794,7 +783,6 @@ bool Http_req::delete_Dir(std::string pathh)
 
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     // std::ofstream outputFile("request.txt", std::ios_base::app);
 
     // std :: cout << bufer << std ::endl;
@@ -812,11 +800,11 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         if(_status == 404)
         {
            
-             fd = open("www/html/Page not found · GitHub Pages.html", O_RDONLY);
+             fd = open(getErrorPage().c_str(), O_RDONLY);
              return ;
         }
-       
-        fd = open("www/html/400.html", O_RDONLY);
+        _status = 400 ;
+        fd = open(getErrorPage().c_str(), O_RDONLY);
         return;
     }
     else
@@ -877,7 +865,6 @@ void Http_req ::CheckLoc(int *is_file)
 
     std ::string tmp=_target;
    
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     if (path[path.length() - 1] != '/')
     {
         std ::cout << "debug1\n";
@@ -915,7 +902,7 @@ void Http_req ::CheckLoc(int *is_file)
         if (is_file_dir(_target) == 0)
         {
             _status = 403;
-            fd = open("403.html", std::ios::binary, O_RDONLY);
+            fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
             in_out = true;
             return;
         }
@@ -1010,7 +997,7 @@ void Http_req ::CheckLoc(int *is_file)
             _status = 403;
             if (fd > 0)
                 close(fd);
-            fd = open("www/html/403.html", std::ios::binary, O_RDONLY);
+            fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
             return;
         }
     }
@@ -1026,10 +1013,6 @@ std::string fileExtension(std::string filename)
 }
 void Http_req::LetGet()
 {
-
-    // std ::cout << _loca << std ::endl;
-   
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     // this condtion here for that stauts come from redirection
     if(_status)
     {
@@ -1039,8 +1022,6 @@ void Http_req::LetGet()
     // int permisson=0;
 
     std ::string URI = _target;
-
-    // debugFileAmine << "int is_file_dir(std::string uri)" << std::endl ;
     int check_type = is_file_dir(URI);
 
     // std :   : cerr << "output" << check_type << std ::endl;
@@ -1068,7 +1049,6 @@ void Http_req::LetGet()
         // exit(0);
 
             //     // cehck extions
-            //     // debugFileAmine << "std::string fileExtension(std::string filename)" << std::endl ;
             std ::string extension = fileExtension(URI);
             std ::map<std::string, std ::string> cgiMap = this->_loca.getCgiPaths();
             std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
@@ -1092,7 +1072,7 @@ void Http_req::LetGet()
                 
                     _status = 500;
                     in_out = true;
-                    fd = open("www/html/500.html", O_RDONLY);
+                    fd = open(getErrorPage().c_str(), O_RDONLY);
                     return;
                 }
             }
@@ -1108,7 +1088,7 @@ void Http_req::LetGet()
 
             //     _status = 404;
             //     in_out = true;
-            //      fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
+            //      fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
             //     return;
             // }
 
@@ -1122,7 +1102,7 @@ void Http_req::LetGet()
            
             _status = 403;
             in_out = true;
-           fd =open("www/html/403.html", O_RDONLY);
+           fd =open(getErrorPage().c_str(), O_RDONLY);
             return;
         }
             /// wa7d case dyal found index in list directory shloud redirect the index as inginx do
@@ -1152,7 +1132,7 @@ void Http_req::LetGet()
         _status = 404;
         // std::cout << "here \n";
         
-        fd = open("www/html/Page not found · GitHub Pages.html", std::ios::binary, O_RDONLY);
+        fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
       
         //std::cout << "fd test =>> " << fd << std::endl;
         in_out = true;
@@ -1175,7 +1155,6 @@ bool Http_req::dirExistWithPermiss()
 }
 int Http_req::mimeParse()
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     std::ifstream file("mime.types");
     std::string line;
     std::string key;
@@ -1185,7 +1164,7 @@ int Http_req::mimeParse()
     {
         //std::cout << "Error : mimes.types could not be open" << std::endl;
         _status = 415;
-        fd = open("www/html/415.html", O_RDWR);
+        fd = open(getErrorPage().c_str(), O_RDWR);
         return 1;
     }
 
@@ -1233,7 +1212,6 @@ int hexStringToInt(const std::string &hexString)
 
 void Http_req::LetPost()
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
     /*location not found*/
     if (fd > 0)
         close(fd);
@@ -1244,7 +1222,7 @@ void Http_req::LetPost()
             in_out = true;
             error = true;
             _status = 404;
-            fd = open("www/html/Page not found · GitHub Pages.html", O_RDWR);
+            fd = open(getErrorPage().c_str(), O_RDWR);
             return;
         }
 
@@ -1253,7 +1231,7 @@ void Http_req::LetPost()
             /*Status 204*/
             _status = 204;
             in_out = true;
-            fd = open("www/html/204.html", O_RDWR);
+            fd = open(getErrorPage().c_str(), O_RDWR);
             return;
         }
             /*First check if the extension exist */
@@ -1272,7 +1250,7 @@ void Http_req::LetPost()
                 _status = 415;
                 in_out = true;
                 error = true;
-                fd = open("www/html/415.html", O_RDWR);
+                fd = open(getErrorPage().c_str(), O_RDWR);
                 return;
             }
 
@@ -1280,7 +1258,7 @@ void Http_req::LetPost()
             {
                 in_out = true;
                 _status = 403;
-                fd = open("www/html/403.html", O_RDWR);
+                fd = open(getErrorPage().c_str(), O_RDWR);
                 error = true;
                 std::cout << "File Upload Error" << std::endl;
                 return;
@@ -1315,7 +1293,7 @@ void Http_req::LetPost()
                         in_out = true;
                         uploadFile.close();
                         _status = 201;
-                        fd = open("www/html/201.html", O_RDWR);
+                        fd = open(getErrorPage().c_str(), O_RDWR);
                         return;
                     }
                 }
@@ -1335,7 +1313,7 @@ void Http_req::LetPost()
                     _status = 201;
                     if (_loca.getCgi() == false){
                         header["content-type"] = "text/html";
-                        fd = open("www/html/201.html", O_RDWR);
+                        fd = open(getErrorPage().c_str(), O_RDWR);
                     }
                     return;
                 }
@@ -1349,7 +1327,7 @@ void Http_req::LetPost()
         /*Status 403*/
         _status = 403;
         in_out = true;
-        fd = open("www/html/403.html", O_RDWR);
+        fd = open(getErrorPage().c_str(), O_RDWR);
         error = true;
 
     }
@@ -1360,8 +1338,8 @@ void Http_req::LetPost()
 
 Http_req::~Http_req()
 {
-    // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
-    // debugFileAmine.close() ;
     configFile.close();
     uploadFile.close();
+    close(fd) ;
+    file.close() ;
 }

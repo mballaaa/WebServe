@@ -31,7 +31,6 @@ public: // amine: i made this public for now
     time_t lastActive ;
     std::ifstream configFile ;
     size_t uploadedFileSize ;
-    // std::ofstream debugFileAmine ;
     bool        moreValidationDone ;
     std::ofstream uploadFile ;
     std::string req;
@@ -88,6 +87,9 @@ public: // amine: i made this public for now
     void contentLenght();
     std::string randNameGen();
     bool dirExistWithPermiss();
+
+    const std::string getErrorPage( void ) ;
+
 
     /*=============== 14 PART (end)==================*/
 public:

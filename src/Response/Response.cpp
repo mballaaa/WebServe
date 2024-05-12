@@ -141,5 +141,4 @@ std::string Response::getResponse()
 Response::~Response()
 {
     close(_socketfd) ;
-    std::cout << "Closed fd: " << _socketfd << std::endl ;
 }
