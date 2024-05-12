@@ -79,10 +79,10 @@ void Cgi::_setupEnv(Http_req &request){
     Server server = request.getServer();
 
     _env.clear();
-
+    
     if (headers["content-type"].length() && request.getMethod() == "POST"){
-        // exit(0);
-        _env["CONTENT_LENGTH"] = off_tToString(getFileSize(request.make_name.c_str()));
+        if(request.make_name != "")
+            _env["CONTENT_LENGTH"] = off_tToString(getFileSize(request.make_name.c_str()));
         _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
     }
     _env["GATEWAY_INTERFACE"] = "CGI/1.1";
@@ -100,12 +100,6 @@ void Cgi::_setupEnv(Http_req &request){
 
     _env["HTTP_COOKIE"] = request.header["cookie"];
 
-    // while (it != _env.end())
-    // {
-    //     std::cout << it->first << "=" << it->second << std::endl ;
-    //     it++ ;
-    // }
-  
     std::string extension = fileExtension(request.getTarget().substr(2));
     
     _executablefile = request._loca.getCgiPaths();
@@ -269,7 +263,7 @@ void Cgi::executeCgi(Http_req &request){
             cgiErrorResponse(request,_cgibody);
             unlink(outputfilename.c_str());//remove output file
             kill(pid,SIGKILL);
-            waitpid(pid,&status,WNOHANG);
+            waitpid(pid,&status,0);
             return ;
         }
     }
@@ -284,7 +278,7 @@ void Cgi::executeCgi(Http_req &request){
     if(elapsedTime>=2){
 
         kill(pid,SIGKILL);
-        waitpid(pid,&status,WNOHANG);
+        waitpid(pid,&status,0);
         request._status = 504;
         request.header["content-type"] = "text/html";
         request.fd = open("www/html/504.html",O_RDONLY);
