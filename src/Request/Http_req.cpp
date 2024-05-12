@@ -7,7 +7,7 @@
 
 #include <cstring>
 
-static int a = 0;
+//static int a = 0;
 /*=============== 14 PART (begin)==================*/
 Http_req::Http_req()
 {
@@ -208,7 +208,7 @@ std ::string SetRootLoc(std ::string target, std ::string key, std ::string root
     if (it != std ::string::npos)
     {
         
-        target.replace(0, key.length(), root + "/");
+        target.replace(0, key.length(), root + key);
 
         return target;
     }
@@ -376,7 +376,8 @@ int Http_req::MoreValidation()
 
     if (flag == 0)
     {
-        std ::cout << "yes1\n";
+
+      
         _status["404"] = "Forbbiden";
         in_out=true;
         return 0;
@@ -491,8 +492,7 @@ int Http_req::StautRe(std::string request)
     int res;
     res = 0;
 
-    a++;
-    
+
     if (!is_finsh && len_req != std ::string ::npos)
     {
 
@@ -542,7 +542,6 @@ int Http_req::StautRe(std::string request)
 
         size_t body_start = len_req + 4;
         this->body = my_req.substr(body_start);
-        //    std ::cout << body ;
 
         is_finsh = true;
     }
@@ -551,7 +550,7 @@ int Http_req::StautRe(std::string request)
         this->body = request;
     }
 
-    // std :: cerr << "this body ==>"  <<body << std ::endl;
+
 
     if (is_finsh == true)
     {
@@ -562,17 +561,9 @@ int Http_req::StautRe(std::string request)
             return (0);
         }
     }
-    //======> check path
+   
 
     res = 1;
-    // std::map<std::string, std::string>::iterator it = header.begin() ;
-    // while (it != header.end())
-    // {
-    //     std::cout << it->first << "=" << it->second << std::endl ;
-    //     it++ ;
-    // }
-    // exit(0);
-    // exit(0);
     return (res);
 }
 void Http_req::LetDelete()
@@ -802,6 +793,7 @@ void Http_req ::CheckLoc(int *is_file)
 {
     //std ::cout << "debug\n";
     std ::cout << _target << std ::endl;
+
     std ::string tmp=_target;
    
     // debugFileAmine << __PRETTY_FUNCTION__ << std::endl ;
@@ -809,8 +801,8 @@ void Http_req ::CheckLoc(int *is_file)
     {
         std ::cout << "debug1\n";
         in_out = true;
-        _status["302"] = "Redirect2";
-        _loca.setReturn("302", path + "/") ;
+        _status["301"] = "Moved Permanently";
+        _loca.setReturn("301", path + "/") ;
         return;
     }
     if (this->_loca.getIndex().size() != 0)
@@ -836,7 +828,7 @@ void Http_req ::CheckLoc(int *is_file)
         }
 
         _target = main_index;
-        std::cout << "the last target=>" << _target << std::endl;
+      
         //exit(0);
         // check if that index is floder shloud trhow error forbiden
         if (is_file_dir(_target) == 0)
@@ -862,13 +854,14 @@ void Http_req ::CheckLoc(int *is_file)
            
 
             std ::string dirpath = _target;
+            std ::cout << dirpath << std ::endl;
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
             
             DIR *dir = opendir(dirpath.c_str());
             if (!dir)
             {
                 closedir(dir);
-                perror("auto index issue");
+                //perror("auto index issue");
                 return;
             }
             else
