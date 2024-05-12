@@ -10,7 +10,7 @@ Cgi::Cgi(){
     outputfilename = "";
     input = -1;
     output = -1;
-    
+    pid = -1;
 }
 
 std::string Cgi::size_t_to_string(size_t nbr){
@@ -113,7 +113,7 @@ void Cgi::_setupEnv(Http_req &request){
     {
         /*=====Must be in a separate func=====*/
         request._status = 404;
-        request.fd = open("www/html/Page not found · GitHub Pages.html",O_RDWR);
+        request.fd = open(request.getErrorPage().c_str(),O_RDWR);
         _waitreturn = 1;
         return ;
         /*===================================*/
@@ -197,7 +197,8 @@ void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
     request._status = std::atoi(_cgibody.substr(8,3).c_str()) ;
     if(request.fd > 0)
         close(request.fd);
-    request.fd = open("www/html/500.html",O_RDWR);
+    request._status = 500 ;
+    request.fd = open(request.getErrorPage().c_str(),O_RDWR);
 }
 
 void freeptr(char **env,char **argv){
@@ -281,10 +282,10 @@ void Cgi::executeCgi(Http_req &request){
         waitpid(pid,&status,0);
         request._status = 504;
         request.header["content-type"] = "text/html";
-        request.fd = open("www/html/504.html",O_RDONLY);
+        request.fd = open(request.getErrorPage().c_str(),O_RDONLY);
         unlink(outputfilename.c_str());//remove output file
         _waitreturn = 1;
-        std::cerr << "ERROR" << std::endl;
+        // std::cerr << "ERROR" << std::endl;
         return ;
     }
     return ;
@@ -296,4 +297,9 @@ Cgi::~Cgi()
             close(output);
         if (input)
             close(input);
+    if (pid != -1)
+    {
+        kill(pid, SIGKILL) ;
+        waitpid(pid,&status,0);
+    }
 }   

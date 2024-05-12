@@ -5,19 +5,27 @@ Response::Response() : buffer(R_BUFFER_SIZE)
 {
     headerSent = false ;
     fileOpened = false ;
+    _socketfd = -1 ;
+}
+
+Response::Response(int _socketfd) : buffer(R_BUFFER_SIZE)
+{
+    headerSent = false ;
+    fileOpened = false ;
+    this->_socketfd = _socketfd ;
+    std::cout << "Created fd: " << _socketfd << std::endl ;
 }
 
 Response::Response(const Response& obj)
 {
     //std::cout << "copy" << std::endl ;
     (void) obj ;
-    exit(1) ;
 }
 const Response& Response::operator=(const Response& obj)
 {
     //std::cout << "= copy" << std::endl ;
     (void) obj ;
-    exit(1) ;
+    return (*this) ;
 }
 
 std::string sizeToHex(size_t size)
@@ -38,7 +46,7 @@ void Response::fillResponseHeadre(Http_req &request){
     _resheaders += request.to_file;
     if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
     {
-        h["Location"] = " " + request._loca.getReturn().second ;
+        h["Location"] = request._loca.getReturn().second ;
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
@@ -132,4 +140,5 @@ std::string Response::getResponse()
 
 Response::~Response()
 {
+    close(_socketfd) ;
 }
