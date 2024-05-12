@@ -487,9 +487,8 @@ int Http_req::MoreValidation()
 
     if (!is_exit)
     {
-
         in_out = true;
-        _status = 504;
+        _status = 405;
         return 0;
     }
     /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
@@ -965,7 +964,7 @@ void Http_req ::CheckLoc(int *is_file)
 
                 in_out = true;
                 _status = 200;
-                std::ofstream outputFile("output.txt");
+                std::ofstream outputFile("output.txt", std::ios::binary);
 
                 if (!outputFile.is_open())
                 {
@@ -1208,7 +1207,7 @@ int hexStringToInt(const std::string &hexString)
 
 void Http_req::LetPost()
 {
-    /*location not found*/
+        /*location not found*/
     if (fd > 0)
         close(fd);
     if (_loca.getUpload() == true)

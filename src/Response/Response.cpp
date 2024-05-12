@@ -50,7 +50,7 @@ void Response::fillResponseHeadre(Http_req &request){
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
-    if(!request._loca.getCgi()){
+    if(!request._loca.getCgi() && request.fd != -1){
         h["content-type"] = request._rmime[fileExtension];
     }
     // if(request._loca.getCgi() && request.getMethod() == "POST")

@@ -1,5 +1,3 @@
 <?php 
-while(TRUE){
-    
-}
+echo "Hello world" ;
 ?>
