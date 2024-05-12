@@ -804,9 +804,9 @@ void Http_req::parse_re(std ::string bufer, int bytee)
              return ;
         }
         if(_status == 411)
-            fd = open("www/html/411.html", O_RDONLY);
+            fd = open(getErrorPage().c_str(), O_RDONLY);
         else
-            fd = open("www/html/400.html", O_RDONLY);
+            fd = open(getErrorPage().c_str(), O_RDONLY);
         return;
     }
     else
