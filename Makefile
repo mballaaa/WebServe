@@ -11,7 +11,6 @@ SRC =	main.cpp						\
 		src/parser/Parser.cpp			\
 		src/Multiplex/Multiplex.cpp		\
 		src/Multiplex/SocketManager.cpp	\
-		src/Request/Request.cpp			\
 		src/Request/Http_req.cpp  \
 		src/Response/Response.cpp  \
 		src/Cgi/Cgi.cpp

@@ -12,6 +12,7 @@ class Response
 private:
     std::string     _resbody;
     std::string     _response;
+    int             _socketfd ;
 public:
     std::string chunkHeader ;
     std::vector<char>   buffer ;
@@ -21,6 +22,7 @@ public:
     std::ifstream   file ;
     size_t          readSize ;
     Response();
+    Response(int _socketfd);
     Response(const Response& obj);
     const Response& operator=(const Response& obj);
     /*==============Member function===============*/
