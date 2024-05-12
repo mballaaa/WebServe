@@ -10,7 +10,7 @@ Cgi::Cgi(){
     outputfilename = "";
     input = -1;
     output = -1;
-    
+    pid = -1;
 }
 
 std::string Cgi::size_t_to_string(size_t nbr){
@@ -285,7 +285,7 @@ void Cgi::executeCgi(Http_req &request){
         request.fd = open(request.getErrorPage().c_str(),O_RDONLY);
         unlink(outputfilename.c_str());//remove output file
         _waitreturn = 1;
-        std::cerr << "ERROR" << std::endl;
+        // std::cerr << "ERROR" << std::endl;
         return ;
     }
     return ;
@@ -297,4 +297,9 @@ Cgi::~Cgi()
             close(output);
         if (input)
             close(input);
+    if (pid != -1)
+    {
+        kill(pid, SIGKILL) ;
+        waitpid(pid,&status,0);
+    }
 }   

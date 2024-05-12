@@ -70,7 +70,7 @@ void Multiplex::start(void)
             }
             if (events[i].events & EPOLLHUP)
             {
-                std::cout << "EPOLLHUP on FD: " << eFD << std::endl ; 
+                // std::cout << "EPOLLHUP on FD: " << eFD << std::endl ; 
                 delete requests[eFD] ;
                 requests.erase(eFD) ;
                 delete response[eFD] ;
@@ -121,8 +121,7 @@ void Multiplex::start(void)
                                 NI_NUMERICHOST | NI_NUMERICSERV);
                 if (s == 0)
                 {
-                    printf("Accepted connection on descriptor %d "
-                            "(host=%s, port=%s)\n", infd, hbuf, sbuf);
+                    // printf("Accepted connection on descriptor %d (host=%s, port=%s)\n", infd, hbuf, sbuf);
                 }
 
                 SocketManager::makeSocketNonBlocking(infd);
@@ -146,7 +145,7 @@ void Multiplex::start(void)
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
                     //std::cout << "client closed " << std::endl ;
-                    std ::cout << "====>" << bytesReceived << std ::endl;
+                    // std ::cout << "====>" << bytesReceived << std ::endl;
                     delete requests[eFD] ;
                     requests.erase(eFD) ;
                     delete response[eFD] ;

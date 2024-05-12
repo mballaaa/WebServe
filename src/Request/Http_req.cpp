@@ -366,7 +366,8 @@ int Http_req::MoreValidation()
 {
     // /// check method
     if (method != "GET" && method != "POST" && method != "DELETE")
-    {std ::cout << "ydes\n";
+    {
+        // std ::cout << "ydes\n";
 
         _status = 400;
         in_out = true;
@@ -374,7 +375,7 @@ int Http_req::MoreValidation()
     }
     if (http_ver != "HTTP/1.1")
     {
-        std ::cout << "yes\n";
+        // std ::cout << "yes\n";
         _status = 400;
         in_out = true;
         return (0);
@@ -397,7 +398,7 @@ int Http_req::MoreValidation()
         if (endptr == header["content-length"].c_str())
         {
             // std :: cout << "ddddd\n";
-            std::cerr << "Error: Invalid content-length in " << std::endl;
+            // std::cerr << "Error: Invalid content-length in " << std::endl;
             _status = 400;
             return 0;
         }
@@ -793,7 +794,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     {
 
         in_out = true;
-        std ::cout << "Baaaad Request\n";
+        // std ::cout << "Baaaad Request\n";
            
         if (fd > 0)
             close(fd);
@@ -861,13 +862,13 @@ int is_file_dir(std::string uri)
 void Http_req ::CheckLoc(int *is_file)
 {
     //std ::cout << "debug\n";
-    std ::cout << _target << std ::endl;
+    // std ::cout << _target << std ::endl;
 
     std ::string tmp=_target;
    
     if (path[path.length() - 1] != '/')
     {
-        std ::cout << "debug1\n";
+        // std ::cout << "debug1\n";
         in_out = true;
         _status = 301;
         _loca.setReturn("301", path + "/") ;
@@ -886,7 +887,7 @@ void Http_req ::CheckLoc(int *is_file)
             std::string filename = *it;
 
             std::string tosearch = _target + separator + filename;
-            std::cout << "Searching: " << tosearch << std::endl;
+            // std::cout << "Searching: " << tosearch << std::endl;
 
             struct stat sb;
             if (stat(tosearch.c_str(), &sb) == 0) {
@@ -922,7 +923,7 @@ void Http_req ::CheckLoc(int *is_file)
            
 
             std ::string dirpath = _target;
-            std ::cout << dirpath << std ::endl;
+            // std ::cout << dirpath << std ::endl;
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
             
             DIR *dir = opendir(dirpath.c_str());
@@ -1037,7 +1038,7 @@ void Http_req::LetGet()
 
     struct stat sb;
 
-   std ::cout << URI << std ::endl;
+//    std ::cout << URI << std ::endl;
    
 
     if (stat(URI.c_str(), &sb) == 0)
@@ -1112,10 +1113,10 @@ void Http_req::LetGet()
                 close(fd);
           
             fd = open(_target.c_str(), std::ios::binary, O_RDONLY);
-            std::cout << "fd get->> " << fd << std::endl;
+            // std::cout << "fd get->> " << fd << std::endl;
 
             _status = 200;
-            std :: cout << "i am here\n";
+            // std :: cout << "i am here\n";
         
             in_out = true;
             // exit(0);
@@ -1260,7 +1261,7 @@ void Http_req::LetPost()
                 _status = 403;
                 fd = open(getErrorPage().c_str(), O_RDWR);
                 error = true;
-                std::cout << "File Upload Error" << std::endl;
+                // std::cout << "File Upload Error" << std::endl;
                 return;
             }
             if (header["transfer-encoding"] == " chunked")
