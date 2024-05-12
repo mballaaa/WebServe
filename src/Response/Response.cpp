@@ -46,7 +46,7 @@ void Response::fillResponseHeadre(Http_req &request){
     _resheaders += request.to_file;
     if (request._loca.getReturn().first !=0 &&request._loca.getReturn().second != "")
     {
-        h["Location"] = " " + request._loca.getReturn().second ;
+        h["Location"] = request._loca.getReturn().second ;
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
