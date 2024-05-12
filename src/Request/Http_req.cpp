@@ -421,8 +421,7 @@ int Http_req::MoreValidation()
     }
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
     {
-       _status = 400;
-     
+       _status = 411;
         return (0);
     }
 
@@ -811,12 +810,13 @@ void Http_req::parse_re(std ::string bufer, int bytee)
             close(fd);
         if(_status == 404)
         {
-           
-             fd = open("www/html/Page not found · GitHub Pages.html", O_RDONLY);
-             return ;
+            fd = open("www/html/Page not found · GitHub Pages.html", O_RDONLY);
+            return ;
         }
-       
-        fd = open("www/html/400.html", O_RDONLY);
+        if(_status == 411)
+            fd = open("www/html/411.html", O_RDONLY);
+        else
+            fd = open("www/html/400.html", O_RDONLY);
         return;
     }
     else
@@ -824,10 +824,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 
         if (method == "GET")
         {
-           
             LetGet();
-
-            // exit(0);
         }
         /*=============== 14 PART (begin)==================*/
         else if (method == "POST")
@@ -1248,7 +1245,7 @@ void Http_req::LetPost()
             return;
         }
 
-        if (header["content-length"] == " 0" || header["content-type"] == "")
+        if (header["content-type"] == "")
         {
             /*Status 204*/
             _status = 204;
@@ -1321,15 +1318,17 @@ void Http_req::LetPost()
                 }
                 i = 1;
             }
-            else
+            else if(header.find("content-length") != header.end())
             {
+                size_t lastsize = uploadedFileSize;
                 uploadedFileSize += body.size();
                 size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10);
-                
                 if (uploadedFileSize >= fullSize)
                 {
                     if(uploadedFileSize == fullSize)
                         uploadFile << body;
+                    else
+                        uploadFile << body.substr(0,fullSize-lastsize);
                     uploadFile.close();
                     in_out = true;
                     _status = 201;
