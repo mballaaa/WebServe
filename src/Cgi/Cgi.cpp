@@ -83,7 +83,7 @@ void Cgi::_setupEnv(Http_req &request){
     if (headers["content-type"].length() && request.getMethod() == "POST"){
         if(request.make_name != "")
             _env["CONTENT_LENGTH"] = off_tToString(getFileSize(request.make_name.c_str()));
-        _env["CONTENT_TYPE"] = headers["content-type"].substr(1);
+        _env["CONTENT_TYPE"] = headers["content-type"];
     }
     _env["GATEWAY_INTERFACE"] = "CGI/1.1";
     _env["SCRIPT_NAME"] = request.getPath().substr(1); 

@@ -318,18 +318,6 @@ std::string replaceDuplicateSlash(const std::string &path)
     return result;
 }
 
-// split string by delimiter
-std::vector<std::string> split(const std::string &s, char delim)
-{
-    std::vector<std::string> result;
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim))
-    {
-        result.push_back(item);
-    }
-    return result;
-}
 bool IsPathValid(std::string path)
 {
 
@@ -551,6 +539,14 @@ long hex_to_decimal(const std::string &hexString)
     char *endPtr;
     return strtol(hexString.c_str(), &endPtr, 16);
 }
+
+std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
+{
+	s.erase(0, s.find_first_not_of(t));
+	s.erase(s.find_last_not_of(t) + 1);
+	return s;
+}
+
 int Http_req::StautRe(std::string request)
 {
     std ::string my_req = "";
@@ -606,7 +602,7 @@ int Http_req::StautRe(std::string request)
 
                     return (0);
                 }
-                header[key] = value;
+                header[key] = trim(value);
 
                 /// debug function
             }
@@ -631,6 +627,7 @@ int Http_req::StautRe(std::string request)
         {
             
             in_out = true;
+            fd = open(getErrorPage().c_str(), O_RDONLY) ;
             return (0);
         }
     }
@@ -1227,19 +1224,15 @@ void Http_req::LetPost()
 
         if (header["content-type"] == "")
         {
-            /*Status 204*/
-            _status = 204;
-            in_out = true;
-            fd = open(getErrorPage().c_str(), O_RDWR);
-            return;
+            header["content-type"] = "application/octet-stream" ;
         }
             /*First check if the extension exist */
             std::string str;
-            if (_mime.find(header["content-type"].substr(1)) != _mime.end() && make_name == ""){
-                make_name = _loca.getUploadPath() +"/"+ randNameGen() + "."+ _mime[header["content-type"].substr(1)];
+            if (_mime.find(header["content-type"]) != _mime.end() && make_name == ""){
+                make_name = _loca.getUploadPath() +"/"+ randNameGen() + "."+ _mime[header["content-type"]];
                 uploadFile.open(make_name.c_str(), std::ios::app);
             }
-            else if(header["content-type"].substr(0,30) == " multipart/form-data; boundary" && make_name == ""){
+            else if(header["content-type"].substr(0,29) == "multipart/form-data; boundary" && make_name == ""){
                 make_name = _loca.getUploadPath() +"/"+ randNameGen() + ".txt";
                 uploadFile.open(make_name.c_str(), std::ios::app);
                 // exit(0);
@@ -1262,7 +1255,7 @@ void Http_req::LetPost()
                 // std::cout << "File Upload Error" << std::endl;
                 return;
             }
-            if (header["transfer-encoding"] == " chunked")
+            if (header["transfer-encoding"] == "chunked")
             {
                 if (!i)
                 {
@@ -1302,7 +1295,7 @@ void Http_req::LetPost()
             {
                 size_t lastsize = uploadedFileSize;
                 uploadedFileSize += body.size();
-                size_t fullSize = strtoul(header["content-length"].substr(1).c_str(), NULL, 10);
+                size_t fullSize = strtoul(header["content-length"].c_str(), NULL, 10);
                 if (uploadedFileSize >= fullSize)
                 {
                     if(uploadedFileSize == fullSize)
@@ -1320,6 +1313,15 @@ void Http_req::LetPost()
                 }
                 uploadFile << body;
                 i = 1;
+            }
+            else
+            {
+                _status = 411 ;
+                in_out = true;
+                error = true;
+                uploadFile.close();
+                fd = open(getErrorPage().c_str(), O_RDWR);
+                return ;
             }
         /*Status 201*/
     }

@@ -4,8 +4,7 @@
 #include"../Request/Http_req.hpp"
 #include"../cgi/Cgi.hpp"
 
-#define R_BUFFER_SIZE 4096
-#define R_SIZE 1024
+#define R_BUFFER_SIZE 1024
 
 class Response
 {
@@ -15,7 +14,6 @@ private:
     int             _socketfd ;
 public:
     std::string chunkHeader ;
-    std::vector<char>   buffer ;
     bool            fileOpened ;
     std::string     _resheaders;
     bool            headerSent ;

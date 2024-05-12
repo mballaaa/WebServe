@@ -1,14 +1,14 @@
 #include "../../includes/Response/Response.hpp"
 #include <unistd.h>
 
-Response::Response() : buffer(R_BUFFER_SIZE)
+Response::Response()
 {
     headerSent = false ;
     fileOpened = false ;
     _socketfd = -1 ;
 }
 
-Response::Response(int _socketfd) : buffer(R_BUFFER_SIZE)
+Response::Response(int _socketfd)
 {
     headerSent = false ;
     fileOpened = false ;
@@ -78,6 +78,7 @@ std::string ssizeToHexToStr(ssize_t chunksize){
 /*Fill  Resposne Body*/
 void Response::fillResponseBody(Http_req &request){
     _resbody = "\r\n0\r\n\r\n";
+    fillResponseHeadre(request);
     if(request.fd > 0)
         fillBodyChunked(request);
     else if(request.fd == -1)
@@ -93,7 +94,6 @@ void Response::fillResponseBody(Http_req &request){
             _resbody = "\r\n0\r\n\r\n";
         request._status = 0 ;
     }
-    fillResponseHeadre(request);
     if(request.sendHeaders == false){
         _resheaders = "";
     }
@@ -102,13 +102,13 @@ void Response::fillResponseBody(Http_req &request){
 
 /*To send response with chunked*/
 void Response::fillBodyChunked(Http_req &request){
-    char buff [R_SIZE];
+    char buff [R_BUFFER_SIZE];
     ssize_t bytesReceived;
     if(request.fd<0){
         std::cout << "request.fd 4FD ERROR" << std::endl;
         return;
     }
-    bytesReceived = read(request.fd, buff, R_SIZE-1);
+    bytesReceived = read(request.fd, buff, R_BUFFER_SIZE-1);
     if (bytesReceived == -1) 
     {
         std::cout << "read error fill body" << std::endl ;
