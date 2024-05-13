@@ -82,11 +82,12 @@ Http_req::Http_req()
 {
 }
 /*=============== 14 PART (end)==================*/
-Http_req::Http_req(Server &server)
+Http_req::Http_req(std::vector<Server> &servers)
 {
     toHtml = "";
     is_finsh = false;
-    this->server = server;
+    this->server = servers[0];
+    this->servers = servers ;
     in_out = false;
     CGI_FLAG = false;
     query_string = "";
@@ -334,6 +335,25 @@ bool IsPathValid(std::string path)
     return true;
 }
 
+void    Http_req::matchServer( void )
+{
+    std::vector<Server>::iterator servIt = servers.begin() ;
+    while (servIt != servers.end())
+    {
+        std::vector<std::string>::const_iterator serverName = servIt->getServerNames().begin() ;
+        while (serverName != servIt->getServerNames().end())
+        {
+            if (header["host"].substr(0, header["host"].find(":")) == *serverName)
+            {
+                server = *servIt ;
+                return ;
+            }
+            serverName++ ;
+        }
+        servIt++ ;
+    }
+}
+
 size_t matchLocation(const char *_target, const char *location)
 {
     size_t matchCount = 0 ;
@@ -437,8 +457,8 @@ int Http_req::MoreValidation()
      }
 
 
-
-    
+    matchServer() ;
+    std::cout << server ;
 
     std::map<std::string, Location> location = this->server.getLocations();
     std::map<std::string, Location>::iterator it;

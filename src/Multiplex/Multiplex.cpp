@@ -29,9 +29,9 @@ void Multiplex::setup(const servers_t &servers)
         std::cerr << "Listening on: " << id << "..." << std::endl;
         if (hostPortMap.find(id) != hostPortMap.end()) // host:port already binded
         {
-            // sfd = hostPortMap[id];
-            servIt++ ;
-            continue ;
+            sfd = hostPortMap[id];
+            // servIt++ ;
+            // continue ;
         }
         else // create new socket, bind, listen and add to epoll finally add it to hostPortMap
         {
@@ -41,7 +41,7 @@ void Multiplex::setup(const servers_t &servers)
             SocketManager::epollCtlSocket(sfd, EPOLL_CTL_ADD);
             hostPortMap.insert(std::make_pair(id, sfd));
         }
-        listeners[sfd] = *servIt;
+        listeners[sfd].push_back(*servIt);
         servIt++;
     }
 }

@@ -58,6 +58,7 @@ public: // amine: i made this public for now
         
      std::map<std::string, std::string> header;
     Server server;
+    std::vector<Server> servers ;
     Location _loca;
 /*=============== 14 PART (begin)==================*/
 
@@ -89,6 +90,8 @@ public: // amine: i made this public for now
     bool dirExistWithPermiss();
 
     const std::string getErrorPage( void ) ;
+    
+    void    matchServer( void ) ;
 
 
     /*=============== 14 PART (end)==================*/
@@ -97,7 +100,7 @@ public:
     Http_req(const Http_req &obj);
     Http_req &operator=(const Http_req &obj);
     void debugFunction();
-   Http_req(Server& server);
+    Http_req(std::vector<Server>& servers);
     // Http_req(std::string req,int byterec, std::map<int, Server> listenrs);
     void parse_re(std ::string bufer, int bytee);
     int StautRe(std ::string request);
