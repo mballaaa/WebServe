@@ -524,34 +524,6 @@ int Http_req::MoreValidation()
     return (1);
 }
 
-void Http_req::debugFunction()
-{
-    // std ::cout << "Yesss\n";
-    // std ::cout << "our infoo\n";
-    // std ::cout << "type mthode=>" << this->method << std ::endl;
-    // std ::cout << "path=>" << this->path << std ::endl;
-    // std ::cout << "vers=>" << this->http_ver << std ::endl;
-    // std::ofstream outputFile("output.txt", std::ios_base::app);
-
-    // if (outputFile.is_open())
-    // {
-    //     // Output body to the file
-    //     outputFile << this->body;
-
-    //     // Close the file
-    //     outputFile.close();
-    // }
-    // ///// print headar
-    //  std::map<std::string, std::string>::iterator it;
-    // for (it = header.begin(); it != header.end(); it++)
-    // {
-
-    //      std ::cerr << it->first << ":" << it->second << std ::endl;
-    // }
-    //
-    // //std :: cout << "this ===?\n";
-    //  std :: cout << this->body << std::endl;
-}
 long hex_to_decimal(const std::string &hexString)
 {
     char *endPtr;
@@ -800,18 +772,9 @@ bool Http_req::delete_Dir(std::string pathh)
 
 void Http_req::parse_re(std ::string bufer, int bytee)
 {
-    // std::ofstream outputFile("request.txt", std::ios_base::app);
-
-    // std :: cout << bufer << std ::endl;
-    (void)bufer;
-    (void)bytee;
-    
     if (!StautRe(bufer) || bytee < 0)
     {
-
         in_out = true;
-        // std ::cout << "Baaaad Request\n";
-           
         if (fd > 0)
             close(fd);
         if(_status == 404)
@@ -1008,7 +971,9 @@ void Http_req ::CheckLoc(int *is_file)
                 {
                     outputFile.close();
                     perror("Error file");
-                    exit(1);
+                    _status = 500 ;
+                    fd = open(error_page().c_str(), O_RDONLY) ;
+                    return ;
                 }
                 outputFile << toHtml;
                 outputFile.close();
@@ -1093,6 +1058,8 @@ void Http_req::LetGet()
                 {
                     _status = 500;
                     in_out = true;
+                    if (fd > 0)
+                        close(fd) ;
                     fd = open(getErrorPage().c_str(), O_RDONLY);
                     return;
                 }
@@ -1107,6 +1074,8 @@ void Http_req::LetGet()
            
             _status = 403;
             in_out = true;
+            if(fd > 0)
+                close(fd) ;
            fd =open(getErrorPage().c_str(), O_RDONLY);
             return;
         }
@@ -1133,6 +1102,8 @@ void Http_req::LetGet()
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
         _status = 404;
+        if (fd > 0)
+            close(fd) ;
         fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
         in_out = true;
         return;
@@ -1165,6 +1136,8 @@ int Http_req::mimeParse()
     {
         //std::cout << "Error : mimes.types could not be open" << std::endl;
         _status = 415;
+        if (fd > 0)
+            close(fd) ;
         fd = open(getErrorPage().c_str(), O_RDWR);
         return 1;
     }
@@ -1185,6 +1158,7 @@ int Http_req::mimeParse()
                 _rmime[value] = key;
         }
     }
+    file.close() ;
     return 0;
 }
 
@@ -1243,110 +1217,122 @@ void Http_req::LetPost()
             _status = 404;
             if(header.find("content-type") ==  header.end())
                 _status = 400;
+            if (fd > 0)
+                close(fd) ;
             fd = open(getErrorPage().c_str(), O_RDWR);
             return;
         }
-            if (header["content-type"] == "")
-            {
-                header["content-type"] = "application/octet-stream" ;
-            }
-            /*First check if the extension exist */
-            std::string str;
-            if (_mime.find(header["content-type"]) != _mime.end() && make_name == ""){
-                make_name = _loca.getRoot()+"/"+_loca.getUploadPath() +"/"+ randNameGen() + "."+ _mime[header["content-type"]];
-                uploadFile.open(make_name.c_str(), std::ios::app);
-            }
-            else if(header["content-type"].substr(0,29) == "multipart/form-data; boundary" && make_name == ""){
-                make_name = _loca.getRoot()+_loca.getUploadPath().substr(1) +"/"+ randNameGen() + ".txt";
-                uploadFile.open(make_name.c_str(), std::ios::app);
-            }
-            else if (make_name == "")
-            {
-                _status = 415;
-                in_out = true;
-                error = true;
-                fd = open(getErrorPage().c_str(), O_RDWR);
-                return;
-            }
+        if (header["content-type"] == "")
+        {
+            header["content-type"] = "application/octet-stream" ;
+        }
+        /*First check if the extension exist */
+        std::string str;
+        if (_mime.find(header["content-type"]) != _mime.end() && make_name == "")
+        {
+            make_name = _loca.getRoot()+"/"+_loca.getUploadPath() +"/"+ randNameGen() + "."+ _mime[header["content-type"]];
+            uploadFile.open(make_name.c_str(), std::ios::app);
+        }
+        else if(header["content-type"].substr(0,29) == "multipart/form-data; boundary" && make_name == "")
+        {
+            make_name = _loca.getRoot()+_loca.getUploadPath().substr(1) +"/"+ randNameGen() + ".txt";
+            uploadFile.open(make_name.c_str(), std::ios::app);
+        }
+        else if (make_name == "")
+        {
+            _status = 415;
+            in_out = true;
+            error = true;
+            if (fd > 0)
+                close(fd) ;
+            fd = open(getErrorPage().c_str(), O_RDWR);
+            return;
+        }
 
-            if (!uploadFile.is_open()) 
+        if (!uploadFile.is_open()) 
+        {
+            in_out = true;
+            _status = 403;
+            if (fd > 0)
+                close(fd) ;
+            fd = open(getErrorPage().c_str(), O_RDWR);
+            error = true;
+            return;
+        }
+        if (header["transfer-encoding"] == "chunked")
+        {
+            if (!i)
             {
-                in_out = true;
-                _status = 403;
-                std::cout << make_name << std::endl;
-                // exit(0);
-                fd = open(getErrorPage().c_str(), O_RDWR);
-                error = true;
-                return;
+                classChunksizeString = body.substr(0, body.find("\r\n") + 2);
+                body = body.substr(body.find("\r\n") + 2);
+                chunksize = hexStringToInt(classChunksizeString);
             }
-            if (header["transfer-encoding"] == "chunked")
+            to_file += body;
+            while (chunksize <= to_file.size())
             {
-                if (!i)
+                if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
                 {
-                    classChunksizeString = body.substr(0, body.find("\r\n") + 2);
-                    body = body.substr(body.find("\r\n") + 2);
-                    chunksize = hexStringToInt(classChunksizeString);
-                }
-                to_file += body;
-                while (chunksize <= to_file.size())
-                {
-                    if (to_file.find("\r\n", chunksize + 2) != std::string::npos)
+                    std::string correct = to_file.substr(0, chunksize);
+                    uploadFile << correct;
+                    to_file.erase(0, chunksize + 2);
+                    if (to_file.size())
                     {
-                        std::string correct = to_file.substr(0, chunksize);
-                        uploadFile << correct;
-                        to_file.erase(0, chunksize + 2);
-                        if (to_file.size())
-                        {
-                            classChunksizeString = to_file.substr(0, to_file.find("\r\n") + 2);
-                            chunksize = hexStringToInt(classChunksizeString);
-                            to_file.erase(0, classChunksizeString.size());
-                        }
-                    }
-                    else
-                        break;
-                    if (!chunksize)
-                    {
-                        in_out = true;
-                        uploadFile.close();
-                        _status = 201;
-                        fd = open(getErrorPage().c_str(), O_RDWR);
-                        return;
+                        classChunksizeString = to_file.substr(0, to_file.find("\r\n") + 2);
+                        chunksize = hexStringToInt(classChunksizeString);
+                        to_file.erase(0, classChunksizeString.size());
                     }
                 }
-                i = 1;
-            }
-            else if(header.find("content-length") != header.end())
-            {
-                size_t lastsize = uploadedFileSize;
-                uploadedFileSize += body.size();
-                size_t fullSize = strtoul(header["content-length"].c_str(), NULL, 10);
-                if (uploadedFileSize >= fullSize)
+                else
+                    break;
+                if (!chunksize)
                 {
-                    if(uploadedFileSize == fullSize)
-                        uploadFile << body;
-                    else
-                        uploadFile << body.substr(0,fullSize-lastsize);
-                    uploadFile.close();
                     in_out = true;
+                    uploadFile.close();
                     _status = 201;
-                    if (!CGI_FLAG){
-                        header["content-type"] = "text/html";
-                        fd = open(getErrorPage().c_str(), O_RDWR);
-                    }
+                    if (fd > 0)
+                        close(fd) ;
+                    fd = open(getErrorPage().c_str(), O_RDWR);
                     return;
                 }
-                uploadFile << body;
-                i = 1;
             }
-            else
+            i = 1;
+        }
+        else if(header.find("content-length") != header.end())
+        {
+            size_t lastsize = uploadedFileSize;
+            uploadedFileSize += body.size();
+            size_t fullSize = strtoul(header["content-length"].c_str(), NULL, 10);
+            if (uploadedFileSize >= fullSize)
             {
-                _status = 411 ;
-                in_out = true;
-                error = true;
+                if(uploadedFileSize == fullSize)
+                    uploadFile << body;
+                else
+                    uploadFile << body.substr(0,fullSize-lastsize);
                 uploadFile.close();
-                fd = open(getErrorPage().c_str(), O_RDWR);
-                return ;
+                in_out = true;
+                _status = 201;
+                if (!CGI_FLAG){
+                    header["content-type"] = "text/html";
+                    if (fd > 0)
+                        close(fd) ;
+                    fd = open(getErrorPage().c_str(), O_RDWR);
+                }
+                return;
             }
+            uploadFile << body;
+            i = 1;
+        }
+        else
+        {
+            _status = 411 ;
+            in_out = true;
+            error = true;
+            uploadFile.close();
+            if (fd > 0)
+                close(fd) ;
+            fd = open(getErrorPage().c_str(), O_RDWR);
+            return ;
+        }
         /*Status 201*/
     }
     else if (_loca.getUpload() == false)
@@ -1354,6 +1340,8 @@ void Http_req::LetPost()
         /*Status 403*/
         _status = 403;
         in_out = true;
+        if (fd > 0)
+            close(fd) ;
         fd = open(getErrorPage().c_str(), O_RDWR);
         error = true;
 

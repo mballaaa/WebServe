@@ -158,6 +158,7 @@ void Cgi::cgiResponse(Http_req &request){
     std::ofstream file(cgifile.c_str(),std::ios_base::app);
     if(!file.is_open())
     {
+        _filename.close();
         return ;
     }
     if(headerflag == false){
@@ -244,7 +245,8 @@ void Cgi::executeCgi(Http_req &request){
     }
     else{
         _waitreturn = waitpid(pid,&status,WNOHANG);
-        if (WIFEXITED(status) && WEXITSTATUS(status) != 0){
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+        {
             std::string _cgibody;
             std::ifstream _filename(outputfilename.c_str());
             std::string line;
@@ -253,6 +255,7 @@ void Cgi::executeCgi(Http_req &request){
             }
             cgiErrorResponse(request,_cgibody);
             unlink(outputfilename.c_str());//remove output file
+            _filename.close() ;
             kill(pid,SIGKILL);
             waitpid(pid,&status,0);
             return ;

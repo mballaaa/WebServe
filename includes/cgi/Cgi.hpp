@@ -15,7 +15,7 @@ private:
     /* data */
     std::map<std::string,std::string> _env;
     std::map<std::string,std::string> _executablefile;
-    std::map<int,std::string>           _argv;
+    std::map<int,std::string>         _argv;
 public:
     Cgi();
     void _setupEnv(Http_req &);
