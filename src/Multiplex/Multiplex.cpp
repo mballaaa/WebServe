@@ -30,7 +30,7 @@ void Multiplex::setup(const servers_t &servers)
             sfd = hostPortMap[id];
         else // create new socket, bind, listen and add to epoll finally add it to hostPortMap
         {
-            sfd = SocketManager::createSocket(servIt->getHost().c_str(), servIt->getPort().c_str(), AF_INET, SOCK_STREAM, AI_PASSIVE);
+            sfd = SocketManager::createSocket(*servIt, AF_INET, SOCK_STREAM, AI_PASSIVE);
             SocketManager::makeSocketNonBlocking(sfd);
             SocketManager::startListening(sfd);
             SocketManager::epollCtlSocket(sfd, EPOLL_CTL_ADD);
@@ -96,7 +96,7 @@ void Multiplex::start(void)
                 int infd;
                 char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
-                in_len = sizeof in_addr;
+                in_len = sizeof(in_addr);
                 infd = accept(eFD, &in_addr, &in_len); // Accept connection
                 if (!ISVALIDSOCKET(infd))
                 {

@@ -360,7 +360,7 @@ size_t matchLocation(const char *_target, const char *location)
 int Http_req::MoreValidation()
 {
     matchServer() ;
-    // /// check method
+    // check method
     if (method != "GET" && method != "POST" && method != "DELETE")
     {
         _status = 400;

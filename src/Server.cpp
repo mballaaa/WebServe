@@ -130,10 +130,26 @@ void 							Server::setRoot( const std::string& _root )
 {
     this->_root = _root ;
 }
-       
+
 void 							Server::setHost( const std::string& _host )
 {
-    this->_host = _host ;  
+    std::string tmp = _host ;
+    int pointCount = 0 ;
+    for (size_t i = 0; i < tmp.length(); i++)
+    {
+        char c = tmp[i] ;
+        pointCount += (c == '.') ;
+        if (std::string("0123456789.").find(c) == std::string::npos)
+        {
+            throw std::runtime_error("invalid ip address in host") ;
+        }
+        if (tmp[i] == '.' && tmp[i+1] == '0' && std::string("0123456789").find(tmp[i+2]) != std::string::npos)
+            tmp.erase(i+1, 1) ;
+    }
+    if (pointCount != 3)
+        throw std::runtime_error("invalid ip address in host") ;
+    std::cout << tmp << std::endl ;
+    this->_host = tmp ;
 }
 
 void 							Server::setClientMaxBodySize( const size_t& _clientMaxBodySize )

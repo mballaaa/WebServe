@@ -242,6 +242,8 @@ Server Parser::createServer( void )
         else 
             throw std::runtime_error("Unexpected token: in server" + *curr) ;
     }
+    s.appendServerName(s.getHost()) ;
+    s.appendServerName(s.getHost()+":"+s.getPort()) ;
     return (s) ;
 }
 

@@ -4,7 +4,7 @@ int SocketManager::epollFD = -1 ;
 
 #include <iostream>
 
-int SocketManager::createSocket( const char *host, const char *port, int ai_family, int ai_socktype, int ai_flags)
+int SocketManager::createSocket( const Server &server, int ai_family, int ai_socktype, int ai_flags)
 {
     struct addrinfo hints ;
     struct addrinfo *result, *rp ;
@@ -17,7 +17,7 @@ int SocketManager::createSocket( const char *host, const char *port, int ai_fami
     hints.ai_socktype = ai_socktype ;
     hints.ai_flags = ai_flags ;
 
-    s = getaddrinfo(host, port, &hints, &result) ;
+    s = getaddrinfo(server.getHost().c_str(), server.getPort().c_str(), &hints, &result) ;
     if (s != 0)
     {
         perror("getaddrinfo") ;
@@ -43,7 +43,7 @@ int SocketManager::createSocket( const char *host, const char *port, int ai_fami
     }
     freeaddrinfo(result) ;
     if (rp == NULL)
-        throw std::runtime_error("Could not bind " + std::string(port)) ;
+        throw std::runtime_error("Could not bind " + server.getHost() + ":" + server.getPort()) ;
     return sfd;
 }
 
