@@ -161,19 +161,8 @@ void Multiplex::start(void)
             {
                 requests[eFD]->to_file.clear();
                 requests[eFD]->lastActive = time(0) ;
-                if(requests[eFD]->CGI_FLAG && requests[eFD]->_loca.getCgi() == true && requests[eFD]->error != true) {
-                    exit(0);
-                    if(requests[eFD]->getMethod() != "GET")
-                    {
-                        response[eFD]->fillResponseBody(*requests[eFD]);
-                        s = write (eFD, response[eFD]->getResponse().c_str(), response[eFD]->getResponse().size());
-                        if(response[eFD]->getResBody() == "\r\n0\r\n\r\n" || s<=0){
-                            cleanAll(eFD);
-                            continue ;
-                        }
-                        else
-                            requests[eFD]->sendHeaders = false;
-                    }
+                if((requests[eFD]->CGI_FLAG)&& requests[eFD]->_loca.getCgi() == true && requests[eFD]->error != true) {
+                    
                     if(requests[eFD]->sendHeaders == true)
                         response[eFD]->cgi._setupEnv(*requests[eFD]);
                     if(response[eFD]->cgi._waitreturn){
@@ -186,7 +175,7 @@ void Multiplex::start(void)
                             continue ;
                         }
                         else
-                            requests[eFD]->sendHeaders = false;
+                            requests[eFD]->sendHeaders = false; 
                     }
                 }
                 else{

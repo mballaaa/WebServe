@@ -1246,6 +1246,25 @@ int hexStringToInt(const std::string &hexString)
 void Http_req::LetPost()
 {
         /*location not found*/
+    std ::string URI = _target;
+    struct stat sb;
+    if (stat(URI.c_str(), &sb) == 0)
+    {
+        if (this->_loca.getCgi())
+        {
+            std ::string extension = fileExtension(URI);
+            std ::map<std::string, std ::string> cgiMap = this->_loca.getCgiPaths();
+            std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
+            if (it != cgiMap.end())
+            {
+                if (!it->second.empty() )
+                {
+                    CGI_FLAG = true;
+                }
+            }
+        }
+    }
+    std::cout << CGI_FLAG << std::endl;
     if (fd > 0)
         close(fd);
     if (_loca.getUpload() == true)
@@ -1344,7 +1363,7 @@ void Http_req::LetPost()
                     uploadFile.close();
                     in_out = true;
                     _status = 201;
-                    if (_loca.getCgi() == false){
+                    if (!CGI_FLAG){
                         header["content-type"] = "text/html";
                         fd = open(getErrorPage().c_str(), O_RDWR);
                     }
