@@ -1142,7 +1142,7 @@ void Http_req::LetGet()
 bool Http_req::dirExistWithPermiss()
 {
     struct stat info;
-    if (stat(_loca.getUploadPath().c_str(), &info) != 0)
+    if (stat((_loca.getRoot()+_loca.getUploadPath().substr(1)).c_str(), &info) != 0)
         return false;
     else if (info.st_mode & S_IFDIR)
         return true; 
@@ -1212,7 +1212,8 @@ void Http_req::LetPost()
         close(fd);
     if (_loca.getUpload() == true)
     {
-        if (dirExistWithPermiss() == false)
+        
+        if (!i && dirExistWithPermiss() == false)
         {
             in_out = true;
             error = true;
@@ -1228,13 +1229,12 @@ void Http_req::LetPost()
             /*First check if the extension exist */
             std::string str;
             if (_mime.find(header["content-type"]) != _mime.end() && make_name == ""){
-                make_name = _loca.getUploadPath() +"/"+ randNameGen() + "."+ _mime[header["content-type"]];
+                make_name = _loca.getRoot()+_loca.getUploadPath().substr(1) +"/"+ randNameGen() + "."+ _mime[header["content-type"]];
                 uploadFile.open(make_name.c_str(), std::ios::app);
             }
             else if(header["content-type"].substr(0,29) == "multipart/form-data; boundary" && make_name == ""){
                 make_name = _loca.getUploadPath() +"/"+ randNameGen() + ".txt";
                 uploadFile.open(make_name.c_str(), std::ios::app);
-                // exit(0);
             }
             else if (make_name == "")
             {
@@ -1251,7 +1251,6 @@ void Http_req::LetPost()
                 _status = 403;
                 fd = open(getErrorPage().c_str(), O_RDWR);
                 error = true;
-                // std::cout << "File Upload Error" << std::endl;
                 return;
             }
             if (header["transfer-encoding"] == "chunked")
@@ -1333,7 +1332,6 @@ void Http_req::LetPost()
         error = true;
 
     }
-    // exit(0);
 }
 
 /*=============== 14 PART (end)==================*/

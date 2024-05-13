@@ -154,6 +154,7 @@ void Multiplex::start(void)
                 }
                 std::string toSTing(buf,bytesReceived);
                 requests[eFD]->parse_re(toSTing, bytesReceived);
+
             }
             else if (events[i].events & EPOLLOUT && requests[eFD] && requests[eFD]->getFlag() == true)
             {

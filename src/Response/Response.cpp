@@ -50,7 +50,7 @@ void Response::fillResponseHeadre(Http_req &request){
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
-    if(!request._loca.getCgi() && request.fd != -1){
+    if(!request.CGI_FLAG && request.fd != -1){
         h["content-type"] = request._rmime[fileExtension];
     }
     // if(request._loca.getCgi() && request.getMethod() == "POST")
@@ -65,7 +65,6 @@ void Response::fillResponseHeadre(Http_req &request){
         if (it2->second != "")
             _resheaders += it2->first+": "+it2->second+"\r\n";
     }
-
 }
 std::string ssizeToHexToStr(ssize_t chunksize){
     std::stringstream ss;
@@ -109,13 +108,7 @@ void Response::fillBodyChunked(Http_req &request){
         return;
     }
     bytesReceived = read(request.fd, buff, R_BUFFER_SIZE-1);
-    if (bytesReceived == -1) 
-    {
-        std::cout << "read error fill body" << std::endl ;
-        close(request.fd);
-        return;
-    }
-    if(bytesReceived == 0)
+    if (bytesReceived == -1|| bytesReceived == 0) 
     {
         _resbody = "\r\n0\r\n\r\n";
         close(request.fd);

@@ -79,7 +79,6 @@ void Cgi::_setupEnv(Http_req &request){
     Server server = request.getServer();
 
     _env.clear();
-    
     if (headers["content-type"].length() && request.getMethod() == "POST"){
         if(request.make_name != "")
             _env["CONTENT_LENGTH"] = off_tToString(getFileSize(request.make_name.c_str()));
@@ -113,6 +112,8 @@ void Cgi::_setupEnv(Http_req &request){
     {
         /*=====Must be in a separate func=====*/
         request._status = 404;
+        if(request.fd>0)
+            close(request.fd);
         request.fd = open(request.getErrorPage().c_str(),O_RDWR);
         _waitreturn = 1;
         return ;
@@ -150,8 +151,6 @@ void Cgi::cgiResponse(Http_req &request){
             request._status = 200;
             if (_cgibody.find("\r\n\r\n") != std::string::npos)
                 request.to_file = _cgibody.substr(0,_cgibody.find("\r\n\r\n") + 2);
-            else
-                exit(1) ;
         }
             
             // std::cout << "->"<<request.to_file;
