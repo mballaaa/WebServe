@@ -92,9 +92,14 @@ const Server::errorPages_t&				Server::getErrorPages ( void ) const
 
 const std::string				Server::getErrorPage ( int status )
 {
+   
     errorPages_t::iterator page = _errorPages.find(status) ;
     if (page != _errorPages.end())
-        return (page->second) ;
+    {
+        
+         return (page->second) ;
+    }
+       
     return ("") ;
 }
 
