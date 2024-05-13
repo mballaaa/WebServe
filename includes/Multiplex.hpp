@@ -42,7 +42,7 @@ class Multiplex
 {
 public:
 	typedef std::vector<Server> servers_t ;
-	typedef std::map<SOCKET, Server> listeners_t ;
+	typedef std::map<SOCKET, std::vector<Server> > listeners_t ;
 	typedef std::map<std::string, SOCKET> host_port_map_t ;
 	typedef struct epoll_event epoll_event_t ;
     typedef std::map<SOCKET, Http_req*> requests_t ;
