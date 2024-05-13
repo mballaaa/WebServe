@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Index of /sir/</title>
+<title>Index of /a/</title>
 </head>
 <body>
-<h1>Index of /sir/</h1>
+<h1>Index of /a/</h1>
 <pre><a href="../">../</a> 
 <a href="./">./</a> 
-<a href="index.html">index.html</a> 
 </pre>
 </body>
 </html>

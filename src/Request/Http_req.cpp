@@ -380,13 +380,11 @@ int Http_req::MoreValidation()
     size_t content_len;
     if (header.find("content-length") != header.end())
     {
-        // std ::cout << "SSSSSSSSSSSSSSSSSSSSSJDKJDKLFJLKDFJKLDFJKLDFJKLDFKLDFLKFDJLK\n";
-        // std ::cout << "sss" << header.find("content-length")->second << std ::endl;
+       
         content_len = strtol(header["content-length"].c_str(), &endptr, 10);
         if (endptr == header["content-length"].c_str())
         {
-            // std :: cout << "ddddd\n";
-            // std::cerr << "Error: Invalid content-length in " << std::endl;
+           
             _status = 400;
             return 0;
         }
@@ -407,6 +405,14 @@ int Http_req::MoreValidation()
      
         return (0);
     }
+     if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
+    {
+        // _status = 
+        _status=400;
+      
+        return (0);
+    }
+
     if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
     {
        _status = 411;
@@ -432,7 +438,7 @@ int Http_req::MoreValidation()
 
 
 
-    // now let check if match or not
+    
 
     std::map<std::string, Location> location = this->server.getLocations();
     std::map<std::string, Location>::iterator it;
@@ -491,16 +497,14 @@ int Http_req::MoreValidation()
         _status = 405;
         return 0;
     }
-    /// TO DO SHLOUD DO SOMETHING IF ALLOW MEHODE FALSE
+  
 
 
     _target = SetRootLoc(_target, key, this->_loca.getRoot());
  
      
 
-    // std :: cout << _target << std ::endl;
-
-    // std ::cout << "lastttttttttttttttttt =>" << _target << std ::endl;
+  
     moreValidationDone = 1;
     return (1);
 }
@@ -856,7 +860,7 @@ int is_file_dir(std::string uri)
 void Http_req ::CheckLoc(int *is_file)
 {
     //std ::cout << "debug\n";
-    // std ::cout << _target << std ::endl;
+    
 
     std ::string tmp=_target;
    
@@ -868,17 +872,20 @@ void Http_req ::CheckLoc(int *is_file)
         _loca.setReturn("301", path + "/") ;
         return;
     }
+    std ::cout << _loca << std ::endl;
+
     if (this->_loca.getIndex().size() != 0)
     {
         //int setdef=0;
         std ::string main_index;
         std ::vector<std ::string> index = this->_loca.getIndex();
         
-            // Check if _target ends with a slash, adjust filename concatenation accordingly
+           
         std::string separator = (_target[_target.length() - 1] == '/') ? "" : "/";
         
         for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
             std::string filename = *it;
+            std ::cout << "====>" << filename << std ::endl;
 
             std::string tosearch = _target + separator + filename;
             // std::cout << "Searching: " << tosearch << std::endl;
@@ -891,6 +898,8 @@ void Http_req ::CheckLoc(int *is_file)
         }
 
         _target = main_index;
+       
+       // exit(0);
       
         //exit(0);
         // check if that index is floder shloud trhow error forbiden
@@ -912,17 +921,20 @@ void Http_req ::CheckLoc(int *is_file)
         
         if (this->_loca.getAutoIndex() )
         {
+
             
             /// Here We shloud Send DirectoryListe
            
 
-            std ::string dirpath = _target;
+            std ::string dirpath = tmp;
             // std ::cout << dirpath << std ::endl;
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
-            
+
             DIR *dir = opendir(dirpath.c_str());
+            //std ::cout << "=======>\n";
             if (!dir)
             {
+               
                 closedir(dir);
                 //perror("auto index issue");
                 return;
@@ -1008,7 +1020,11 @@ std::string fileExtension(std::string filename)
 }
 void Http_req::LetGet()
 {
+   
     // this condtion here for that stauts come from redirection
+  
+    std ::cout << _status << std ::endl;
+
     if(_status)
     {
         return ;
@@ -1017,6 +1033,7 @@ void Http_req::LetGet()
     // int permisson=0;
 
     std ::string URI = _target;
+ 
     int check_type = is_file_dir(URI);
 
     // std :   : cerr << "output" << check_type << std ::endl;
@@ -1027,7 +1044,7 @@ void Http_req::LetGet()
         CheckLoc(&is_file);
         URI = _target;
     }
-    
+
 
 
     struct stat sb;
@@ -1037,7 +1054,7 @@ void Http_req::LetGet()
 
     if (stat(URI.c_str(), &sb) == 0)
     {
-
+           
         if (this->_loca.getCgi())
         {
         // std :: cout << "veveve\n";
@@ -1124,16 +1141,21 @@ void Http_req::LetGet()
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
       
+     
         _status = 404;
         // std::cout << "here \n";
         
         fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
+      
       
         //std::cout << "fd test =>> " << fd << std::endl;
         in_out = true;
         // exit(0);
         return;
     }
+ 
+    
+  
 }
 // in_out=true;
 

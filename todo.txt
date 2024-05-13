@@ -34,3 +34,42 @@ printf "GET asdfsdafsdafdsafsdfadsfsdafasdasdfsdafsdafdsafsdfadsfsdafasdasdfsdaf
 post when cgi is on
 
 max body size
+
+
+
+
+
+
+
+
+
+
+
+*********************************************************************************************
+
+==> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
