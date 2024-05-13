@@ -372,18 +372,16 @@ size_t matchLocation(const char *_target, const char *location)
 
 int Http_req::MoreValidation()
 {
+    matchServer() ;
     // /// check method
     if (method != "GET" && method != "POST" && method != "DELETE")
     {
-        // std ::cout << "ydes\n";
-
         _status = 400;
         in_out = true;
         return (0);
     }
     if (http_ver != "HTTP/1.1")
     {
-        // std ::cout << "yes\n";
         _status = 400;
         in_out = true;
         return (0);
@@ -404,7 +402,6 @@ int Http_req::MoreValidation()
         content_len = strtol(header["content-length"].c_str(), &endptr, 10);
         if (endptr == header["content-length"].c_str())
         {
-           
             _status = 400;
             return 0;
         }
@@ -421,15 +418,13 @@ int Http_req::MoreValidation()
    
     if(header.find("host") == header.end())
     {
-          _status = 400;
-     
+        _status = 400;
         return (0);
     }
      if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
     {
         // _status = 
         _status=400;
-      
         return (0);
     }
 
@@ -650,6 +645,8 @@ int Http_req::StautRe(std::string request)
         {
             
             in_out = true;
+            if (fd > 0)
+                close(fd) ;
             fd = open(getErrorPage().c_str(), O_RDONLY) ;
             return (0);
         }
@@ -819,14 +816,23 @@ void Http_req::parse_re(std ::string bufer, int bytee)
             close(fd);
         if(_status == 404)
         {
-           
+           if (fd > 0)
+                close(fd) ;
              fd = open(getErrorPage().c_str(), O_RDONLY);
              return ;
         }
         if(_status == 411)
+        {
+            if (fd > 0)
+                close(fd) ;
             fd = open(getErrorPage().c_str(), O_RDONLY);
+        }
         else
+        {
+            if (fd > 0)
+                close(fd) ;
             fd = open(getErrorPage().c_str(), O_RDONLY);
+        }
         return;
     }
     else
@@ -924,6 +930,8 @@ void Http_req ::CheckLoc(int *is_file)
         if (is_file_dir(_target) == 0)
         {
             _status = 403;
+            if (fd > 0)
+                close(fd) ;
             fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
             in_out = true;
             return;
@@ -1009,6 +1017,8 @@ void Http_req ::CheckLoc(int *is_file)
                     //std::cout << "case in get fd >0\n";
                     close(fd);
                 }
+                if (fd > 0)
+                    close(fd) ;
                 fd = open("output.txt", std::ios::binary, O_RDONLY);
                 //std::cout << "fd list->> " << fd << std::endl;
               
@@ -1051,9 +1061,6 @@ void Http_req::LetGet()
     std ::string URI = _target;
  
     int check_type = is_file_dir(URI);
-
-    // std :   : cerr << "output" << check_type << std ::endl;
-
     if (check_type == IS_DIR)
     {
       
@@ -1061,21 +1068,11 @@ void Http_req::LetGet()
         URI = _target;
     }
 
-
-
     struct stat sb;
-
-//    std ::cout << URI << std ::endl;
-   
-
     if (stat(URI.c_str(), &sb) == 0)
     {
-           
         if (this->_loca.getCgi())
         {
-        // std :: cout << "veveve\n";
-        // exit(0);
-
             //     // cehck extions
             std ::string extension = fileExtension(URI);
             std ::map<std::string, std ::string> cgiMap = this->_loca.getCgiPaths();
@@ -1087,39 +1084,19 @@ void Http_req::LetGet()
           
                 if (!it->second.empty() )
                 {
-                   
                     _status = 200;
-                
-    
                     CGI_FLAG = true;
                     in_out = true;
                     return;
                 }
                 else
                 {
-                
                     _status = 500;
                     in_out = true;
                     fd = open(getErrorPage().c_str(), O_RDONLY);
                     return;
                 }
             }
-        
-           
-            
-
-
-            // else
-            // {
-
-                
-
-            //     _status = 404;
-            //     in_out = true;
-            //      fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
-            //     return;
-            // }
-
         }
 
         if ((sb.st_mode & S_IFREG) || is_file)
@@ -1138,7 +1115,6 @@ void Http_req::LetGet()
 
             if (fd > 0)
                 close(fd);
-          
             fd = open(_target.c_str(), std::ios::binary, O_RDONLY);
             // std::cout << "fd get->> " << fd << std::endl;
 
@@ -1156,17 +1132,9 @@ void Http_req::LetGet()
 
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
-      
-     
         _status = 404;
-        // std::cout << "here \n";
-        
         fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
-      
-      
-        //std::cout << "fd test =>> " << fd << std::endl;
         in_out = true;
-        // exit(0);
         return;
     }
  
@@ -1180,7 +1148,7 @@ void Http_req::LetGet()
 bool Http_req::dirExistWithPermiss()
 {
     struct stat info;
-    if (stat((_loca.getRoot()+_loca.getUploadPath().substr(1)).c_str(), &info) != 0)
+    if (stat((_loca.getRoot()+"/"+_loca.getUploadPath()).c_str(), &info) != 0)
         return false;
     else if (info.st_mode & S_IFDIR)
         return true; 
@@ -1245,7 +1213,6 @@ int hexStringToInt(const std::string &hexString)
 
 void Http_req::LetPost()
 {
-        /*location not found*/
     std ::string URI = _target;
     struct stat sb;
     if (stat(URI.c_str(), &sb) == 0)
@@ -1264,7 +1231,6 @@ void Http_req::LetPost()
             }
         }
     }
-    std::cout << CGI_FLAG << std::endl;
     if (fd > 0)
         close(fd);
     if (_loca.getUpload() == true)
@@ -1287,7 +1253,7 @@ void Http_req::LetPost()
             /*First check if the extension exist */
             std::string str;
             if (_mime.find(header["content-type"]) != _mime.end() && make_name == ""){
-                make_name = _loca.getRoot()+_loca.getUploadPath().substr(1) +"/"+ randNameGen() + "."+ _mime[header["content-type"]];
+                make_name = _loca.getRoot()+"/"+_loca.getUploadPath() +"/"+ randNameGen() + "."+ _mime[header["content-type"]];
                 uploadFile.open(make_name.c_str(), std::ios::app);
             }
             else if(header["content-type"].substr(0,29) == "multipart/form-data; boundary" && make_name == ""){

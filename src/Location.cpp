@@ -5,7 +5,7 @@ Location::Location( void ) : _autoIndex(false), _index(), _allowedMethods(), _re
 {
 }
 
-Location::Location( const Server& server ) : _autoIndex(false), _index(), _allowedMethods(), _return(), _root(server.getRoot()), _cgi(false), _upload(false), _upload_path("/var/upload")
+Location::Location( const Server& server ) : _autoIndex(false), _index(server.getIndex()), _allowedMethods(), _return(), _root(server.getRoot()), _cgi(false), _upload(false), _upload_path("/var/upload")
 {
 }
 
@@ -124,13 +124,8 @@ void 						Location::setAllowedMethods( const Methods_t& _allowedMethods )
 void 						Location::setReturn( const std::string& statusCodeStr, const std::string& _return )
 {
     int statusCode = atol(statusCodeStr.c_str()) ;
-    // Implement support for common HTTP redirection status codes (301, 302, 303, 307, 308).
-    if (statusCode != 301
-        && statusCode != 302
-        && statusCode != 303
-        && statusCode != 307
-        && statusCode != 308)
-         throw std::runtime_error("Support is only for common HTTP redirection status codes (301, 302, 303, 307, 308).") ;
+    if (statusCode < 300 || statusCode > 399)
+         throw std::runtime_error("HTTP redirection status codes must be between 300 and 399") ;
     this->_return = std::make_pair(statusCode, _return) ;
 }
 

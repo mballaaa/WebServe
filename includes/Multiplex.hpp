@@ -47,14 +47,12 @@ public:
 	typedef struct epoll_event epoll_event_t ;
     typedef std::map<SOCKET, Http_req*> requests_t ;
     typedef std::map<SOCKET, Response*> response_t ; // For "JaQen" Response
-    // typedef std::map<SOCKET, Cgi> cgi_t ; // For "JaQen" Response
 	
 private:
 	static SOCKET 			epollFD ;
 	static listeners_t		listeners ;
 	static requests_t		requests ;
 	static response_t		response ; // For "JaQen" Response
-	// static cgi_t		cgi ; // For "JaQen" Response
     static epoll_event_t 	events[SOMAXCONN] ;
 	static host_port_map_t	hostPortMap ;
 
@@ -63,13 +61,9 @@ private:
 	Multiplex& operator=( const Multiplex& rhs ) ;
 	~Multiplex( void ) ;
 public:
-    // static void setServers( const servers_t& servers ) ;
     static void start( void ) ;
     static void setup( const servers_t& _servers ) ;
 	static void cleanAll( int eFD );
-	// Getters
-
-	// Setters
 } ;
 
 std::ostream& operator<<( std::ostream& os, const Multiplex& server ) ;

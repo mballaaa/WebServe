@@ -85,12 +85,12 @@ void Cgi::_setupEnv(Http_req &request){
         _env["CONTENT_TYPE"] = headers["content-type"];
     }
     _env["GATEWAY_INTERFACE"] = "CGI/1.1";
-    _env["SCRIPT_NAME"] = request.getPath().substr(1); 
-    _env["SCRIPT_FILENAME"] = request.getTarget().substr(2);
+    _env["SCRIPT_NAME"] = request.getPath(); 
+    _env["SCRIPT_FILENAME"] = request.getTarget();
     _env["PATH_INFO"] = _env["SCRIPT_NAME"]; 
     _env["PATH_TRANSLATED"] = _env["SCRIPT_FILENAME"];
     _env["QUERY_STRING"] = request.query_string;
-    _env["REQUEST_URI"] = request.getTarget().substr(2);
+    _env["REQUEST_URI"] = request.getTarget();
     _env["SERVER_PORT"] = server.getPort(); 
     _env["REQUEST_METHOD"] = request.getMethod();
     _env["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -99,18 +99,19 @@ void Cgi::_setupEnv(Http_req &request){
 
     _env["HTTP_COOKIE"] = request.header["cookie"];
 
-    std::string extension = fileExtension(request.getTarget().substr(2));
+    std::string extension = fileExtension(request.getTarget());
     
     _executablefile = request._loca.getCgiPaths();
    
     if(extension != "" && _executablefile.find(extension) != _executablefile.end()){
         _argv[0] = _executablefile[extension];
-        _argv[1] = request.getTarget().substr(2);
+        _argv[1] = request.getTarget();
 
     }
     else    
     {
         /*=====Must be in a separate func=====*/
+        std::cout << "no extension" << std::endl ;
         request._status = 404;
         if(request.fd>0)
             close(request.fd);
@@ -119,7 +120,6 @@ void Cgi::_setupEnv(Http_req &request){
         return ;
         /*===================================*/
     }
-    // std::cerr << "SAAAALm" << std::endl;
     executeCgi(request);
 }
 
@@ -139,8 +139,6 @@ void Cgi::cgiResponse(Http_req &request){
   
     if(headerflag == true){
         if(_cgibody.find("Status") != std::string::npos){
-            // std::string::size_type index2 = _cgibody.find("\r",12);
-            // request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
             request._status = std::atoi(_cgibody.substr(8,3).c_str());
             std::string::size_type index1= _cgibody.find("\r\n") + 2;
             std::string::size_type index3= _cgibody.find("\r\n\r\n");
@@ -152,11 +150,6 @@ void Cgi::cgiResponse(Http_req &request){
             if (_cgibody.find("\r\n\r\n") != std::string::npos)
                 request.to_file = _cgibody.substr(0,_cgibody.find("\r\n\r\n") + 2);
         }
-            
-            // std::cout << "->"<<request.to_file;
-            // if(request.getMethod() == "POST")
-            //     exit(0);
-        // exit(0);
     }
     else
         request._status = 200;
@@ -165,7 +158,6 @@ void Cgi::cgiResponse(Http_req &request){
     std::ofstream file(cgifile.c_str(),std::ios_base::app);
     if(!file.is_open())
     {
-        //std::cout << "cgi file erro" << std::endl;
         return ;
     }
     if(headerflag == false){
@@ -182,21 +174,20 @@ void Cgi::cgiResponse(Http_req &request){
     
     file.close();
     if(i)
+    {
+        if (request.fd > 0)
+            close(request.fd) ;
         request.fd = open(cgifile.c_str(),O_RDWR);    
+    }
 }
 
 void Cgi::cgiErrorResponse(Http_req &request,std::string _cgibody){
-
     if(_cgibody.find("\r\n\r\n") == std::string::npos)
         _cgibody = "Status: 500 Internal Server Error\r\nContent-type: text/html; charset=UTF-8\r\n\r\n";
     request.header["content-type"] = "text/html";
-   
-    // std::string::size_type index2= _cgibody.find("\r",12);
-    // request._status[_cgibody.substr(8,3)] = _cgibody.substr(12,index2 - 12);
     request._status = std::atoi(_cgibody.substr(8,3).c_str()) ;
     if(request.fd > 0)
         close(request.fd);
-    request._status = 500 ;
     request.fd = open(request.getErrorPage().c_str(),O_RDWR);
 }
 
@@ -281,10 +272,11 @@ void Cgi::executeCgi(Http_req &request){
         waitpid(pid,&status,0);
         request._status = 504;
         request.header["content-type"] = "text/html";
+        if (request.fd > 0)
+            close(request.fd) ;
         request.fd = open(request.getErrorPage().c_str(),O_RDONLY);
         unlink(outputfilename.c_str());//remove output file
         _waitreturn = 1;
-        // std::cerr << "ERROR" << std::endl;
         return ;
     }
     return ;

@@ -1,6 +1,6 @@
 #include "../includes/Server.hpp"
 
-Server::Server( void ) : _serverNames(), _port(), _root("/var/www/"), _host(""), _clientMaxBodySize(), _errorPages()
+Server::Server( void ) : _serverNames(), _port(), _root("/var/www/"), _host("127.0.0.1"), _clientMaxBodySize(), _errorPages()
 {
 }
 
@@ -130,10 +130,10 @@ void 							Server::setRoot( const std::string& _root )
 {
     this->_root = _root ;
 }
-
+       
 void 							Server::setHost( const std::string& _host )
 {
-    this->_host = _host ;
+    this->_host = _host ;  
 }
 
 void 							Server::setClientMaxBodySize( const size_t& _clientMaxBodySize )
@@ -163,6 +163,8 @@ void 							Server::appendLocation( const std::string& path, const Location& _lo
 
 void 							Server::appendErrorPage( const int& statusCode, const std::string& errorPagePath )
 {
+    if (statusCode < 400 || statusCode > 599)
+        throw std::runtime_error("status error codes must be between 400 and 599") ;
     if (errorPagePath.empty())
         throw std::runtime_error("expected error page path") ;
     this->_errorPages[statusCode] = errorPagePath ;
