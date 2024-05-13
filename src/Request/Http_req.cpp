@@ -104,7 +104,6 @@ Http_req::Http_req(std::vector<Server> &servers)
 
 Http_req::Http_req(const Http_req &obj)
 {
-    //std::cout << __PRETTY_FUNCTION__ << std::endl;
     query_string = obj.query_string;
     req = obj.req;
     _target = obj._target;
@@ -269,16 +268,11 @@ std::string to_stringmetohd(int value)
 std ::string SetRootLoc(std ::string target, std ::string key, std ::string root)
 {
     std ::string result;
-
-    // std::cout << "SetRootLoc" << std::endl ;
-
     size_t it = target.find(key);
 
     if (it != std ::string::npos)
     {
-        
         target.replace(0, key.length(), root + key);
-
         return target;
     }
     return root+target;
@@ -321,17 +315,10 @@ std::string replaceDuplicateSlash(const std::string &path)
 
 bool IsPathValid(std::string path)
 {
-
     std::string allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~";
-
     size_t found = path.find_first_not_of(allowed_chars);
-
     if (found == std::string::npos)
-    {
-
         return false;
-    }
-
     return true;
 }
 
@@ -398,15 +385,12 @@ int Http_req::MoreValidation()
     size_t content_len;
     if (header.find("content-length") != header.end())
     {
-       
         content_len = strtol(header["content-length"].c_str(), &endptr, 10);
         if (endptr == header["content-length"].c_str())
         {
             _status = 400;
             return 0;
         }
-        (void)content_len;
-
         if (maxx_size < content_len)
         {
             _status = 400;
@@ -423,7 +407,6 @@ int Http_req::MoreValidation()
     }
      if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
     {
-        // _status = 
         _status=400;
         return (0);
     }
@@ -433,28 +416,14 @@ int Http_req::MoreValidation()
        _status = 411;
         return (0);
     }
-
-
     this->_target = this->path;
-   
-   
-
- size_t stat = _target.find('?');
-
+    size_t stat = _target.find('?');
     if (stat != std::string ::npos)
-     {
-       
+    {
         _target = _target.substr(0, stat); 
-    
          query_string = path.substr(stat + 1, path.length()); 
-
-       
      }
-
-
     matchServer() ;
-    // std::cout << server ;
-
     std::map<std::string, Location> location = this->server.getLocations();
     std::map<std::string, Location>::iterator it;
     int flag = 0;
@@ -477,10 +446,7 @@ int Http_req::MoreValidation()
         in_out=true;
         return 0;
     }
-
-    /// std :: cerr << "weech\n";
     Location::redirection_t red = this->_loca.getReturn();
-    
     if (red.first != 0 && red.second != "")
     {
         _status = red.first;
@@ -490,17 +456,13 @@ int Http_req::MoreValidation()
     // let check allow methode
     Location::Methods_t allowmethod = this->_loca.getAllowedMethods();
     bool is_exit = false;
-
     for (size_t i = 0; i < allowmethod.size(); i++)
     {
-
         // change to stirng
         std ::string get_methode = to_stringmetohd(allowmethod[i]);
-
         //  std :: cerr << "get methode==>\n" << get_methode << std ::endl;
         if (get_methode == this->method)
         {
-
             is_exit = true;
             break;
         }
@@ -512,14 +474,7 @@ int Http_req::MoreValidation()
         _status = 405;
         return 0;
     }
-  
-
-
     _target = SetRootLoc(_target, key, this->_loca.getRoot());
- 
-     
-
-  
     moreValidationDone = 1;
     return (1);
 }
@@ -549,14 +504,10 @@ int Http_req::StautRe(std::string request)
     size_t len_req = my_req.find("\r\n\r\n");
     int res;
     res = 0;
-
-
     if (!is_finsh && len_req != std ::string ::npos)
     {
-
         std::istringstream input(my_req);
         input >> this->method >> this->path >> this->http_ver;
-        /*amine do this*/
         path = replaceDuplicateSlash(path) ;
         while (path.find("%") != std::string::npos)
         {
@@ -570,7 +521,6 @@ int Http_req::StautRe(std::string request)
         /*amine finsh*/
         std ::string next_line;
         std ::getline(input, next_line);
-
         while (std::getline(input, next_line, '\n') && next_line != "\r")
         {
             // try to supp all \r in each line we have
@@ -589,33 +539,23 @@ int Http_req::StautRe(std::string request)
                 if (header.find(key) != header.end())
                 {
                     perror("Error : RequstHeader ==>Duplcated");
-
                     return (0);
                 }
                 header[key] = trim(value);
-
-                /// debug function
             }
-            debugFunction();
         }
-
         size_t body_start = len_req + 4;
         this->body = my_req.substr(body_start);
-
         is_finsh = true;
     }
     else if (is_finsh)
     {
         this->body = request;
     }
-
-
-
     if (is_finsh == true)
     {
         if (!moreValidationDone && MoreValidation() == 0)
         {
-            
             in_out = true;
             if (fd > 0)
                 close(fd) ;
@@ -623,19 +563,15 @@ int Http_req::StautRe(std::string request)
             return (0);
         }
     }
-   
-
     res = 1;
     return (res);
 }
 void Http_req::LetDelete()
 {
-
     struct stat infoo;
     std::string URI = _target;
     if (stat(_target.c_str(), &infoo) == 0)
     {
-
         if (S_ISREG(infoo.st_mode))
         {
             // CHECK PERMISSION
@@ -644,7 +580,6 @@ void Http_req::LetDelete()
                 // here have dele file
                 if (unlink(URI.c_str()) == 0)
                 {
-
                     _status = 204 ;
                     in_out = true;
                     return;
@@ -659,12 +594,9 @@ void Http_req::LetDelete()
         }
         else if (S_ISDIR(infoo.st_mode))
         {
-
             if (infoo.st_mode & S_IWUSR)
             {
-
                 bool check = delete_Dir(URI);
-
                 if (!check)
                 {
                     in_out = true;
@@ -693,34 +625,24 @@ void Http_req::LetDelete()
 bool Http_req::delete_Dir(std::string pathh)
 {
     DIR *ptr = opendir(pathh.c_str());
-
     if (ptr != NULL)
     {
-
         struct dirent *list;
-
         while (((list = readdir(ptr)) != NULL))
         {
             std::string filename = list->d_name;
-           
-
             if (filename == "." || filename == "..")
             {
                 continue;
             }
-
             std::string full_path = pathh + "/" + filename;
             struct stat fileStat;
-
             if (stat(full_path.c_str(), &fileStat) == 0)
             {
-
                 if (S_ISREG(fileStat.st_mode) && (fileStat.st_mode & S_IWUSR))
                 {
-
                     if (unlink(full_path.c_str()) != 0)
                     {
-
                         perror("Error: Cannot delete file");
                         _status = 500;
                         closedir(ptr);
@@ -734,7 +656,6 @@ bool Http_req::delete_Dir(std::string pathh)
                 }
                 else
                 {
-
                     perror("Error: Cannot get file or directory information");
                     _status = 500;
                     closedir(ptr);
@@ -748,13 +669,10 @@ bool Http_req::delete_Dir(std::string pathh)
                 return false;
             }
         }
-
         closedir(ptr);
-
         if (rmdir(pathh.c_str()) != 0)
         {
             perror("Error : DIRECTOR DELETE");
-
             return false;
         }
         return true;
@@ -766,7 +684,6 @@ bool Http_req::delete_Dir(std::string pathh)
         closedir(ptr);
         return false;
     }
-
     closedir(ptr);
 }
 
@@ -800,7 +717,6 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     }
     else
     {
-
         if (method == "GET")
         {
             LetGet();
@@ -820,13 +736,11 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 
 bool Is_dir(const char *ptr)
 {
-    // std ::cerr << "ptr==>" << ptr << std ::endl;
     if (!access(ptr, X_OK | R_OK))
     {
         DIR *dir = opendir(ptr);
         if (dir != NULL)
         {
-            //  std ::cerr << "Is directory\n";
             closedir(dir);
             return true;
         }
@@ -834,10 +748,7 @@ bool Is_dir(const char *ptr)
         return false;
     }
     else
-    {
-
         return false;
-    }
 }
 int is_file_dir(std::string uri)
 {
@@ -848,14 +759,9 @@ int is_file_dir(std::string uri)
 
 void Http_req ::CheckLoc(int *is_file)
 {
-    //std ::cout << "debug\n";
-    
-
-    std ::string tmp=_target;
-   
+    std ::string tmp =_target;
     if (path[path.length() - 1] != '/')
     {
-        // std ::cout << "debug1\n";
         in_out = true;
         _status = 301;
         _loca.setReturn("301", path + "/") ;
@@ -864,31 +770,19 @@ void Http_req ::CheckLoc(int *is_file)
 
     if (this->_loca.getIndex().size() != 0)
     {
-        //int setdef=0;
         std ::string main_index;
         std ::vector<std ::string> index = this->_loca.getIndex();
-        
-           
         std::string separator = (_target[_target.length() - 1] == '/') ? "" : "/";
-        
         for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
             std::string filename = *it;
-
             std::string tosearch = _target + separator + filename;
-            // std::cout << "Searching: " << tosearch << std::endl;
-
             struct stat sb;
             if (stat(tosearch.c_str(), &sb) == 0) {
                 main_index = tosearch;
                 break;
             }
         }
-
         _target = main_index;
-       
-       // exit(0);
-      
-        //exit(0);
         // check if that index is floder shloud trhow error forbiden
         if (is_file_dir(_target) == 0)
         {
@@ -899,109 +793,76 @@ void Http_req ::CheckLoc(int *is_file)
             in_out = true;
             return;
         }
-
         *is_file = 1;
     }
-   
-        // std ::cout << "adhjdfjdf\n";
-        // //std::cout << this->_loca.getIndex().size();
-        // std ::cout <<  this->_loca.getAutoIndex() << std ::endl;
-        // exit(0);
-        
-        if (this->_loca.getAutoIndex() )
+    if (this->_loca.getAutoIndex() )
+    {
+        /// Here We shloud Send DirectoryListe
+        std ::string dirpath = tmp;
+        toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
+        DIR *dir = opendir(dirpath.c_str());
+        if (!dir)
         {
-
-            
-            /// Here We shloud Send DirectoryListe
-           
-
-            std ::string dirpath = tmp;
-            // std ::cout << dirpath << std ::endl;
-            toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
-
-            DIR *dir = opendir(dirpath.c_str());
-            //std ::cout << "=======>\n";
-            if (!dir)
-            {
-               
-                closedir(dir);
-                //perror("auto index issue");
-                return;
-            }
-            else
-            {
-
-                struct dirent *list;
-                list = readdir(dir);
-                // std :: cout << path << std :: endl;
-                while (list != NULL)
-                {
-
-                    // if (std ::string(list->d_name) == "index.html")
-                    // {
-
-                    //     _target += std ::string(list->d_name);
-
-                    //     closedir(dir);
-                    //     return;
-                    // }
-                    if (list->d_type == DT_DIR)
-                    {
-                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
-                    }
-                    else if (list->d_type == DT_LNK)
-                    {
-                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a>\n";
-                    }
-                    else if (list->d_type == DT_REG)
-                    {
-                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a> \n";
-                    }
-                    list = readdir(dir);
-                }
-                toHtml += "</pre>\n</body>\n</html>";
-
-                closedir(dir);
-
-                in_out = true;
-                _status = 200;
-                std::ofstream outputFile("output.txt", std::ios::binary);
-
-                if (!outputFile.is_open())
-                {
-                    outputFile.close();
-                    perror("Error file");
-                    _status = 500 ;
-                    fd = open(error_page().c_str(), O_RDONLY) ;
-                    return ;
-                }
-                outputFile << toHtml;
-                outputFile.close();
-                if (fd > 0)
-                {
-                    //std::cout << "case in get fd >0\n";
-                    close(fd);
-                }
-                if (fd > 0)
-                    close(fd) ;
-                fd = open("output.txt", std::ios::binary, O_RDONLY);
-                //std::cout << "fd list->> " << fd << std::endl;
-              
-                return;
-            }
             closedir(dir);
+            //perror("auto index issue");
+            return;
         }
         else
         {
+            struct dirent *list;
+            list = readdir(dir);
+            while (list != NULL)
+            {
+                if (list->d_type == DT_DIR)
+                {
+                    toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
+                }
+                else if (list->d_type == DT_LNK)
+                {
+                    toHtml += "<a href=\"" + (std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a>\n";
+                }
+                else if (list->d_type == DT_REG)
+                {
+                    toHtml += "<a href=\"" + (std::string(list->d_name)) + "\">" + std::string(list->d_name) + "</a> \n";
+                }
+                list = readdir(dir);
+            }
+            toHtml += "</pre>\n</body>\n</html>";
+            closedir(dir);
             in_out = true;
-            _status = 403;
+            _status = 200;
+            std::ofstream outputFile("output.txt", std::ios::binary);
+            if (!outputFile.is_open())
+            {
+                outputFile.close();
+                perror("Error file");
+                _status = 500 ;
+                fd = open(getErrorPage().c_str(), O_RDONLY) ;
+                return ;
+            }
+            outputFile << toHtml;
+            outputFile.close();
             if (fd > 0)
+            {
                 close(fd);
-            fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
+            }
+            if (fd > 0)
+                close(fd) ;
+            fd = open("output.txt", std::ios::binary, O_RDONLY);
             return;
         }
+        closedir(dir);
     }
-
+    else
+    {
+        in_out = true;
+        _status = 403;
+        if (fd > 0)
+            close(fd);
+        fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
+        return;
+    }
+}
 
 std::string fileExtension(std::string filename)
 {
@@ -1013,40 +874,28 @@ std::string fileExtension(std::string filename)
 }
 void Http_req::LetGet()
 {
-   
     // this condtion here for that stauts come from redirection
-  
     if(_status)
-    {
         return ;
-    }
     int is_file = 0;
-    // int permisson=0;
-
     std ::string URI = _target;
- 
     int check_type = is_file_dir(URI);
     if (check_type == IS_DIR)
     {
-      
         CheckLoc(&is_file);
         URI = _target;
     }
-
     struct stat sb;
     if (stat(URI.c_str(), &sb) == 0)
     {
         if (this->_loca.getCgi())
         {
-            //     // cehck extions
+            // cehck extions
             std ::string extension = fileExtension(URI);
             std ::map<std::string, std ::string> cgiMap = this->_loca.getCgiPaths();
             std ::map<std::string, std::string>::iterator it = cgiMap.find(extension);
-
             if (it != cgiMap.end())
             {
-                
-          
                 if (!it->second.empty() )
                 {
                     _status = 200;
@@ -1065,40 +914,27 @@ void Http_req::LetGet()
                 }
             }
         }
-
         if ((sb.st_mode & S_IFREG) || is_file)
         {
-           
-            
-              if (!(sb.st_mode & S_IWUSR)) {
-           
-            _status = 403;
-            in_out = true;
-            if(fd > 0)
-                close(fd) ;
-           fd =open(getErrorPage().c_str(), O_RDONLY);
-            return;
-        }
+            if (!(sb.st_mode & S_IWUSR))
+            {
+                _status = 403;
+                in_out = true;
+                if(fd > 0)
+                    close(fd) ;
+                fd =open(getErrorPage().c_str(), O_RDONLY);
+                return;
+            }
             /// wa7d case dyal found index in list directory shloud redirect the index as inginx do
-          
-
             if (fd > 0)
                 close(fd);
             fd = open(_target.c_str(), std::ios::binary, O_RDONLY);
-            // std::cout << "fd get->> " << fd << std::endl;
-
             _status = 200;
-            // std :: cout << "i am here\n";
-        
             in_out = true;
-            // exit(0);
-
             return;
         }
-    
         // permisiion condition trhow
     }
-
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
         _status = 404;
@@ -1108,13 +944,8 @@ void Http_req::LetGet()
         in_out = true;
         return;
     }
- 
-    
-  
 }
-// in_out=true;
 
-// std ::cout << "sssdffd\n";
 /*=============== 14 PART (begin)==================*/
 bool Http_req::dirExistWithPermiss()
 {
@@ -1131,21 +962,17 @@ int Http_req::mimeParse()
     std::string line;
     std::string key;
     std::string value;
-
     if (!file.is_open())
     {
-        //std::cout << "Error : mimes.types could not be open" << std::endl;
         _status = 415;
         if (fd > 0)
             close(fd) ;
         fd = open(getErrorPage().c_str(), O_RDWR);
         return 1;
     }
-
     while (getline(file, line))
     {
         std::istringstream thenewline(line);
-
         thenewline >> key;
         thenewline >> value;
         if (!value.empty())
@@ -1166,13 +993,10 @@ std::string Http_req::randNameGen()
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-
     size_t milliseconds = (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000LL);
-
     std::stringstream ss;
     ss << std::setfill('0') << std::setw(13) << milliseconds;
     std::string name = ss.str();
-
     return name;
 }
 
@@ -1209,7 +1033,6 @@ void Http_req::LetPost()
         close(fd);
     if (_loca.getUpload() == true)
     {
-        
         if ((dirExistWithPermiss() == false || (header.find("content-type") ==  header.end())))
         {
             in_out = true;
@@ -1248,7 +1071,6 @@ void Http_req::LetPost()
             fd = open(getErrorPage().c_str(), O_RDWR);
             return;
         }
-
         if (!uploadFile.is_open()) 
         {
             in_out = true;
@@ -1344,7 +1166,6 @@ void Http_req::LetPost()
             close(fd) ;
         fd = open(getErrorPage().c_str(), O_RDWR);
         error = true;
-
     }
 }
 
