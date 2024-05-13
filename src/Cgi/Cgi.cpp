@@ -302,4 +302,5 @@ Cgi::~Cgi()
         kill(pid, SIGKILL) ;
         waitpid(pid,&status,0);
     }
+    unlink(cgifile.c_str()) ;
 }   
