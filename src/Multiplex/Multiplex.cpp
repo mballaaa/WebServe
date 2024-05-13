@@ -183,7 +183,7 @@ void Multiplex::start(void)
                 else{
                     response[eFD]->fillResponseBody(*requests[eFD]);
                     s = write (eFD, response[eFD]->getResponse().c_str(), response[eFD]->getResponse().size());
-                    if(response[eFD]->getResBody() == "\r\n0\r\n\r\n"){
+                    if(response[eFD]->getResBody() == "\r\n0\r\n\r\n" || s<=0){
                         delete requests[eFD] ;
                         requests.erase(eFD) ;
                         delete response[eFD] ;
