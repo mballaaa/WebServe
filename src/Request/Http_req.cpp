@@ -458,7 +458,7 @@ int Http_req::MoreValidation()
 
 
     matchServer() ;
-    std::cout << server ;
+    // std::cout << server ;
 
     std::map<std::string, Location> location = this->server.getLocations();
     std::map<std::string, Location>::iterator it;
@@ -904,7 +904,6 @@ void Http_req ::CheckLoc(int *is_file)
         
         for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
             std::string filename = *it;
-            std ::cout << "====>" << filename << std ::endl;
 
             std::string tosearch = _target + separator + filename;
             // std::cout << "Searching: " << tosearch << std::endl;
