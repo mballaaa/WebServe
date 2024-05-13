@@ -1232,19 +1232,20 @@ void Http_req::LetPost()
     if (_loca.getUpload() == true)
     {
         
-        if (!i && dirExistWithPermiss() == false)
+        if ((dirExistWithPermiss() == false || (header.find("content-type") ==  header.end())))
         {
             in_out = true;
             error = true;
             _status = 404;
+            if(header.find("content-type") ==  header.end())
+                _status = 400;
             fd = open(getErrorPage().c_str(), O_RDWR);
             return;
         }
-
-        if (header["content-type"] == "")
-        {
-            header["content-type"] = "application/octet-stream" ;
-        }
+            if (header["content-type"] == "")
+            {
+                header["content-type"] = "application/octet-stream" ;
+            }
             /*First check if the extension exist */
             std::string str;
             if (_mime.find(header["content-type"]) != _mime.end() && make_name == ""){
@@ -1252,7 +1253,7 @@ void Http_req::LetPost()
                 uploadFile.open(make_name.c_str(), std::ios::app);
             }
             else if(header["content-type"].substr(0,29) == "multipart/form-data; boundary" && make_name == ""){
-                make_name = _loca.getUploadPath() +"/"+ randNameGen() + ".txt";
+                make_name = _loca.getRoot()+_loca.getUploadPath().substr(1) +"/"+ randNameGen() + ".txt";
                 uploadFile.open(make_name.c_str(), std::ios::app);
             }
             else if (make_name == "")
@@ -1268,6 +1269,8 @@ void Http_req::LetPost()
             {
                 in_out = true;
                 _status = 403;
+                std::cout << make_name << std::endl;
+                // exit(0);
                 fd = open(getErrorPage().c_str(), O_RDWR);
                 error = true;
                 return;

@@ -46,6 +46,12 @@ void Multiplex::setup(const servers_t &servers)
     }
 }
 
+void Multiplex::cleanAll(int eFD){
+    delete requests[eFD] ;
+    requests.erase(eFD) ;
+    delete response[eFD] ;
+    response.erase(eFD) ;
+}
 void Multiplex::start(void)
 {
     int s;
@@ -144,12 +150,7 @@ void Multiplex::start(void)
                 // std ::cout << bytesReceived << std ::endl;
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
-                    //std::cout << "client closed " << std::endl ;
-                    // std ::cout << "====>" << bytesReceived << std ::endl;
-                    delete requests[eFD] ;
-                    requests.erase(eFD) ;
-                    delete response[eFD] ;
-                    response.erase(eFD) ;
+                    cleanAll(eFD);
                     continue;
                 }
                 std::string toSTing(buf,bytesReceived);
@@ -160,20 +161,28 @@ void Multiplex::start(void)
             {
                 requests[eFD]->to_file.clear();
                 requests[eFD]->lastActive = time(0) ;
-                if((requests[eFD]->CGI_FLAG || requests[eFD]->getMethod() != "GET") && requests[eFD]->_loca.getCgi() == true && requests[eFD]->error != true) {
-                    if(requests[eFD]->sendHeaders == true){
-                        response[eFD]->cgi._setupEnv(*requests[eFD]);
+                if(requests[eFD]->CGI_FLAG && requests[eFD]->_loca.getCgi() == true && requests[eFD]->error != true) {
+                    exit(0);
+                    if(requests[eFD]->getMethod() != "GET")
+                    {
+                        response[eFD]->fillResponseBody(*requests[eFD]);
+                        s = write (eFD, response[eFD]->getResponse().c_str(), response[eFD]->getResponse().size());
+                        if(response[eFD]->getResBody() == "\r\n0\r\n\r\n" || s<=0){
+                            cleanAll(eFD);
+                            continue ;
+                        }
+                        else
+                            requests[eFD]->sendHeaders = false;
                     }
+                    if(requests[eFD]->sendHeaders == true)
+                        response[eFD]->cgi._setupEnv(*requests[eFD]);
                     if(response[eFD]->cgi._waitreturn){
                         response[eFD]->fillResponseBody(*requests[eFD]);
 
                         s = write (eFD, response[eFD]->getResponse().c_str(), response[eFD]->getResponse().size());
                         if(response[eFD]->getResBody() == "\r\n0\r\n\r\n"){
                             unlink(response[eFD]->cgi.cgifile.c_str());
-                            delete requests[eFD] ;
-                            requests.erase(eFD) ;
-                            delete response[eFD] ;
-                            response.erase(eFD) ;
+                            cleanAll(eFD);
                             continue ;
                         }
                         else
@@ -184,10 +193,7 @@ void Multiplex::start(void)
                     response[eFD]->fillResponseBody(*requests[eFD]);
                     s = write (eFD, response[eFD]->getResponse().c_str(), response[eFD]->getResponse().size());
                     if(response[eFD]->getResBody() == "\r\n0\r\n\r\n" || s<=0){
-                        delete requests[eFD] ;
-                        requests.erase(eFD) ;
-                        delete response[eFD] ;
-                        response.erase(eFD) ;
+                        cleanAll(eFD);
                         continue ;
                     }
                     else
