@@ -16,10 +16,10 @@ mballa :==> in part allow methode ( change enum for be handle only GET DELETE PO
 }
 
 ===> pemission index.html auto index on 
-===> get delete  allowe method;
-===> body get ;
+
+
 ===>  herdare ==>
-url ==> to large check status;
+ url ==> to large check status;
 
 
 

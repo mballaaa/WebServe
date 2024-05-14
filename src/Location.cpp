@@ -3,10 +3,14 @@
 
 Location::Location( void ) : _autoIndex(false), _index(), _allowedMethods(), _return(), _root("/var/www"), _cgi(false), _upload(true), _upload_path("/var/upload")
 {
+    _return.first = 0 ;
+    _return.second = "" ;
 }
 
 Location::Location( const Server& server ) : _autoIndex(false), _index(server.getIndex()), _allowedMethods(), _return(), _root(server.getRoot()), _cgi(false), _upload(false), _upload_path("/var/upload")
 {
+    _return.first = 0 ;
+    _return.second = "" ;
 }
 
 Location::Location( const Location& rhs )

@@ -608,13 +608,16 @@ void Http_req::LetDelete()
             else
             {
                 _status = 403 ;
+                if(fd > 0)
+                    close(fd);
+                fd=open(getErrorPage().c_str(),O_RDONLY);
                 in_out = true;
                 return;
             }
         }
         else if (S_ISDIR(infoo.st_mode))
         {
-            if (infoo.st_mode & S_IWUSR)
+            if ((infoo.st_mode & S_IWUSR )&& (infoo.st_mode & S_IXUSR) )
             {
                 bool check = delete_Dir(URI);
                 if (!check)
@@ -629,6 +632,9 @@ void Http_req::LetDelete()
             else
             {
                 _status = 403;
+                if(fd > 0)
+                    close(fd);
+                fd=open(getErrorPage().c_str(),O_RDONLY);
                 in_out = true;
                 return;
             }
@@ -637,6 +643,9 @@ void Http_req::LetDelete()
     else
     {
         _status = 404;
+        if(fd > 0)
+            close(fd);
+        fd=open(getErrorPage().c_str(),O_RDONLY);
         in_out = true;
         return;
     }
@@ -781,7 +790,7 @@ bool Http_req :: Is_dir(const char *ptr)
     }
     else
     {
-        _status=403;
+       
         return false;
     }
 }
@@ -794,9 +803,12 @@ int Http_req:: is_file_dir(std::string uri)
 
 void Http_req ::CheckLoc(int *is_file)
 {
+   
     std ::string tmp =_target;
+   
     if (path[path.length() - 1] != '/')
     {
+     
         in_out = true;
         _status = 301;
         _loca.setReturn("301", path + "/") ;
@@ -820,6 +832,7 @@ void Http_req ::CheckLoc(int *is_file)
             }
         }
         _target = main_index;
+       
         // check if that index is floder shloud trhow error forbiden
         if (is_file_dir(_target) == 0)
         {
@@ -913,6 +926,8 @@ std::string fileExtension(std::string filename)
 void Http_req::LetGet()
 {
     // this condtion here for that stauts come from redirection
+
+
   std ::string tmp=_target;
     if(_status)
         return ;
@@ -922,9 +937,9 @@ void Http_req::LetGet()
 
     std ::string URI = _target;
     int check_type = is_file_dir(URI);
-    std ::cout <<_status << std ::endl;
+   
    stat(URI.c_str(), &sb) ;
-   if(_status && sb.st_mode &&  !(sb.st_mode & S_IFREG)  &&   !(sb.st_mode & (S_IRUSR | S_IXUSR)) )
+   if(check_type &&   !(sb.st_mode & S_IFREG)  &&   !(sb.st_mode & (S_IRUSR | S_IXUSR)) )
    {
     in_out =true;
      if(fd >0)
@@ -932,15 +947,20 @@ void Http_req::LetGet()
     fd= open(getErrorPage().c_str(),O_RDONLY);
     return ;
    }
-    // std :   : cerr << "output" << check_type << std ::endl;
+
 
     if (check_type == IS_DIR)
     {
         CheckLoc(&is_file);
         URI = _target;
     }
-  
-
+    if(_loca.getReturn().first)
+    {
+        
+       return ; 
+    }
+        
+    
     if (stat(URI.c_str(), &sb) == 0)
     {
         
