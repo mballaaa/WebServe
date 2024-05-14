@@ -8,7 +8,6 @@
 <pre><a href="./">./</a> 
 <a href="../">../</a> 
 <a href="index.html">index.html</a> 
-<a href="index.php">index.php</a> 
 <a href="test.html">test.html</a> 
 <a href="index1.html">index1.html</a> 
 <a href="vv.txt">vv.txt</a> 

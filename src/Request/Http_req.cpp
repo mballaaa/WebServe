@@ -959,7 +959,17 @@ void Http_req::LetGet()
         
        return ; 
     }
-        
+ 
+   if(_target.empty() && check_type==IS_DIR && toHtml.empty())
+   {
+      
+        _status = 403;
+        if (fd > 0)
+            close(fd) ;
+        fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
+        in_out = true;
+        return;
+   }
     
     if (stat(URI.c_str(), &sb) == 0)
     {
