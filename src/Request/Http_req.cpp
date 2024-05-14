@@ -314,7 +314,11 @@ std::string replaceDuplicateSlash(const std::string &path)
 }
 
 bool IsPathValid(std::string path)
-{
+ {
+    //     std ::cout << path << std ::endl;
+    //     std ::cout << path.length() << std ::endl;
+
+    //     exit(0);
     std::string allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~";
     size_t found = path.find_first_not_of(allowed_chars);
     if (found == std::string::npos)
@@ -407,6 +411,7 @@ int Http_req::MoreValidation()
 
     if (!is_exit)
     {
+       
         in_out = true;
         _status = 405;
         return 0;
@@ -433,6 +438,7 @@ int Http_req::StautRe(std::string request)
 {
     
     std ::string my_req = "";
+  
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
     {
@@ -447,6 +453,8 @@ int Http_req::StautRe(std::string request)
         std::istringstream input(my_req);
         input >> this->method >> this->path >> this->http_ver;
         path = replaceDuplicateSlash(path) ;
+       
+        
         while (path.find("%") != std::string::npos)
         {
             unsigned int x;
@@ -484,14 +492,16 @@ int Http_req::StautRe(std::string request)
         }
         size_t body_start = len_req + 4;
         this->body = my_req.substr(body_start);
-        if(path.length() > 2048)
+       
+      if (!IsPathValid(path))
     {
-        _status=413;
-       return (0);
+        _status = 400;
+        in_out = true;
+         return (0);
     }
         if (method != "GET" && method != "POST" && method != "DELETE")
     {
-        _status = 405;
+        _status =  501;
         in_out = true;
         return (0);
     }
@@ -501,12 +511,7 @@ int Http_req::StautRe(std::string request)
         in_out = true;
          return (0);
     }
-    if (!IsPathValid(path))
-    {
-        _status = 400;
-        in_out = true;
-         return (0);
-    }
+ 
     if(header.find("host") == header.end())
     {
         
@@ -574,15 +579,11 @@ int Http_req::StautRe(std::string request)
     {
         if (!moreValidationDone && MoreValidation() == 0)
         {
-            in_out = true;
-            if (fd > 0)
-                close(fd) ;
-            fd = open(getErrorPage().c_str(), O_RDONLY) ;
             return (0);
         }
     }
-    res = 1;
-    return (res);
+   
+    return (1);
 }
 void Http_req::LetDelete()
 {
@@ -710,28 +711,36 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     if (!StautRe(bufer) || bytee < 0)
     {
        
+       
         in_out = true;
         if (fd > 0)
             close(fd);
+        if(_status==405)
+        {
+            fd =open(getErrorPage().c_str(), O_RDONLY);
+
+        }
         if(_status == 404)
         {
-           if (fd > 0)
-                close(fd) ;
              fd = open(getErrorPage().c_str(), O_RDONLY);
-             return ;
+            
         }
         if(_status == 411)
         {
-            if (fd > 0)
-                close(fd) ;
+            
+            fd = open(getErrorPage().c_str(), O_RDONLY);
+        }
+        if(_status == 501)
+        {
+        
             fd = open(getErrorPage().c_str(), O_RDONLY);
         }
         else
         {
-            if (fd > 0)
-                close(fd) ;
+            
             fd = open(getErrorPage().c_str(), O_RDONLY);
         }
+        
         return;
     }
     else
