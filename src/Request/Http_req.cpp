@@ -359,11 +359,10 @@ size_t matchLocation(const char *_target, const char *location)
 
 int Http_req::MoreValidation()
 {
-    matchServer() ;
     // check method
     if (method != "GET" && method != "POST" && method != "DELETE")
     {
-        _status = 400;
+        _status = 405;
         in_out = true;
         return (0);
     }
@@ -379,6 +378,14 @@ int Http_req::MoreValidation()
         in_out = true;
         return 0;
     }
+    if(header.find("host") == header.end())
+    {
+        std::cout << "ma l9ahch" << std::endl ;
+        _status = 400;
+        return (0);
+    }
+    matchServer() ;
+
     // get    max body size  in conf
     size_t maxx_size = this->server.getClientMaxBodySize();
     char *endptr;
@@ -395,17 +402,10 @@ int Http_req::MoreValidation()
         {
             _status = 400;
             in_out = true;
-           
             return (0);
         }
     }
-   
-    if(header.find("host") == header.end())
-    {
-        _status = 400;
-        return (0);
-    }
-     if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
+    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
     {
         _status=400;
         return (0);
@@ -416,14 +416,19 @@ int Http_req::MoreValidation()
        _status = 411;
         return (0);
     }
+    if(method=="POST"  && header.find("content-length") != header.end() && header.find("transfer-encoding") != header.end())
+    {
+
+     _status=  400;
+     return (0); 
+    }
     this->_target = this->path;
     size_t stat = _target.find('?');
     if (stat != std::string ::npos)
     {
         _target = _target.substr(0, stat); 
          query_string = path.substr(stat + 1, path.length()); 
-     }
-    matchServer() ;
+    }
     std::map<std::string, Location> location = this->server.getLocations();
     std::map<std::string, Location>::iterator it;
     int flag = 0;
@@ -494,6 +499,7 @@ std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
 
 int Http_req::StautRe(std::string request)
 {
+    std::cout << request << std::endl ;
     std ::string my_req = "";
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
@@ -719,6 +725,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     {
         if (method == "GET")
         {
+            std::cout << _target << std::endl ;
             LetGet();
         }
         /*=============== 14 PART (begin)==================*/
@@ -734,10 +741,12 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     }
 }
 
-bool Is_dir(const char *ptr)
+bool Http_req :: Is_dir(const char *ptr)
 {
+    std::cout << ptr << std::endl ;
     if (!access(ptr, X_OK | R_OK))
     {
+       
         DIR *dir = opendir(ptr);
         if (dir != NULL)
         {
@@ -748,9 +757,12 @@ bool Is_dir(const char *ptr)
         return false;
     }
     else
+    {
+        _status=403;
         return false;
+    }
 }
-int is_file_dir(std::string uri)
+int Http_req:: is_file_dir(std::string uri)
 {
     if (Is_dir(uri.c_str()))
         return 0;
@@ -773,11 +785,13 @@ void Http_req ::CheckLoc(int *is_file)
         std ::string main_index;
         std ::vector<std ::string> index = this->_loca.getIndex();
         std::string separator = (_target[_target.length() - 1] == '/') ? "" : "/";
-        for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
+        for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) 
+        {
             std::string filename = *it;
             std::string tosearch = _target + separator + filename;
             struct stat sb;
-            if (stat(tosearch.c_str(), &sb) == 0) {
+            if (stat(tosearch.c_str(), &sb) == 0)
+            {
                 main_index = tosearch;
                 break;
             }
@@ -795,6 +809,7 @@ void Http_req ::CheckLoc(int *is_file)
         }
         *is_file = 1;
     }
+
     if (this->_loca.getAutoIndex() )
     {
         /// Here We shloud Send DirectoryListe
@@ -875,19 +890,38 @@ std::string fileExtension(std::string filename)
 void Http_req::LetGet()
 {
     // this condtion here for that stauts come from redirection
+  std ::string tmp=_target;
     if(_status)
         return ;
-    int is_file = 0;
+    int is_file = 0;    
+    struct stat sb;
+    // int permisson=0;
+
     std ::string URI = _target;
     int check_type = is_file_dir(URI);
+    std ::cout <<_status << std ::endl;
+   
+   if(_status && !(sb.st_mode & (S_IRUSR | S_IXUSR)) )
+   {
+    in_out =true;
+     if(fd >0)
+        close(fd);
+    fd= open(getErrorPage().c_str(),O_RDONLY);
+    return ;
+   }
+    // std :   : cerr << "output" << check_type << std ::endl;
+  std ::cout << "===>" << URI << std ::endl; 
     if (check_type == IS_DIR)
     {
         CheckLoc(&is_file);
         URI = _target;
     }
-    struct stat sb;
+  
+
     if (stat(URI.c_str(), &sb) == 0)
     {
+        
+        
         if (this->_loca.getCgi())
         {
             // cehck extions
@@ -916,15 +950,16 @@ void Http_req::LetGet()
         }
         if ((sb.st_mode & S_IFREG) || is_file)
         {
-            if (!(sb.st_mode & S_IWUSR))
-            {
-                _status = 403;
-                in_out = true;
-                if(fd > 0)
-                    close(fd) ;
-                fd =open(getErrorPage().c_str(), O_RDONLY);
-                return;
-            }
+           
+            
+              if (!(sb.st_mode & S_IRUSR )) {
+              
+       
+            _status = 403;
+            in_out = true;
+           fd =open(getErrorPage().c_str(), O_RDONLY);
+            return;
+        }
             /// wa7d case dyal found index in list directory shloud redirect the index as inginx do
             if (fd > 0)
                 close(fd);
@@ -937,6 +972,7 @@ void Http_req::LetGet()
     }
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
+        std::cout << "here" << std::endl ;
         _status = 404;
         if (fd > 0)
             close(fd) ;

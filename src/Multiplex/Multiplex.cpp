@@ -50,13 +50,6 @@ void Multiplex::cleanAll(int eFD){
 void Multiplex::start(void)
 {
     int s;
-    std::map<int, std::string> eventName;
-
-    eventName[EPOLLIN] = "EPOLLIN";
-    eventName[EPOLLET] = "EPOLLET";
-    eventName[EPOLLOUT] = "EPOLLOUT";
-    eventName[EPOLLERR] = "EPOLLERR";
-    eventName[EPOLLHUP] = "EPOLLHUP";
     Http_req::initErrorTexts() ;
     while (1)
     {
@@ -94,7 +87,6 @@ void Multiplex::start(void)
                 struct sockaddr in_addr;
                 socklen_t in_len;
                 int infd;
-                char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
                 in_len = sizeof(in_addr);
                 infd = accept(eFD, &in_addr, &in_len); // Accept connection
@@ -105,26 +97,14 @@ void Multiplex::start(void)
                     {
                         /* We have processed all incoming
                             connections. */
-                        exit(1) ;
                         continue;
                     }
                     else
                     {
                         perror("accept");
-                        exit(1) ;
                         continue;
                     }
                 }
-
-                s = getnameinfo(&in_addr, in_len,
-                                hbuf, sizeof hbuf,
-                                sbuf, sizeof sbuf,
-                                NI_NUMERICHOST | NI_NUMERICSERV);
-                if (s == 0)
-                {
-                    printf("Accepted connection on descriptor %d (host=%s, port=%s)\n", infd, hbuf, sbuf);
-                }
-
                 SocketManager::makeSocketNonBlocking(infd);
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
                 if (requests[infd])
@@ -144,6 +124,8 @@ void Multiplex::start(void)
                 bytesReceived = read(eFD, buf,  R_SIZE - 1);
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
+                    if (bytesReceived == -1)
+                        std::cout << "colse" << std::endl ;
                     cleanAll(eFD);
                     continue;
                 }

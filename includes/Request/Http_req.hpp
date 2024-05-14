@@ -102,6 +102,10 @@ public:
     void CheckLoc(int *);
     bool loadCGIMap() ;
     bool delete_Dir(std::string);
+
+    bool Is_dir(const char *ptr);
+    int is_file_dir(std::string uri);
+    
     ~Http_req();
 
     /*  Getter*/
