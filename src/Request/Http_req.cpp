@@ -401,7 +401,7 @@ int Http_req::MoreValidation()
     {
         // change to stirng
         std ::string get_methode = to_stringmetohd(allowmethod[i]);
-        //  std :: cerr << "get methode==>\n" << get_methode << std ::endl;
+        
         if (get_methode == this->method)
         {
             is_exit = true;
@@ -573,7 +573,8 @@ int Http_req::StautRe(std::string request)
     }
     else if (is_finsh)
     {
-        this->body = request;
+        if(this->method != "GET"  && this->method !="DELETE")
+            this->body = request;
     }
     if (is_finsh == true)
     {
