@@ -896,12 +896,13 @@ void Http_req::LetGet()
     int is_file = 0;    
     struct stat sb;
     // int permisson=0;
+   /// stat(URI.c_str(), &sb);
 
     std ::string URI = _target;
     int check_type = is_file_dir(URI);
     std ::cout <<_status << std ::endl;
-   
-   if(_status && !(sb.st_mode & (S_IRUSR | S_IXUSR)) )
+   stat(URI.c_str(), &sb) ;
+   if(_status && sb.st_mode &&  !(sb.st_mode & S_IFREG)  &&   !(sb.st_mode & (S_IRUSR | S_IXUSR)) )
    {
     in_out =true;
      if(fd >0)
