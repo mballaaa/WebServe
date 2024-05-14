@@ -606,6 +606,15 @@ void Http_req::LetDelete()
                     in_out = true;
                     return;
                 }
+                else
+                {
+                    _status = 403 ;
+                    if(fd > 0)
+                        close(fd);
+                    fd=open(getErrorPage().c_str(),O_RDONLY);
+                    in_out = true;
+                    return;
+                }
             }
             else
             {
@@ -917,15 +926,14 @@ void Http_req::LetGet()
     stat(URI.c_str(), &sb);
     int check_type = is_file_dir(URI);
    
-    if (S_ISDIR(sb.st_mode) && !(sb.st_mode & S_IRUSR ) && !(sb.st_mode & S_IXUSR))
+    if (S_ISDIR(sb.st_mode) && (!(sb.st_mode & S_IRUSR ) || !(sb.st_mode & S_IXUSR)))
     {
-      _status = 403;
-    in_out = true;
-    if (fd > 0) close(fd);
-    fd = open(getErrorPage().c_str(), O_RDONLY);
-    return;  
+        _status = 403;
+        in_out = true;
+        if (fd > 0) close(fd);
+        fd = open(getErrorPage().c_str(), O_RDONLY);
+        return;  
     }
-
 
     if (check_type == IS_DIR)
     {

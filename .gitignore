@@ -39,3 +39,5 @@ webserv
 .editorconfig
 
 Upload/
+www/delete
+output.txt
