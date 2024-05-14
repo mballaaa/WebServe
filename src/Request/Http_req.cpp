@@ -708,6 +708,7 @@ bool Http_req::delete_Dir(std::string pathh)
         if (rmdir(pathh.c_str()) != 0)
         {
             perror("Error : DIRECTOR DELETE");
+            _status = 403;
             return false;
         }
         return true;
@@ -726,44 +727,16 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 {
     if (!StautRe(bufer) || bytee < 0)
     {
-       
-       
         in_out = true;
         if (fd > 0)
             close(fd);
-        if(_status==405)
-        {
-            fd =open(getErrorPage().c_str(), O_RDONLY);
-
-        }
-        if(_status == 404)
-        {
-             fd = open(getErrorPage().c_str(), O_RDONLY);
-            
-        }
-        if(_status == 411)
-        {
-            
-            fd = open(getErrorPage().c_str(), O_RDONLY);
-        }
-        if(_status == 501)
-        {
-        
-            fd = open(getErrorPage().c_str(), O_RDONLY);
-        }
-        else
-        {
-            
-            fd = open(getErrorPage().c_str(), O_RDONLY);
-        }
-        
+        fd =open(getErrorPage().c_str(), O_RDONLY);
         return;
     }
     else
     {
         if (method == "GET")
         {
-            
             LetGet();
         }
         /*=============== 14 PART (begin)==================*/
@@ -774,6 +747,10 @@ void Http_req::parse_re(std ::string bufer, int bytee)
         else if (method == "DELETE")
         {
             LetDelete();
+            if (fd > 0)
+                close(fd) ;
+            in_out = true ;
+            fd = open(getErrorPage().c_str(), O_RDONLY) ;
         }
         /*=============== 14 PART (end)==================*/
     }
@@ -781,10 +758,8 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 
 bool Http_req :: Is_dir(const char *ptr)
 {
-    std::cout << ptr << std::endl ;
     if (!access(ptr, X_OK | R_OK))
     {
-       
         DIR *dir = opendir(ptr);
         if (dir != NULL)
         {
@@ -795,8 +770,7 @@ bool Http_req :: Is_dir(const char *ptr)
         return false;
     }
     else
-    {
-       
+    {       
         return false;
     }
 }
@@ -814,7 +788,6 @@ void Http_req ::CheckLoc(int *is_file)
    
     if (path[path.length() - 1] != '/')
     {
-     
         in_out = true;
         _status = 301;
         _loca.setReturn("301", path + "/") ;
@@ -862,6 +835,10 @@ void Http_req ::CheckLoc(int *is_file)
         {
             closedir(dir);
             //perror("auto index issue");
+            _status = 403 ;
+            if (fd > 0)
+                close(fd) ;
+            fd = open(getErrorPage().c_str(), O_RDONLY) ;
             return;
         }
         else
@@ -899,10 +876,6 @@ void Http_req ::CheckLoc(int *is_file)
             }
             outputFile << toHtml;
             outputFile.close();
-            if (fd > 0)
-            {
-                close(fd);
-            }
             if (fd > 0)
                 close(fd) ;
             fd = open("output.txt", std::ios::binary, O_RDONLY);
