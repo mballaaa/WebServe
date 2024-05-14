@@ -505,7 +505,6 @@ int Http_req::MoreValidation()
         //  std :: cerr << "get methode==>\n" << get_methode << std ::endl;
         if (get_methode == this->method)
         {
-
             is_exit = true;
             break;
         }
@@ -1264,7 +1263,7 @@ void Http_req::LetPost()
             }
         }
     }
-    std::cout << CGI_FLAG << std::endl;
+    // std::cout << CGI_FLAG << std::endl;
     if (fd > 0)
         close(fd);
     if (_loca.getUpload() == true)
@@ -1307,7 +1306,7 @@ void Http_req::LetPost()
             {
                 in_out = true;
                 _status = 403;
-                std::cout << make_name << std::endl;
+                // std::cout << make_name << std::endl;
                 // exit(0);
                 fd = open(getErrorPage().c_str(), O_RDWR);
                 error = true;

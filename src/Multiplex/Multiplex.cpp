@@ -169,7 +169,8 @@ void Multiplex::start(void)
                         response[eFD]->fillResponseBody(*requests[eFD]);
 
                         s = write (eFD, response[eFD]->getResponse().c_str(), response[eFD]->getResponse().size());
-                        if(response[eFD]->getResBody() == "\r\n0\r\n\r\n"){
+                        std::cout << response[eFD]->getResponse() ;
+                        if(response[eFD]->getResBody() == "\r\n0\r\n\r\n" || requests[eFD]->getMethod() == "HEAD"||s<=0){
                             unlink(response[eFD]->cgi.cgifile.c_str());
                             cleanAll(eFD);
                             continue ;
@@ -181,7 +182,7 @@ void Multiplex::start(void)
                 else{
                     response[eFD]->fillResponseBody(*requests[eFD]);
                     s = write (eFD, response[eFD]->getResponse().c_str(), response[eFD]->getResponse().size());
-                    if(response[eFD]->getResBody() == "\r\n0\r\n\r\n" || s<=0){
+                    if(response[eFD]->getResBody() == "\r\n0\r\n\r\n" || s<=0||requests[eFD]->getMethod() == "HEAD"){
                         cleanAll(eFD);
                         continue ;
                     }

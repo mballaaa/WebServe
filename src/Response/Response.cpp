@@ -53,9 +53,8 @@ void Response::fillResponseHeadre(Http_req &request){
     if(!request.CGI_FLAG && request.fd != -1){
         h["content-type"] = request._rmime[fileExtension];
     }
-    // if(request._loca.getCgi() && request.getMethod() == "POST")
-    //     _resheaders += "\r\n";
-    h["Transfer-Encoding"] = "chunked";
+    if( request.getMethod() != "HEAD")
+        h["Transfer-Encoding"] = "chunked";
     h["host"] = "127.0.0.1:9090";
     h["Connection"] = "close";
     
@@ -76,9 +75,10 @@ std::string ssizeToHexToStr(ssize_t chunksize){
 
 /*Fill  Resposne Body*/
 void Response::fillResponseBody(Http_req &request){
+    
     _resbody = "\r\n0\r\n\r\n";
     fillResponseHeadre(request);
-    if(request.fd > 0)
+    if(request.fd > 0 && request.getMethod() != "HEAD")
         fillBodyChunked(request);
     else if(request.fd == -1)
     {
@@ -96,6 +96,8 @@ void Response::fillResponseBody(Http_req &request){
     if(request.sendHeaders == false){
         _resheaders = "";
     }
+    if(request.getMethod() == "HEAD")
+        _resbody = "\r\n";
     _response = _resheaders + _resbody;
 }
 
