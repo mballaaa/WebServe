@@ -377,7 +377,7 @@ int Http_req::MoreValidation()
     {
         // std ::cout << "ydes\n";
 
-        _status = 400;
+        _status = 405;
         in_out = true;
         return (0);
     }
@@ -437,6 +437,12 @@ int Http_req::MoreValidation()
     {
        _status = 411;
         return (0);
+    }
+    if(method=="POST"  && header.find("content-length") != header.end() && header.find("transfer-encoding") != header.end())
+    {
+
+     _status=  400;
+     return (0); 
     }
 
 
@@ -849,11 +855,15 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     }
 }
 
-bool Is_dir(const char *ptr)
+bool Http_req :: Is_dir(const char *ptr)
 {
     // std ::cerr << "ptr==>" << ptr << std ::endl;
+   
+
+    
     if (!access(ptr, X_OK | R_OK))
     {
+       
         DIR *dir = opendir(ptr);
         if (dir != NULL)
         {
@@ -866,11 +876,13 @@ bool Is_dir(const char *ptr)
     }
     else
     {
-
+         
+       
+        _status=403;
         return false;
     }
 }
-int is_file_dir(std::string uri)
+int Http_req:: is_file_dir(std::string uri)
 {
     if (Is_dir(uri.c_str()))
         return 0;
@@ -931,49 +943,28 @@ void Http_req ::CheckLoc(int *is_file)
 
         *is_file = 1;
     }
-   
-        // std ::cout << "adhjdfjdf\n";
-        // //std::cout << this->_loca.getIndex().size();
-        // std ::cout <<  this->_loca.getAutoIndex() << std ::endl;
-        // exit(0);
-        
+  
         if (this->_loca.getAutoIndex() )
         {
 
-            
-            /// Here We shloud Send DirectoryListe
-           
 
             std ::string dirpath = tmp;
-            // std ::cout << dirpath << std ::endl;
+            
             toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
 
             DIR *dir = opendir(dirpath.c_str());
-            //std ::cout << "=======>\n";
+         
             if (!dir)
             {
-               
                 closedir(dir);
-                //perror("auto index issue");
                 return;
             }
             else
             {
-
                 struct dirent *list;
                 list = readdir(dir);
-                // std :: cout << path << std :: endl;
                 while (list != NULL)
                 {
-
-                    // if (std ::string(list->d_name) == "index.html")
-                    // {
-
-                    //     _target += std ::string(list->d_name);
-
-                    //     closedir(dir);
-                    //     return;
-                    // }
                     if (list->d_type == DT_DIR)
                     {
                         toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
@@ -1006,12 +997,9 @@ void Http_req ::CheckLoc(int *is_file)
                 outputFile.close();
                 if (fd > 0)
                 {
-                    //std::cout << "case in get fd >0\n";
                     close(fd);
                 }
                 fd = open("output.txt", std::ios::binary, O_RDONLY);
-                //std::cout << "fd list->> " << fd << std::endl;
-              
                 return;
             }
             closedir(dir);
@@ -1040,37 +1028,42 @@ void Http_req::LetGet()
 {
    
     // this condtion here for that stauts come from redirection
-  
+  std ::string tmp=_target;
     if(_status)
     {
         return ;
     }
-    int is_file = 0;
+    int is_file = 0;    
+    struct stat sb;
     // int permisson=0;
 
     std ::string URI = _target;
  
     int check_type = is_file_dir(URI);
-
+    std ::cout <<_status << std ::endl;
+   
+   if(_status && !(sb.st_mode & (S_IRUSR | S_IXUSR)) )
+   {
+    in_out =true;
+     if(fd >0)
+        close(fd);
+    fd= open(getErrorPage().c_str(),O_RDONLY);
+    return ;
+   }
     // std :   : cerr << "output" << check_type << std ::endl;
-
+  std ::cout << "===>" << URI << std ::endl; 
     if (check_type == IS_DIR)
     {
       
         CheckLoc(&is_file);
         URI = _target;
     }
-
-
-
-    struct stat sb;
-
-//    std ::cout << URI << std ::endl;
-   
+  
 
     if (stat(URI.c_str(), &sb) == 0)
     {
-           
+        
+        
         if (this->_loca.getCgi())
         {
         // std :: cout << "veveve\n";
@@ -1104,30 +1097,15 @@ void Http_req::LetGet()
                     return;
                 }
             }
-        
-           
-            
-
-
-            // else
-            // {
-
-                
-
-            //     _status = 404;
-            //     in_out = true;
-            //      fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
-            //     return;
-            // }
-
         }
 
         if ((sb.st_mode & S_IFREG) || is_file)
         {
            
             
-              if (!(sb.st_mode & S_IWUSR)) {
-           
+              if (!(sb.st_mode & S_IRUSR )) {
+              
+       
             _status = 403;
             in_out = true;
            fd =open(getErrorPage().c_str(), O_RDONLY);
@@ -1153,6 +1131,8 @@ void Http_req::LetGet()
     
         // permisiion condition trhow
     }
+   
+    
 
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
