@@ -360,75 +360,7 @@ size_t matchLocation(const char *_target, const char *location)
 int Http_req::MoreValidation()
 {
     // check method
-    if (method != "GET" && method != "POST" && method != "DELETE")
-    {
-        _status = 405;
-        in_out = true;
-        return (0);
-    }
-    if (http_ver != "HTTP/1.1")
-    {
-        _status = 400;
-        in_out = true;
-        return (0);
-    }
-    if (!IsPathValid(path))
-    {
-        _status = 400;
-        in_out = true;
-        return 0;
-    }
-    if(header.find("host") == header.end())
-    {
-        std::cout << "ma l9ahch" << std::endl ;
-        _status = 400;
-        return (0);
-    }
-    matchServer() ;
-
-    // get    max body size  in conf
-    size_t maxx_size = this->server.getClientMaxBodySize();
-    char *endptr;
-    size_t content_len;
-    if (header.find("content-length") != header.end())
-    {
-        content_len = strtol(header["content-length"].c_str(), &endptr, 10);
-        if (endptr == header["content-length"].c_str())
-        {
-            _status = 400;
-            return 0;
-        }
-        if (maxx_size < content_len)
-        {
-            _status = 400;
-            in_out = true;
-            return (0);
-        }
-    }
-    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
-    {
-        _status=400;
-        return (0);
-    }
-
-    if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
-    {
-       _status = 411;
-        return (0);
-    }
-    if(method=="POST"  && header.find("content-length") != header.end() && header.find("transfer-encoding") != header.end())
-    {
-
-     _status=  400;
-     return (0); 
-    }
-    this->_target = this->path;
-    size_t stat = _target.find('?');
-    if (stat != std::string ::npos)
-    {
-        _target = _target.substr(0, stat); 
-         query_string = path.substr(stat + 1, path.length()); 
-    }
+    
     std::map<std::string, Location> location = this->server.getLocations();
     std::map<std::string, Location>::iterator it;
     int flag = 0;
@@ -499,7 +431,7 @@ std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
 
 int Http_req::StautRe(std::string request)
 {
-    std::cout << request << std::endl ;
+    
     std ::string my_req = "";
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
@@ -552,7 +484,87 @@ int Http_req::StautRe(std::string request)
         }
         size_t body_start = len_req + 4;
         this->body = my_req.substr(body_start);
-        is_finsh = true;
+        if(path.length() > 2048)
+    {
+        _status=413;
+       return (0);
+    }
+        if (method != "GET" && method != "POST" && method != "DELETE")
+    {
+        _status = 405;
+        in_out = true;
+        return (0);
+    }
+    if (http_ver != "HTTP/1.1")
+    {
+        _status = 400;
+        in_out = true;
+         return (0);
+    }
+    if (!IsPathValid(path))
+    {
+        _status = 400;
+        in_out = true;
+         return (0);
+    }
+    if(header.find("host") == header.end())
+    {
+        
+        _status = 400;
+      
+        return (0);
+    }
+    matchServer() ;
+
+    // get    max body size  in conf
+    size_t maxx_size = this->server.getClientMaxBodySize();
+    char *endptr;
+    size_t content_len;
+    if (header.find("content-length") != header.end())
+    {
+        content_len = strtol(header["content-length"].c_str(), &endptr, 10);
+        if (endptr == header["content-length"].c_str())
+        {
+            _status = 400;
+            return 1;
+        }
+        if (maxx_size < content_len)
+        {
+            _status = 400;
+            in_out = true;
+          return (0);
+        }
+    }
+    if (header.find("transfer-encoding") != header.end() && header["transfer-encoding"] != "chunked")
+    {
+        _status=400;
+        return (0);
+    }
+
+    if (method == "POST" && header.find("content-length") == header.end() && header.find("transfer-encoding") == header.end())
+    {
+       _status = 411;
+        return (0);
+    }
+    if(method=="POST"  && header.find("content-length") != header.end() && header.find("transfer-encoding") != header.end())
+    {
+
+     _status=  400;
+     return (0);
+    }
+    this->_target = this->path;
+    size_t stat = _target.find('?');
+    if (stat != std::string ::npos)
+    {
+        _target = _target.substr(0, stat); 
+         query_string = path.substr(stat + 1, path.length()); 
+    }
+    if(path.length() > 2048)
+    {
+        _status=413;
+       return (0);
+    }
+    is_finsh = true;
     }
     else if (is_finsh)
     {
@@ -697,6 +709,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
 {
     if (!StautRe(bufer) || bytee < 0)
     {
+       
         in_out = true;
         if (fd > 0)
             close(fd);
@@ -725,7 +738,7 @@ void Http_req::parse_re(std ::string bufer, int bytee)
     {
         if (method == "GET")
         {
-            std::cout << _target << std::endl ;
+            
             LetGet();
         }
         /*=============== 14 PART (begin)==================*/
@@ -895,8 +908,7 @@ void Http_req::LetGet()
         return ;
     int is_file = 0;    
     struct stat sb;
-    // int permisson=0;
-   /// stat(URI.c_str(), &sb);
+ 
 
     std ::string URI = _target;
     int check_type = is_file_dir(URI);
@@ -911,7 +923,7 @@ void Http_req::LetGet()
     return ;
    }
     // std :   : cerr << "output" << check_type << std ::endl;
-  std ::cout << "===>" << URI << std ::endl; 
+
     if (check_type == IS_DIR)
     {
         CheckLoc(&is_file);
