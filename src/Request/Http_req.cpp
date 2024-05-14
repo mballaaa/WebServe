@@ -934,50 +934,41 @@ void Http_req::LetGet()
     // this condtion here for that stauts come from redirection
 
 
-    std ::cout << _loca << std ::endl;
-    exit(0);
+   
    std ::string tmp=_target;
+ 
+   
     if(_status)
         return ;
     int is_file = 0;    
     struct stat sb;
- 
+  
 
     std ::string URI = _target;
+    stat(URI.c_str(), &sb);
     int check_type = is_file_dir(URI);
    
-   stat(URI.c_str(), &sb) ;
-   if(check_type &&   !(sb.st_mode & S_IFREG)  &&   !(sb.st_mode & (S_IRUSR | S_IXUSR)) )
-   {
-    in_out =true;
-     if(fd >0)
-        close(fd);
-    fd= open(getErrorPage().c_str(),O_RDONLY);
-    return ;
-   }
+    if (S_ISDIR(sb.st_mode) && !(sb.st_mode & S_IRUSR ) && !(sb.st_mode & S_IXUSR))
+    {
+      _status = 403;
+    in_out = true;
+    if (fd > 0) close(fd);
+    fd = open(getErrorPage().c_str(), O_RDONLY);
+    return;  
+    }
 
 
     if (check_type == IS_DIR)
     {
         CheckLoc(&is_file);
         URI = _target;
+        
     }
     if(_loca.getReturn().first)
     {
         
        return ; 
     }
- 
-   if(_target.empty() && check_type==IS_DIR && toHtml.empty())
-   {
-      
-        _status = 403;
-        if (fd > 0)
-            close(fd) ;
-        fd = open(getErrorPage().c_str(), std::ios::binary, O_RDONLY);
-        in_out = true;
-        return;
-   }
     
     if (stat(URI.c_str(), &sb) == 0)
     {
