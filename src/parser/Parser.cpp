@@ -7,6 +7,8 @@ Lexer::iterator_t   Parser::end ;
 void Parser::_listen( Server& s )
 {
     expect("listen") ;
+    if ((*curr).find_first_not_of("0123456789") != std::string::npos)
+        throw std::runtime_error("listen port must be a number") ;
     s.setPort(*curr) ;
     next() ;
     expect(";") ;
@@ -43,6 +45,8 @@ void Parser::_root( Server& s )
 void Parser::_clientMaxBodySize( Server& s )
 {
     expect("client_max_body_size") ;
+    if ((*curr).find_first_not_of("0123456789") != std::string::npos)
+        throw std::runtime_error("client_max_body_size must be a number") ;
     s.setClientMaxBodySize(std::atol(curr->c_str())) ;
     next() ;
     expect(";") ;
@@ -65,6 +69,8 @@ void Parser::_index( Server& s )
 void Parser::_errorPage( Server& s )
 {
     expect("error_page") ;
+    if ((*curr).find_first_not_of("0123456789") != std::string::npos)
+        throw std::runtime_error("error_page status must be a number") ;
     int statusCode = atol(curr->c_str()) ;
     next() ;
     s.appendErrorPage(statusCode, *curr) ;
