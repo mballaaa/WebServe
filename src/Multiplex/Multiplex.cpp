@@ -122,7 +122,7 @@ void Multiplex::start(void)
                 char buf[R_SIZE] = {0};
 
                 bytesReceived = read(eFD, buf,  R_SIZE - 1);
-                if (bytesReceived == -1 || bytesReceived == 0)
+                if (bytesReceived == -1 || bytesReceived == 0 || requests[eFD]->error == true)
                 {
                     if (bytesReceived == -1)
                         std::cout << "colse" << std::endl ;
@@ -137,14 +137,13 @@ void Multiplex::start(void)
             {
                 requests[eFD]->to_file.clear();
                 requests[eFD]->lastActive = time(0) ;
-                if(requests[eFD]->CGI_FLAG && requests[eFD]->_loca.getCgi() == true && requests[eFD]->error != true) {
+                if(requests[eFD]->CGI_FLAG && requests[eFD]->error != true) {
                     if(requests[eFD]->sendHeaders == true)
                         response[eFD]->cgi._setupEnv(*requests[eFD]);
                     if(response[eFD]->cgi._waitreturn){
                         response[eFD]->fillResponseBody(*requests[eFD]);
 
                         s = write (eFD, response[eFD]->getResponse().c_str(), response[eFD]->getResponse().size());
-                        std::cout << response[eFD]->getResponse() ;
                         if(response[eFD]->getResBody() == "\r\n0\r\n\r\n" || requests[eFD]->getMethod() == "HEAD"||s<=0){
                             unlink(response[eFD]->cgi.cgifile.c_str());
                             cleanAll(eFD);

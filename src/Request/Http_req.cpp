@@ -900,18 +900,7 @@ void Http_req::LetGet()
 
     std ::string URI = _target;
     int check_type = is_file_dir(URI);
-    std ::cout <<_status << std ::endl;
-   stat(URI.c_str(), &sb) ;
-//    if(_status && sb.st_mode &&  !(sb.st_mode & S_IFREG)  &&   !(sb.st_mode & (S_IRUSR | S_IXUSR)) )
-//    {
-//     in_out =true;
-//      if(fd >0)
-//         close(fd);
-//     fd= open(getErrorPage().c_str(),O_RDONLY);
-//     return ;
-//    }
-    // std :   : cerr << "output" << check_type << std ::endl;
-//   std ::cout << "===>" << URI << std ::endl; 
+    stat(URI.c_str(), &sb) ; 
     if (check_type == IS_DIR)
     {
         CheckLoc(&is_file);
@@ -1074,7 +1063,7 @@ void Http_req::LetPost()
         {
             in_out = true;
             error = true;
-            _status = 404;
+            _status = 403;
             if(header.find("content-type") ==  header.end())
                 _status = 400;
             if (fd > 0)
