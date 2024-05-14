@@ -20,7 +20,6 @@ int SocketManager::createSocket( const Server &server, int ai_family, int ai_soc
     s = getaddrinfo(server.getHost().c_str(), server.getPort().c_str(), &hints, &result) ;
     if (s != 0)
     {
-        perror("getaddrinfo") ;
         throw std::runtime_error("getaddrinfo") ;
     }
 

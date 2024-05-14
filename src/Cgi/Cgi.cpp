@@ -111,7 +111,6 @@ void Cgi::_setupEnv(Http_req &request){
     else    
     {
         /*=====Must be in a separate func=====*/
-        std::cout << "no extension" << std::endl ;
         request._status = 404;
         if(request.fd>0)
             close(request.fd);

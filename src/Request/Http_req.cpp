@@ -315,10 +315,6 @@ std::string replaceDuplicateSlash(const std::string &path)
 
 bool IsPathValid(std::string path)
  {
-    //     std ::cout << path << std ::endl;
-    //     std ::cout << path.length() << std ::endl;
-
-    //     exit(0);
     std::string allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~";
     size_t found = path.find_first_not_of(allowed_chars);
     if (found == std::string::npos)
@@ -997,7 +993,6 @@ void Http_req::LetGet()
     }
     else if(!(stat(URI.c_str(), &sb) == 0) && toHtml.empty())
     {
-        std::cout << "here" << std::endl ;
         _status = 404;
         if (fd > 0)
             close(fd) ;

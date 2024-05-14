@@ -148,7 +148,6 @@ void 							Server::setHost( const std::string& _host )
     }
     if (pointCount != 3)
         throw std::runtime_error("invalid ip address in host") ;
-    std::cout << tmp << std::endl ;
     this->_host = tmp ;
 }
 

@@ -25,7 +25,6 @@ void Multiplex::setup(const servers_t &servers)
     {
         SOCKET sfd;
         std::string id = servIt->getHost() + ":" + servIt->getPort();
-        std::cerr << "Listening on: " << id << "..." << std::endl;
         if (hostPortMap.find(id) != hostPortMap.end()) // host:port already binded
             sfd = hostPortMap[id];
         else // create new socket, bind, listen and add to epoll finally add it to hostPortMap
@@ -100,10 +99,7 @@ void Multiplex::start(void)
                         continue;
                     }
                     else
-                    {
-                        perror("accept");
                         continue;
-                    }
                 }
                 SocketManager::makeSocketNonBlocking(infd);
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
@@ -125,7 +121,6 @@ void Multiplex::start(void)
                 if (bytesReceived == -1 || bytesReceived == 0 || requests[eFD]->error == true)
                 {
                     if (bytesReceived == -1)
-                        std::cout << "colse" << std::endl ;
                     cleanAll(eFD);
                     continue;
                 }

@@ -17,12 +17,10 @@ Response::Response(int _socketfd)
 
 Response::Response(const Response& obj)
 {
-    //std::cout << "copy" << std::endl ;
     (void) obj ;
 }
 const Response& Response::operator=(const Response& obj)
 {
-    //std::cout << "= copy" << std::endl ;
     (void) obj ;
     return (*this) ;
 }
@@ -105,7 +103,6 @@ void Response::fillBodyChunked(Http_req &request){
     char buff [R_BUFFER_SIZE];
     ssize_t bytesReceived;
     if(request.fd<0){
-        std::cout << "request.fd 4FD ERROR" << std::endl;
         return;
     }
     bytesReceived = read(request.fd, buff, R_BUFFER_SIZE-1);
