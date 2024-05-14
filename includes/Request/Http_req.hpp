@@ -21,12 +21,6 @@
 class Http_req
 {
 public:
-    struct golbal_info
-    {
-    };
-
-public: // amine: i made this public for now
-        /// this the start line
     static std::map<int, std::string> errorTexts;
     time_t lastActive ;
     std::ifstream configFile ;
@@ -39,10 +33,9 @@ public: // amine: i made this public for now
     std ::string my_req;
     size_t bodycount;
     std ::string query_string;
-    //
-     std ::ifstream file;
-     bool CGI_FLAG;
-     std ::map<std::string,std::string> cgiMap;
+    std ::ifstream file;
+    bool CGI_FLAG;
+    std ::map<std::string,std::string> cgiMap;
 
     std ::string toHtml;
     std ::string method;
@@ -56,7 +49,7 @@ public: // amine: i made this public for now
     size_t lencontent;
     std ::string GetFIle;
         
-     std::map<std::string, std::string> header;
+    std::map<std::string, std::string> header;
     Server server;
     std::vector<Server> servers ;
     Location _loca;
@@ -101,15 +94,18 @@ public:
     Http_req &operator=(const Http_req &obj);
     void debugFunction();
     Http_req(std::vector<Server>& servers);
-    // Http_req(std::string req,int byterec, std::map<int, Server> listenrs);
     void parse_re(std ::string bufer, int bytee);
     int StautRe(std ::string request);
     int MoreValidation();
     void LetGet();
     void LetDelete();
-   void CheckLoc(int *);
-   bool loadCGIMap() ;
+    void CheckLoc(int *);
+    bool loadCGIMap() ;
     bool delete_Dir(std::string);
+
+    bool Is_dir(const char *ptr);
+    int is_file_dir(std::string uri);
+    
     ~Http_req();
 
     /*  Getter*/

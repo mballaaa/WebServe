@@ -97,6 +97,7 @@ void Parser::_index( Location& l )
      * could have multiple index files
     */
     expect("index") ;
+    l.clearIndex();
     while ( *curr != ";" )
     {
         l.setIndex(*curr) ;
@@ -241,6 +242,8 @@ Server Parser::createServer( void )
         else 
             throw std::runtime_error("Unexpected token: in server" + *curr) ;
     }
+    s.appendServerName(s.getHost()) ;
+    s.appendServerName(s.getHost()+":"+s.getPort()) ;
     return (s) ;
 }
 

@@ -7,7 +7,6 @@ SOCKET Multiplex::epollFD;
 Multiplex::listeners_t Multiplex::listeners;
 Multiplex::requests_t Multiplex::requests;
 Multiplex::response_t Multiplex::response;// For "JaQen" Response
-// Multiplex::cgi_t Multiplex::cgi;// For "JaQen" Response
 Multiplex::epoll_event_t Multiplex::events[SOMAXCONN] = {};
 Multiplex::host_port_map_t Multiplex::hostPortMap;
 
@@ -28,14 +27,10 @@ void Multiplex::setup(const servers_t &servers)
         std::string id = servIt->getHost() + ":" + servIt->getPort();
         std::cerr << "Listening on: " << id << "..." << std::endl;
         if (hostPortMap.find(id) != hostPortMap.end()) // host:port already binded
-        {
             sfd = hostPortMap[id];
-            // servIt++ ;
-            // continue ;
-        }
         else // create new socket, bind, listen and add to epoll finally add it to hostPortMap
         {
-            sfd = SocketManager::createSocket(servIt->getHost().c_str(), servIt->getPort().c_str(), AF_INET, SOCK_STREAM, AI_PASSIVE);
+            sfd = SocketManager::createSocket(*servIt, AF_INET, SOCK_STREAM, AI_PASSIVE);
             SocketManager::makeSocketNonBlocking(sfd);
             SocketManager::startListening(sfd);
             SocketManager::epollCtlSocket(sfd, EPOLL_CTL_ADD);
@@ -55,13 +50,6 @@ void Multiplex::cleanAll(int eFD){
 void Multiplex::start(void)
 {
     int s;
-    std::map<int, std::string> eventName;
-
-    eventName[EPOLLIN] = "EPOLLIN";
-    eventName[EPOLLET] = "EPOLLET";
-    eventName[EPOLLOUT] = "EPOLLOUT";
-    eventName[EPOLLERR] = "EPOLLERR";
-    eventName[EPOLLHUP] = "EPOLLHUP";
     Http_req::initErrorTexts() ;
     while (1)
     {
@@ -76,7 +64,6 @@ void Multiplex::start(void)
             }
             if (events[i].events & EPOLLHUP)
             {
-                // std::cout << "EPOLLHUP on FD: " << eFD << std::endl ; 
                 delete requests[eFD] ;
                 requests.erase(eFD) ;
                 delete response[eFD] ;
@@ -88,10 +75,11 @@ void Multiplex::start(void)
                 if (difftime(time(NULL), requests[eFD]->lastActive) > TIMEOUT)
                 {
                     requests[eFD]->_status = 408 ;
+                    if (requests[eFD]->fd > 0)
+                        close(requests[eFD]->fd) ;
                     requests[eFD]->fd = open(requests[eFD]->getErrorPage().c_str(), O_RDWR) ;
                     unlink(requests[eFD]->make_name.c_str());
                     requests[eFD]->in_out = true ;
-                    //std::cout << "fd: " << eFD << " time diff: " << difftime(time(NULL), requests[eFD]->lastActive) << std::endl ;
                 }
             }
             if (listeners.find(eFD) != listeners.end()) // Check if socket belong to a server
@@ -99,9 +87,8 @@ void Multiplex::start(void)
                 struct sockaddr in_addr;
                 socklen_t in_len;
                 int infd;
-                char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
-                in_len = sizeof in_addr;
+                in_len = sizeof(in_addr);
                 infd = accept(eFD, &in_addr, &in_len); // Accept connection
                 if (!ISVALIDSOCKET(infd))
                 {
@@ -110,26 +97,14 @@ void Multiplex::start(void)
                     {
                         /* We have processed all incoming
                             connections. */
-                        exit(1) ;
                         continue;
                     }
                     else
                     {
                         perror("accept");
-                        exit(1) ;
                         continue;
                     }
                 }
-
-                s = getnameinfo(&in_addr, in_len,
-                                hbuf, sizeof hbuf,
-                                sbuf, sizeof sbuf,
-                                NI_NUMERICHOST | NI_NUMERICSERV);
-                if (s == 0)
-                {
-                    // printf("Accepted connection on descriptor %d (host=%s, port=%s)\n", infd, hbuf, sbuf);
-                }
-
                 SocketManager::makeSocketNonBlocking(infd);
                 SocketManager::epollCtlSocket(infd, EPOLL_CTL_ADD);
                 if (requests[infd])
@@ -147,9 +122,10 @@ void Multiplex::start(void)
                 char buf[R_SIZE] = {0};
 
                 bytesReceived = read(eFD, buf,  R_SIZE - 1);
-                // std ::cout << bytesReceived << std ::endl;
                 if (bytesReceived == -1 || bytesReceived == 0)
                 {
+                    if (bytesReceived == -1)
+                        std::cout << "colse" << std::endl ;
                     cleanAll(eFD);
                     continue;
                 }
@@ -161,8 +137,7 @@ void Multiplex::start(void)
             {
                 requests[eFD]->to_file.clear();
                 requests[eFD]->lastActive = time(0) ;
-                if((requests[eFD]->CGI_FLAG)&& requests[eFD]->_loca.getCgi() == true && requests[eFD]->error != true) {
-                    
+                if(requests[eFD]->CGI_FLAG && requests[eFD]->_loca.getCgi() == true && requests[eFD]->error != true) {
                     if(requests[eFD]->sendHeaders == true)
                         response[eFD]->cgi._setupEnv(*requests[eFD]);
                     if(response[eFD]->cgi._waitreturn){
@@ -192,5 +167,4 @@ void Multiplex::start(void)
             }
         }
     }
-    // close (sfd);
 }

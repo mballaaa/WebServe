@@ -13,7 +13,6 @@ Response::Response(int _socketfd)
     headerSent = false ;
     fileOpened = false ;
     this->_socketfd = _socketfd ;
-    std::cout << "Created fd: " << _socketfd << std::endl ;
 }
 
 Response::Response(const Response& obj)

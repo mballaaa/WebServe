@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Index of /</title>
+</head>
+<body>
+<h1>Index of /</h1>
+<pre><a href="counter.php">counter.php</a> 
+<a href="video.mp4">video.mp4</a> 
+<a href="site1/">site1/</a> 
+<a href="test/">test/</a> 
+<a href="kokab.png">kokab.png</a> 
+<a href="aji/">aji/</a> 
+<a href="../">../</a> 
+<a href="test.py">test.py</a> 
+<a href="warda.jpg">warda.jpg</a> 
+<a href="login.php">login.php</a> 
+<a href="fc0bd191d00457ca_kokab.png">fc0bd191d00457ca_kokab.png</a> 
+<a href="set_cookies.php">set_cookies.php</a> 
+<a href="e703c96671dfb121_kokab.png">e703c96671dfb121_kokab.png</a> 
+<a href="index.php">index.php</a> 
+<a href="index1.html">index1.html</a> 
+<a href="cgi-bin/">cgi-bin/</a> 
+<a href="test.php">test.php</a> 
+<a href="test.html">test.html</a> 
+<a href="./">./</a> 
+<a href="index.html">index.html</a> 
+<a href="expire_cookies.php">expire_cookies.php</a> 
+<a href="image.html">image.html</a> 
+<a href="profile.php">profile.php</a> 
+<a href="html/">html/</a> 
+<a href="aji2/">aji2/</a> 
+<a href="index .html">index .html</a> 
+</pre>
+</body>
+</html>
