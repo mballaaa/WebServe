@@ -1,6 +1,6 @@
 #include "../includes/Server.hpp"
 
-Server::Server( void ) : _serverNames(), _port(), _root("/var/www/"), _host("127.0.0.1"), _clientMaxBodySize(), _errorPages()
+Server::Server( void ) : _serverNames(), _port("9090"), _root("/var/www/"), _host("127.0.0.1"), _clientMaxBodySize(0), _errorPages()
 {
 }
 

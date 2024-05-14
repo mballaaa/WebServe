@@ -218,6 +218,7 @@ Lexer::tokens_t Lexer::checkSyntax( const std::string& configPath )
 	tokens = lexer(configPath) ;
 	it = tokens.begin() ;
 	sym = nameSyms[*it] ;
+	prev = it ;
 	while (it != tokens.end() && expect(SERVER))
 	{
 		expect(OCB) ;
