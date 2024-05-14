@@ -1095,7 +1095,7 @@ void Http_req::LetPost()
         {
             in_out = true;
             error = true;
-            _status = 404;
+            _status = 403;
             if(header.find("content-type") ==  header.end())
                 _status = 400;
             if (fd > 0)
