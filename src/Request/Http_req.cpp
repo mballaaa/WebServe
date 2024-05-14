@@ -928,7 +928,9 @@ void Http_req::LetGet()
     // this condtion here for that stauts come from redirection
 
 
-  std ::string tmp=_target;
+    std ::cout << _loca << std ::endl;
+    exit(0);
+   std ::string tmp=_target;
     if(_status)
         return ;
     int is_file = 0;    
