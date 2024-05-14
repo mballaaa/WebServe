@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <signal.h>
+#include "Server.hpp"
 
 #define ISVALIDSOCKET(s) ((s) >= 0)
 #define CLOSESOCKET(s) close(s)
@@ -29,7 +30,7 @@ private:
     
 public:
     static int epollFD ;
-    static int createSocket( const char *host, const char *port, int ai_family = AF_INET, int ai_socktype = SOCK_STREAM, int ai_flags = AI_PASSIVE) ;
+    static int createSocket( const Server& server, int ai_family = AF_INET, int ai_socktype = SOCK_STREAM, int ai_flags = AI_PASSIVE) ;
     static int makeSocketNonBlocking( int sfd ) ;
     static int startListening( int sfd ) ;
     static int createEpoll( void ) ;
