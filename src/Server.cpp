@@ -174,7 +174,10 @@ void 							Server::appendLocation( const std::string& path, const Location& _lo
 {
     if (path.empty())
         throw std::runtime_error("empty path in location") ;
-    this->_locations[path] = _location ;
+    if (_locations.find(path) == _locations.end())
+        this->_locations[path] = _location ;
+    else
+        throw std::runtime_error("duplicate location path") ;
 }
 
 void 							Server::appendErrorPage( const int& statusCode, const std::string& errorPagePath )
