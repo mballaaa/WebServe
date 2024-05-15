@@ -240,15 +240,7 @@ const std::string Http_req::getErrorPage( void )
         *****2Header
 
 */
-bool comparePaths(const std::string &target, const std::string &key)
-{
-    // Check if the target starts with the key
-    if (target.compare(0, key.length(), key) != 0)
-        return false;
 
-    // If the target is exactly the same as the key or the next character is a '/'
-    return (target.length() == key.length() || target[key.length()] == '/');
-}
 
 std::string to_stringmetohd(int value)
 {
@@ -310,15 +302,6 @@ std::string replaceDuplicateSlash(const std::string &path)
     if (result == "")
         return "/" ;
     return result;
-}
-
-bool IsPathValid(std::string path)
- {
-    std::string allowed_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~";
-    size_t found = path.find_first_not_of(allowed_chars);
-    if (found == std::string::npos)
-        return false;
-    return true;
 }
 
 void    Http_req::matchServer( void )
@@ -416,11 +399,6 @@ int Http_req::MoreValidation()
     return (1);
 }
 
-long hex_to_decimal(const std::string &hexString)
-{
-    char *endPtr;
-    return strtol(hexString.c_str(), &endPtr, 16);
-}
 
 std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
 {
@@ -438,10 +416,7 @@ int Http_req::StautRe(std::string request)
     }
 
     size_t len_req = my_req.find("\r\n\r\n");
-    // if (len_req == std::string::npos)
-    // {
-    //     return (1);
-    // }
+
     if (!is_finsh && len_req != std ::string ::npos)
     {
         std::istringstream input(my_req);
@@ -498,14 +473,8 @@ int Http_req::StautRe(std::string request)
         }
         size_t body_start = len_req + 4;
         this->body = my_req.substr(body_start);
-       
-        if (!IsPathValid(path))
-        {
-            _status = 400;
-            in_out = true;
-            return (0);
-        }
-            if (method != "GET" && method != "POST" && method != "DELETE")
+
+        if (method != "GET" && method != "POST" && method != "DELETE")
         {
             _status =  501;
             in_out = true;
@@ -527,7 +496,7 @@ int Http_req::StautRe(std::string request)
         }
         matchServer() ;
 
-        // get    max body size  in conf
+   
         size_t maxx_size = this->server.getClientMaxBodySize();
         char *endptr;
         size_t content_len;
@@ -838,7 +807,7 @@ void Http_req ::CheckLoc(int *is_file)
     {
         /// Here We shloud Send DirectoryListe
         std ::string dirpath = tmp;
-        toHtml = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path + "</title>\n</head>\n<body>\n<h1>Index of " + path + "</h1>\n<pre>";
+        toHtml = "<!DOCTYPE html><html><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" /><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr/><pre>";
         DIR *dir = opendir(dirpath.c_str());
         if (!dir)
         {
@@ -858,7 +827,8 @@ void Http_req ::CheckLoc(int *is_file)
             {
                 if (list->d_type == DT_DIR)
                 {
-                    toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
+                    if (std::string(list->d_name) != ".")
+                        toHtml += "<a href=\"" + (std::string(list->d_name)) + "/\">" + std::string(list->d_name) + "/</a> \n";
                 }
                 else if (list->d_type == DT_LNK)
                 {
@@ -870,7 +840,7 @@ void Http_req ::CheckLoc(int *is_file)
                 }
                 list = readdir(dir);
             }
-            toHtml += "</pre>\n</body>\n</html>";
+            toHtml += "</pre><hr/>\n</body>\n</html>";
             closedir(dir);
             in_out = true;
             _status = 200;
@@ -914,17 +884,12 @@ std::string fileExtension(std::string filename)
 void Http_req::LetGet()
 {
     // this condtion here for that stauts come from redirection
-
-
-   
    std ::string tmp=_target;
- 
    
     if(_status)
         return ;
     int is_file = 0;    
     struct stat sb;
-  
 
     std ::string URI = _target;
     stat(URI.c_str(), &sb);

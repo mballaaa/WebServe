@@ -34,8 +34,8 @@ std::string sizeToHex(size_t size)
 }
 
 /*Fill Response Header*/
-void Response::fillResponseHeadre(Http_req &request){
-    
+void Response::fillResponseHeadre(Http_req &request)
+{    
     std::map<std::string,std::string> h;
     std::stringstream ss;
     ss << request._status;
@@ -54,6 +54,12 @@ void Response::fillResponseHeadre(Http_req &request){
         h["Transfer-Encoding"] = "chunked";
     h["host"] = "127.0.0.1:9090";
     h["Connection"] = "close";
+    h["Server"] = "Webserv" ;
+    char buf[1000];
+    time_t now = time(0);
+    struct tm tm = *gmtime(&now);
+    strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+    h["Date"] = buf ;
     
     std::map<std::string,std::string>::iterator it2 = h.begin();
     for(;it2 != h.end();it2++)
@@ -62,7 +68,8 @@ void Response::fillResponseHeadre(Http_req &request){
             _resheaders += it2->first+": "+it2->second+"\r\n";
     }
 }
-std::string ssizeToHexToStr(ssize_t chunksize){
+std::string ssizeToHexToStr(ssize_t chunksize)
+{
     std::stringstream ss;
     ss << std::hex << chunksize;
     std::string hexString = ss.str();
@@ -71,7 +78,8 @@ std::string ssizeToHexToStr(ssize_t chunksize){
 }
 
 /*Fill  Resposne Body*/
-void Response::fillResponseBody(Http_req &request){
+void Response::fillResponseBody(Http_req &request)
+{
     
     _resbody = "\r\n0\r\n\r\n";
     fillResponseHeadre(request);
@@ -99,7 +107,8 @@ void Response::fillResponseBody(Http_req &request){
 }
 
 /*To send response with chunked*/
-void Response::fillBodyChunked(Http_req &request){
+void Response::fillBodyChunked(Http_req &request)
+{
     char buff [R_BUFFER_SIZE];
     ssize_t bytesReceived;
     if(request.fd<0){
