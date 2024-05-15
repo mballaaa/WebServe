@@ -6,7 +6,6 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <cerrno>
 #include <cstdlib>
 #include <cstdio>
 #include <unistd.h>
@@ -36,7 +35,7 @@
 #define FOREWHT  "\x1B[37m" // White
 
 #define R_SIZE 1024 // Read Buffer Size
-#define TIMEOUT 5
+#define TIMEOUT 30
 
 class Multiplex
 {

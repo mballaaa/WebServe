@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <cstring>
-#include <cerrno>
 #include <cstdio>
 #include <stdexcept>
 #include <unistd.h>
@@ -17,7 +16,6 @@
 #define ISVALIDSOCKET(s) ((s) >= 0)
 #define CLOSESOCKET(s) close(s)
 #define SOCKET int
-#define GETSOCKETERRNO() (errno)
 
 class SocketManager
 {

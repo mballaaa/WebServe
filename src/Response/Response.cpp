@@ -47,7 +47,7 @@ void Response::fillResponseHeadre(Http_req &request){
     }
       
     std::string fileExtension = request._target.substr(request._target.find_last_of('.') + 1);
-    if(!request.CGI_FLAG && request.fd != -1){
+    if(!request.CGI_FLAG && request.fd != -1 && request._status < 400){
         h["content-type"] = request._rmime[fileExtension];
     }
     if( request.getMethod() != "HEAD")

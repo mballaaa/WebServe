@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#include <cerrno>
 #include <cstring>
 
 #include <cstring>
@@ -432,9 +431,6 @@ std::string& trim(std::string& s, const char* t = " \t\n\r\f\v")
 
 int Http_req::StautRe(std::string request)
 {
-    
-    std ::string my_req = "";
-  
     // Set flag that can tell us is request are finshied
     if (!is_finsh)
     {
@@ -442,14 +438,10 @@ int Http_req::StautRe(std::string request)
     }
 
     size_t len_req = my_req.find("\r\n\r\n");
-    int res;
-    res = 0;
-    if (len_req == std::string::npos)
-    {
-        _status = 414;
-        in_out = true;
-        return (0);
-    }
+    // if (len_req == std::string::npos)
+    // {
+    //     return (1);
+    // }
     if (!is_finsh && len_req != std ::string ::npos)
     {
         std::istringstream input(my_req);
@@ -480,6 +472,12 @@ int Http_req::StautRe(std::string request)
             {
                 std ::string key = next_line.substr(0, find);
                 std ::string value = next_line.substr(find + 1, distance);
+                if (value.empty())
+                {
+                    _status = 400;
+                    in_out = true;
+                    return (0);
+                }
                 for (size_t i = 0; i < key.length(); i++)
                 {
                     key[i] = std::tolower(key[i]);
@@ -490,6 +488,12 @@ int Http_req::StautRe(std::string request)
                     return (0);
                 }
                 header[key] = trim(value);
+            }
+            else
+            {
+                _status = 400;
+                in_out = true;
+                return (0);
             }
         }
         size_t body_start = len_req + 4;
@@ -537,7 +541,7 @@ int Http_req::StautRe(std::string request)
             }
             if (maxx_size < content_len)
             {
-                _status = 400;
+                _status = 413;
                 in_out = true;
             return (0);
             }

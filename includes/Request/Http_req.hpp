@@ -4,7 +4,6 @@
 #include <fstream>
 #include <sys/socket.h>
 #include "../Server.hpp"
-#include <cerrno>
 #include <cstdio>
 #include <sstream>
 #include <algorithm>
